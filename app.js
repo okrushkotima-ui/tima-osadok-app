@@ -41,7 +41,7 @@ function analyticsDays(){
   let start=selected, end=selected;
   if(analyticsPeriod==='week'){const dow=(parseKey(selected).getDay()+6)%7;start=shift(selected,-dow);end=shift(start,6)}
   if(analyticsPeriod==='month'){const d=parseKey(selected);start=dateKey(new Date(d.getFullYear(),d.getMonth(),1,12));end=dateKey(new Date(d.getFullYear(),d.getMonth()+1,0,12))}
-  if(analyticsPeriod==='all'){const keys=Object.keys(data.checks).filter(k=>k<=today&&/^\\d{4}-\\d\\d-\\d\\d$/.test(k)).sort();return keys.length?keys:[today]}
+  if(analyticsPeriod==='all'){const keys=Object.keys(data.checks).filter(k=>k<=today&&/^\d{4}-\d\d-\d\d$/.test(k)).sort();return keys.length?keys:[today]}
   if(end>today)end=today;
   const out=[];for(let day=start;day<=end&&out.length<400;day=shift(day,1))out.push(day);
   return out;
