@@ -168,7 +168,59 @@ function renderHabits(){
   $('daily-caption').textContent=doneCount===HABITS.length?'Все цели выполнены!':doneCount?'Хороший старт':'Начни с малого';
 }
 
-function renderSleep(){const entry=data.sleep[selected]||{};$('sleep-bed').value=entry.bed||'';$('sleep-wake').value=entry.wake||'';const out=$('sleep-result');if(!entry.bed&&!entry.wake){out.textContent='За этот день пока нет записи о сне';return}if(entry.bed&&entry.wake){const toMins=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};const total=(toMins(entry.wake)-toMins(entry.bed)+1440)%1440;const h=Math.floor(total/60),m=total%60;out.textContent=total?'🌙 '+h+' ч '+(m?m+' мин':'')+' между отметками сна':'Уточни время — отметки совпадают'}else out.textContent='✓ Записано: '+(entry.bed?'уснул в '+entry.bed:'проснулся в '+entry.wake)}
+function renderSleep(){
+  const entry=data.sleep[selected]||{};
+  $('sleep-bed').value=entry.bed||'';
+  $('sleep-wake').value=entry.wake||'';
+  $('sleep-mini-bed').textContent=entry.bed||'—';
+  $('sleep-mini-wake').textContent=entry.wake||'—';
+  const out=$('sleep-result');
+  if(!entry.bed&&!entry.wake){out.textContent='За этот день пока нет записи о сне';$('sleep-mini-total').textContent='Нет записи';return}
+  if(entry.bed&&entry.wake){
+    const mins=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};
+    const total=(mins(entry.wake)-mins(entry.bed)+1440)%1440;
+    const h=Math.floor(total/60),m=total%60;
+    const label=total?h+' ч '+(m?m+' мин':''):'Уточни время';
+    out.textContent=total?'🌙 '+label+' между отметками сна':'Уточни время — отметки совпадают';
+    $('sleep-mini-total').textContent=label;
+  }else{
+    out.textContent='✓ Записано: '+(entry.bed?'уснул в '+entry.bed:'проснулся в '+entry.wake);
+    $('sleep-mini-total').textContent='Частичная запись';
+  }
+}
+function renderHabitPreview(){
+  const root=$('habit-preview'),items=[];
+  const titles={'Тренировка':'Тренировка','Зарядка':'Зарядка','Вода':'Вода','Прогулка':'Прогулка','Сон по режиму':'Сон','Без переедания':'Питание','Чтение книг':'Чтение','Саморазвитие':'Развитие'};
+  const descriptions={'Тренировка':'движение','Зарядка':'5 минут','Вода':'в течение дня','Прогулка':'свежий воздух','Сон по режиму':'режим сна','Без переедания':'без лишнего','Чтение книг':'10 минут','Саморазвитие':'новое знание'};
+  for(const h of HABITS){
+    const state=statusFor(selected,h.id);
+    const btn=document.createElement('button');btn.type='button';btn.className='habit-tile';btn.dataset.state=state||'neutral';btn.setAttribute('aria-pressed',String(state==='done'));
+    btn.setAttribute('aria-label',(state==='done'?'Снять отметку: ':'Отметить выполненным: ')+h.id);
+    const symbol=document.createElement('span');symbol.className='tile-icon';symbol.textContent=h.icon;
+    const mark=document.createElement('span');mark.className='tile-state';mark.textContent=state==='done'?'✓':state==='skip'?'–':'◯';
+    const title=document.createElement('strong');title.className='tile-name';title.textContent=titles[h.id]||h.id;
+    const meta=document.createElement('small');meta.className='tile-detail';meta.textContent=descriptions[h.id]||'в своём темпе';
+    btn.append(symbol,mark,title,meta);
+    btn.onclick=()=>setHabit(h.id,state==='done'?null:'done');
+    items.push(btn);
+  }
+  root.replaceChildren(...items);
+}
+function renderWeightMini(){
+  const all=Object.entries(data.weights).sort((a,b)=>a[0].localeCompare(b[0])).slice(-16);
+  const svg=$('weight-mini-chart'),ns='http://www.w3.org/2000/svg';
+  svg.replaceChildren();
+  function element(tag,attributes){const el=document.createElementNS(ns,tag);Object.entries(attributes).forEach(([k,v])=>el.setAttribute(k,String(v)));svg.append(el);return el}
+  if(!all.length){$('weight-mini-value').textContent='—';$('weight-mini-change').textContent='Добавь первый вес';element('text',{x:165,y:58,fill:'#758092','text-anchor':'middle','font-size':13}).textContent='Пока нет измерений';return}
+  const last=all.at(-1)[1],first=all[0][1],delta=Math.round((last-first)*10)/10;
+  $('weight-mini-value').textContent=last.toLocaleString('ru-RU')+' кг';
+  $('weight-mini-change').textContent=all.length<2?'Первая запись веса':(delta>0?'+':'')+delta.toLocaleString('ru-RU')+' кг за '+all.length+' измерений';
+  for(let i=0;i<3;i++)element('line',{x1:9,y1:20+i*31,x2:322,y2:20+i*31,stroke:'#455063','stroke-width':.8,opacity:.47});
+  const vals=all.map(e=>e[1]),lo=Math.min(...vals)-.5,hi=Math.max(...vals)+.5,range=Math.max(1,hi-lo);
+  const coords=vals.map((v,i)=>[12+(all.length===1?0.5:i/(all.length-1))*300,83-(v-lo)/range*63]);
+  if(coords.length>1)element('polyline',{points:coords.map(p=>p.join(',')).join(' '),fill:'none',stroke:'#b5a8eb','stroke-width':3.1,'stroke-linecap':'round','stroke-linejoin':'round'});
+  for(const [x,y] of coords)element('circle',{cx:x,cy:y,r:3.3,fill:'#dbd1fa'});
+}
 function renderOverview(){const all=Object.entries(data.weights).sort((a,b)=>a[0].localeCompare(b[0]));const last=all.at(-1);$('current-weight').textContent=last?last[1].toLocaleString('ru-RU')+' кг':'—';$('weight-caption').textContent=last?'От '+new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short'}).format(parseKey(last[0])):'Первая запись впереди';$('goal-value').innerHTML=data.goal.toLocaleString('ru-RU')+' <small>кг</small>';$('goal-input').value=data.goal;$('profile-name').value=data.profileName||'';$('weight-input').value=data.weights[selected]??'';$('cal-input').value=data.calories[selected]??'';$('cal-hint').textContent=data.calories[selected]!==undefined?'Сохранено: '+data.calories[selected]+' ккал':'Можно пропускать без последствий.';$('human-date').textContent=new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric'}).format(parseKey(TODAY()))}
 function chart(){const all=Object.entries(data.weights).sort((a,b)=>a[0].localeCompare(b[0])).slice(-24);const svg=$('weight-chart');svg.replaceChildren();const ns='http://www.w3.org/2000/svg';function el(name,attrs,text){const n=document.createElementNS(ns,name);Object.entries(attrs||{}).forEach(([k,v])=>n.setAttribute(k,String(v)));if(text!==undefined)n.textContent=text;svg.append(n);return n}for(let i=0;i<4;i++)el('line',{x1:35,x2:622,y1:22+i*48,y2:22+i*48,stroke:'#2d4055','stroke-dasharray':'4 7'});if(!all.length){el('text',{x:320,y:106,'text-anchor':'middle',fill:'#91a6c1','font-size':16},'Запиши первый вес — появится график');$('chart-caption').textContent='Пока нет измерений';return}const values=all.map(x=>x[1]),lo=Math.min(...values)-.6,hi=Math.max(...values)+.6,range=Math.max(hi-lo,1);const points=all.map(([date,v],i)=>[35+(all.length===1?0.5:i/(all.length-1))*587,171-(v-lo)/range*137]);if(points.length>1)el('polyline',{points:points.map(p=>p.join(',')).join(' '),fill:'none',stroke:'#a7f8c2','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round'});points.forEach(([x,y])=>el('circle',{cx:x,cy:y,r:4.5,fill:'#b9ffe1',stroke:'#244c4a','stroke-width':2}));el('text',{x:35,y:201,fill:'#98acc5','font-size':13},new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short'}).format(parseKey(all[0][0])));el('text',{x:622,y:201,fill:'#98acc5','font-size':13,'text-anchor':'end'},new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short'}).format(parseKey(all.at(-1)[0])));const delta=Math.round((values.at(-1)-values[0])*10)/10;$('chart-caption').textContent=all.length===1?'Одна запись':all.length+' записей · '+(delta>0?'+':'')+delta+' кг за период'}
 function renderWeek(){const now=TODAY();const dow=(parseKey(now).getDay()+6)%7,mon=shift(now,-dow);const weeks=[];let active=0;for(let i=0;i<7;i++){const day=shift(mon,i),isFuture=day>now,hit=Object.values(data.checks[day]||{}).includes('done');if(hit)active++;const box=document.createElement('div');box.className='week-cell';const label=document.createElement('span');label.textContent=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][i];const b=document.createElement('b');b.className=(hit?'hit ':'')+(day===now?'today':'');b.textContent=isFuture?'·':hit?'✓':'—';box.append(label,b);weeks.push(box)}$('week-grid').replaceChildren(...weeks);$('week-summary').textContent=active+' из 7 дней с победами ✦';$('week-insight').textContent=active===0?'Начни с одного маленького действия — этого достаточно, чтобы сдвинуться с места.':active===7?'Каждый день этой недели с маленькой победой. Вот это серия!':`На этой неделе уже ${active} ${active===1?'день':active<5?'дня':'дней'} с победами. Не идеальность, а возвращение к привычкам.`}
@@ -286,17 +338,27 @@ document.querySelectorAll('.analytics-tab').forEach(btn=>btn.addEventListener('c
 
 
 function renderTodaySummary(){
-  const total=HABITS.length;
-  const done=HABITS.filter(h=>statusFor(selected,h.id)==='done').length;
+  const total=HABITS.length, done=HABITS.filter(h=>statusFor(selected,h.id)==='done').length;
   const skipped=HABITS.filter(h=>statusFor(selected,h.id)==='skip').length;
-  const isToday=selected===TODAY();
-  const percent=Math.round(done/total*100);
+  const percent=Math.round(done/total*100),left=total-done-skipped;
+  let streak=0;
+  for(let i=0;i<1500;i++){
+    const day=shift(selected,-i);
+    if(!HABITS.some(h=>statusFor(day,h.id)==='done'))break;
+    streak++;
+  }
   $('today-progress').style.setProperty('--today-percent',String(percent));
-  $('today-count').textContent=done+'/'+total;
-  $('today-headline').textContent=isToday?(data.profileName?data.profileName+', это твой день':'Сегодня — твой день'):'Твой день';
-  $('today-message').textContent=done===total?'Все привычки выполнены. Красота!':done===0?'Начни с одного небольшого шага.':done+' из '+total+' уже сделано. Двигаемся.';
+  $('today-percent').textContent=percent+'%';
+  $('today-count').textContent=done+' из '+total;
+  $('today-headline').textContent='Прогресс дня';
+  const name=data.profileName?data.profileName+', ':'';
+  $('today-message').textContent=percent===100?'Все цели выполнены. Мощный день!':done>0?name+'держишь темп. Главное — не останавливаться.':'Начни с малого. Даже один шаг считается.';
+  $('summary-done').textContent=done;
+  $('summary-left').textContent=left;
+  $('summary-skip').textContent=skipped;
+  $('summary-streak').textContent=streak;
   $('today-date-label').textContent=dateHuman(selected);
-  $('jump-today').hidden=isToday;
+  $('jump-today').hidden=selected===TODAY();
 }
 function renderNotes(){
   const current=data.notes?.[selected]||'';
@@ -323,7 +385,7 @@ function setupIosInstallTip(){
 }
 setupIosInstallTip();
 
-function render(){renderOverview();renderDays();renderHabits();renderSleep();renderWeek();chart();renderAnalytics();renderTodaySummary();renderNotes();renderCalendar()}
+function render(){renderOverview();renderDays();renderHabits();renderHabitPreview();renderSleep();renderWeek();chart();renderWeightMini();renderAnalytics();renderTodaySummary();renderNotes();renderCalendar()}
 $('prev-day').onclick=()=>{selected=shift(selected,-1);calendarMonth=selected.slice(0,7);render()};$('next-day').onclick=()=>{if(selected<TODAY()){selected=shift(selected,1);calendarMonth=selected.slice(0,7);render()}};
 $('weight-form').onsubmit=e=>{e.preventDefault();const n=Number($('weight-input').value);if(!validNum(n,25,350))return notice('Проверь вес','Можно указать значение от 25 до 350 кг.','⚠️');data.weights[selected]=n;save();render();notice('Вес записан','Важно видеть тенденцию, а не одну цифру.','⚖️')};
 $('cal-form').onsubmit=e=>{e.preventDefault();const n=Number($('cal-input').value);if($('cal-input').value.trim()===''||!validNum(n,0,10000))return notice('Проверь калории','Можно указать значение от 0 до 10 000.','⚠️');data.calories[selected]=n;save();render();notice('Записано','Без погони за идеальными цифрами.','🍽️')};
@@ -337,6 +399,16 @@ function setView(name){
 }
 document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>setView(button.dataset.view)));
 $('settings-toggle').onclick=()=>setView('settings');
+$('header-calendar').onclick=()=>{setView('habits');setCalendarOpen(true);$('calendar-panel').scrollIntoView({behavior:'smooth',block:'center'})};
+$('expand-habits').onclick=()=>{
+  const details=$('habit-list-container'),open=details.hidden;
+  details.hidden=!open;$('expand-habits').setAttribute('aria-expanded',String(open));
+  $('expand-habits').innerHTML=open?'Скрыть <span>⌃</span>':'Все привычки <span>›</span>';
+  if(open)details.scrollIntoView({behavior:'smooth',block:'nearest'});
+};
+$('open-sleep').onclick=()=>{$('sleep-editor').open=true;$('sleep-editor').scrollIntoView({behavior:'smooth',block:'center'})};
+$('open-weight').onclick=()=>setView('weight');
+
 $('profile-form').onsubmit=e=>{e.preventDefault();data.profileName=$('profile-name').value.trim().slice(0,30);save();renderTodaySummary();notice('Профиль сохранён','Это имя видно только на твоём устройстве.','✓')};
 $('sleep-form').onsubmit=e=>{
   e.preventDefault();
