@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="2048" viewBox="0 0 1024 2048" preserveAspectRatio="xMidYMid slice">
+<defs>
+<radialGradient id="shade"><stop stop-color="#243140"/><stop offset=".45" stop-color="#121923"/><stop offset="1" stop-color="#070b12"/></radialGradient>
+<radialGradient id="mist"><stop stop-color="#a3b4d4" stop-opacity=".30"/><stop offset=".35" stop-color="#73899e" stop-opacity=".17"/><stop offset="1" stop-color="#657f96" stop-opacity="0"/></radialGradient>
+<radialGradient id="mist2"><stop stop-color="#a0b0c9" stop-opacity=".19"/><stop offset=".65" stop-color="#7d93ac" stop-opacity=".09"/><stop offset="1" stop-color="#a0b0c9" stop-opacity="0"/></radialGradient>
+<filter id="vapor" x="-60%" y="-60%" width="220%" height="220%" color-interpolation-filters="sRGB">
+ <feTurbulence baseFrequency=".012 .024" type="fractalNoise" numOctaves="4" seed="22" result="noise"/>
+ <feDisplacementMap in="SourceGraphic" in2="noise" scale="95" xChannelSelector="R" yChannelSelector="G"/>
+ <feGaussianBlur stdDeviation="18"/>
+</filter>
+<filter id="soft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="48"/></filter>
+</defs>
+<rect width="1024" height="2048" fill="#070b11"/>
+<rect x="-250" y="-300" width="1250" height="950" fill="url(#shade)" opacity=".50"/>
+<g filter="url(#soft)">
+ <ellipse cx="140" cy="175" rx="305" ry="160" fill="#65778c" opacity=".18"/>
+ <ellipse cx="775" cy="155" rx="240" ry="160" fill="#5e6e86" opacity=".20"/>
+ <ellipse cx="870" cy="800" rx="330" ry="225" fill="#536480" opacity=".15"/>
+ <ellipse cx="140" cy="1245" rx="360" ry="200" fill="#59667e" opacity=".12"/>
+ <ellipse cx="840" cy="1760" rx="400" ry="260" fill="#4a5977" opacity=".11"/>
+</g>
+<g filter="url(#vapor)">
+ <ellipse cx="120" cy="240" rx="285" ry="112" fill="url(#mist)" />
+ <ellipse cx="340" cy="170" rx="225" ry="130" fill="url(#mist2)" />
+ <ellipse cx="827" cy="220" rx="252" ry="140" fill="url(#mist)" />
+ <ellipse cx="1035" cy="430" rx="210" ry="165" fill="url(#mist2)"/>
+ <ellipse cx="170" cy="690" rx="285" ry="142" fill="url(#mist2)" />
+ <ellipse cx="770" cy="888" rx="385" ry="170" fill="url(#mist)" />
+ <ellipse cx="125" cy="1210" rx="350" ry="158" fill="url(#mist)" />
+ <ellipse cx="880" cy="1450" rx="325" ry="195" fill="url(#mist2)" />
+ <ellipse cx="155" cy="1760" rx="270" ry="188" fill="url(#mist2)" />
+ <ellipse cx="670" cy="1890" rx="330" ry="136" fill="url(#mist)" />
+</g>
+<ellipse cx="520" cy="780" rx="560" ry="490" fill="url(#mist2)" opacity=".13"/>
+</svg>
