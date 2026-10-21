@@ -80,8 +80,8 @@ function setHabit(h,state){data.checks[selected]??={};if(state===null)delete dat
 const shortDays=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 let calendarMonth=null;
 function renderDays(){
-  const dates=[];
-  for(let i=-3;i<=3;i++)dates.push(shift(selected,i));
+  const dates=[],d=parseKey(selected),monday=shift(selected,-((d.getDay()+6)%7));
+  for(let i=0;i<7;i++)dates.push(shift(monday,i));
   $('days').replaceChildren(...dates.map(day=>{
     const d=parseKey(day),future=day>TODAY(),done=HABITS.filter(h=>statusFor(day,h.id)==='done').length;
     const b=document.createElement('button');
