@@ -16,70 +16,65 @@ function statusFor(key,h){return data.checks[key]?.[h]||null}
 function notice(title,desc='',icon='✨'){const el=$('celebration');$('toast-icon').textContent=icon;$('toast-title').textContent=title;$('toast-desc').textContent=desc;el.classList.add('show');clearTimeout(toastTimeout);toastTimeout=setTimeout(()=>el.classList.remove('show'),2700)}
 function fireworks(){if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;const el=$('fx-layer');el.replaceChildren();const colors=['#a9ffbe','#b6a4ff','#ffd987','#ed8bb6','#8dc9ff'];for(let i=0;i<74;i++){const p=document.createElement('i');p.className='confetti';p.style.left=(40+Math.random()*20)+'%';p.style.top=(28+Math.random()*12)+'%';const a=Math.random()*Math.PI*2,d=60+Math.random()*Math.min(420,window.innerWidth*.4);p.style.setProperty('--x',Math.cos(a)*d+'px');p.style.setProperty('--y',Math.sin(a)*d+'px');p.style.setProperty('--r',(Math.random()*1100-550)+'deg');p.style.background=colors[i%colors.length];p.style.animationDelay=Math.random()*.14+'s';el.append(p)}setTimeout(()=>el.replaceChildren(),1550)}
 
-/* Sound is synthesized locally; nothing is downloaded or recorded. */
-let soundEnabled=true,audioCtx=null;
+/* RITM sonic palette — sourced CC0 Kenney WAV samples, no oscillators. */
+let soundEnabled=true;
 try{soundEnabled=localStorage.getItem('ritm-sound')!=='off'}catch{}
 const soundToggle=$('sound-toggle');
-function updateSoundButton(){if(!soundToggle)return;soundToggle.setAttribute('aria-pressed',String(soundEnabled));soundToggle.setAttribute('aria-label',soundEnabled?'Выключить звуки':'Включить звуки');soundToggle.title=soundEnabled?'Звуки включены':'Звуки выключены';soundToggle.textContent=soundEnabled?'♫':'♪'}
+const SAMPLES={
+  success:'./sounds/success.wav',
+  impact:'./sounds/impact.wav',
+  skip:'./sounds/soft-no.wav',
+  warm:'./sounds/warm.wav',
+  tap:'./sounds/tap.wav'
+};
+const soundCache={};
+if(typeof Audio==='function'){
+  for(const [name,url] of Object.entries(SAMPLES)){
+    const a=new Audio(url);
+    a.preload='auto';
+    soundCache[name]=a;
+  }
+}
+function playSample(name,volume=.3,rate=1,delay=0){
+  if(!soundEnabled)return;
+  const start=()=>{
+    if(!soundEnabled)return;
+    try{
+      const origin=soundCache[name];
+      if(!origin)return;
+      const sample=origin.cloneNode(true);
+      sample.volume=volume;
+      sample.playbackRate=rate;
+      sample.play().catch(()=>{});
+    }catch{}
+  };
+  if(delay>0)setTimeout(start,delay);else start();
+}
+function updateSoundButton(){
+  if(!soundToggle)return;
+  soundToggle.setAttribute('aria-pressed',String(soundEnabled));
+  soundToggle.setAttribute('aria-label',soundEnabled?'Выключить звуки':'Включить звуки');
+  soundToggle.title=soundEnabled?'Звуки включены':'Звуки выключены';
+  soundToggle.textContent=soundEnabled?'♫':'♪';
+}
 updateSoundButton();
-if(soundToggle)soundToggle.onclick=()=>{soundEnabled=!soundEnabled;try{localStorage.setItem('ritm-sound',soundEnabled?'on':'off')}catch{}updateSoundButton();if(soundEnabled)playTone(740,.08,.08,'sine')};
-function ctx(){if(!soundEnabled)return null;try{const A=window.AudioContext||window.webkitAudioContext;if(!A)return null;audioCtx??=new A();if(audioCtx.state==='suspended')audioCtx.resume().catch(()=>{});return audioCtx}catch{return null}}
-function playTone(freq,dur,vol=.065,type='sine',delay=0,slide=1){const c=ctx();if(!c)return;try{const t=c.currentTime+delay,o=c.createOscillator(),g=c.createGain();o.type=type;o.frequency.setValueAtTime(freq,t);if(slide!==1)o.frequency.exponentialRampToValueAtTime(Math.max(32,freq*slide),t+dur);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(Math.max(.0002,vol),t+Math.min(.035,dur*.2));g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g);g.connect(c.destination);o.start(t);o.stop(t+dur+.02)}catch{}}
-
-function noiseHit(delay,duration,volume,lo=1200,hi=7000){
-  const c=ctx();if(!c)return;
-  try{
-    const n=Math.max(1,Math.floor(duration*c.sampleRate)),buffer=c.createBuffer(1,n,c.sampleRate),ch=buffer.getChannelData(0);
-    for(let i=0;i<n;i++){const fade=Math.pow(1-i/n,2);ch[i]=(Math.random()*2-1)*fade}
-    const src=c.createBufferSource(),bp=c.createBiquadFilter(),gain=c.createGain(),t=c.currentTime+delay;
-    src.buffer=buffer;bp.type='bandpass';bp.Q.value=.6;bp.frequency.setValueAtTime(hi,t);bp.frequency.exponentialRampToValueAtTime(lo,t+duration);
-    gain.gain.setValueAtTime(.0001,t);gain.gain.linearRampToValueAtTime(volume,t+.007);gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
-    src.connect(bp);bp.connect(gain);gain.connect(c.destination);src.start(t);src.stop(t+duration+.01)
-  }catch{}
-}
-function grittyZap(freq,delay,duration,volume,slide=0.12){
-  const c=ctx();if(!c)return;
-  try{
-    const t=c.currentTime+delay,o=c.createOscillator(),shaper=c.createWaveShaper(),filter=c.createBiquadFilter(),gain=c.createGain();
-    o.type='sawtooth';o.frequency.setValueAtTime(freq,t);o.frequency.exponentialRampToValueAtTime(Math.max(44,freq*slide),t+duration);
-    const curve=new Float32Array(1024);for(let i=0;i<curve.length;i++){const x=i/(curve.length-1)*2-1;curve[i]=Math.tanh(x*4)*.62}shaper.curve=curve;
-    filter.type='lowpass';filter.frequency.setValueAtTime(5200,t);filter.frequency.exponentialRampToValueAtTime(600,t+duration);
-    gain.gain.setValueAtTime(.0001,t);gain.gain.linearRampToValueAtTime(volume,t+.008);gain.gain.exponentialRampToValueAtTime(.0001,t+duration);
-    o.connect(shaper);shaper.connect(filter);filter.connect(gain);gain.connect(c.destination);o.start(t);o.stop(t+duration+.015)
-  }catch{}
-}
-function moodyNote(freq,delay,duration,volume=.032){
-  const c=ctx();if(!c)return;
-  try{
-    const t=c.currentTime+delay,g=c.createGain(),f=c.createBiquadFilter(),o=c.createOscillator(),harm=c.createOscillator(),echo=c.createDelay(.9),wet=c.createGain();
-    o.type='triangle';o.frequency.value=freq;
-    harm.type='sine';harm.frequency.value=freq*2;harm.detune.value=-6;
-    f.type='lowpass';f.frequency.value=1250;g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(volume,t+.055);g.gain.exponentialRampToValueAtTime(.0001,t+duration);
-    const quiet=c.createGain();quiet.gain.value=.16;
-    o.connect(f);harm.connect(quiet);quiet.connect(f);f.connect(g);g.connect(c.destination);
-    echo.delayTime.value=.19;wet.gain.value=.19;g.connect(echo);echo.connect(wet);wet.connect(c.destination);
-    o.start(t);harm.start(t);o.stop(t+duration+.03);harm.stop(t+duration+.03)
-  }catch{}
-}
+if(soundToggle)soundToggle.onclick=()=>{
+  soundEnabled=!soundEnabled;
+  try{localStorage.setItem('ritm-sound',soundEnabled?'on':'off')}catch{}
+  updateSoundButton();
+  if(soundEnabled)playSample('tap',.24,.84);
+};
 function playWin(){
-  // Bold arcade/glitch punch: crackling noise, distorted falling laser, metallic tail
-  noiseHit(0,.13,.095,800,6500);
-  grittyZap(1120,.018,.22,.072,.085);
-  playTone(92,.32,.09,'triangle',.025,.54);
-  grittyZap(1680,.21,.18,.047,.23);
-  noiseHit(.27,.16,.048,2200,8000);
-  playTone(740,.18,.035,'triangle',.23);
-  playTone(932,.25,.035,'sine',.29);
-  playTone(1108.7,.42,.025,'sine',.36);
-  for(let i=0;i<5;i++)noiseHit(.41+i*.05,.06,.014,1800,7500);
+  // Short tactile low hit followed by a restrained confirmation.
+  playSample('impact',.27,.79);
+  playSample('success',.3,.86,42);
 }
 function playSkip(){
-  // Minor and melancholy: D minor -> Bb major -> G minor, a descending motif.
-  [[146.83,174.61,220],[116.54,146.83,174.61],[98,116.54,146.83]].forEach((chord,i)=>{
-    chord.forEach((f,j)=>moodyNote(f,i*.45+j*.012,.92,.018));
-  });
-  [440,349.23,293.66,261.63].forEach((freq,i)=>moodyNote(freq,.13+i*.29,.53,.026));
+  // Gentle, darker two-layer cue with no punitive buzz or game melody.
+  playSample('warm',.16,.69);
+  playSample('skip',.27,.67,85);
 }
+
 function setHabit(h,state){data.checks[selected]??={};if(state===null)delete data.checks[selected][h];else data.checks[selected][h]=state;if(Object.keys(data.checks[selected]).length===0)delete data.checks[selected];save();render();if(state==='done'){playWin();fireworks();const [msg,i]=pickText(wins,lastWin);lastWin=i;notice(msg,h+' — выполнено. Едем дальше!','🎉')}else if(state==='skip'){playSkip();const [msg,i]=pickText(encouragement,lastSkip);lastSkip=i;notice('Пауза тоже часть ритма.',msg,'🌙')}}
 function renderDays(){const dates=[];for(let i=-3;i<=3;i++)dates.push(shift(selected,i));$('days').replaceChildren(...dates.map(day=>{const d=parseKey(day),dayOfWeek=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'][d.getDay()];const b=document.createElement('button');b.type='button';b.className='day'+(day===selected?' selected':'')+(Object.values(data.checks[day]||{}).includes('done')?' has-done':'');b.innerHTML=`<span>${dayOfWeek}</span><strong>${d.getDate()}</strong>`;b.title=dateHuman(day);b.setAttribute('aria-label',dateHuman(day));b.setAttribute('aria-pressed',day===selected?'true':'false');b.onclick=()=>{selected=day;render()};return b}));$('next-day').disabled=selected>=TODAY();$('next-day').style.opacity=selected>=TODAY()?'.35':'1';$('active-day-label').textContent=selected===TODAY()?'Сегодня':dateHuman(selected)}
 function renderHabits(){const list=$('habit-list');list.replaceChildren();let count=0;HABITS.forEach(h=>{const state=statusFor(selected,h.id);if(state==='done')count++;const card=document.createElement('article');card.className='habit';card.dataset.state=state||'neutral';const top=document.createElement('div');top.className='habit-top';const icon=document.createElement('div');icon.className='habit-icon';icon.textContent=h.icon;const label=document.createElement('div');const name=document.createElement('div');name.className='habit-name';name.textContent=h.id;const note=document.createElement('div');note.className='habit-note';note.textContent=state==='done'?'✦ Выполнено!':state==='skip'?'☾ Сегодня пропущено':h.sub;label.append(name,note);top.append(icon,label);const actions=document.createElement('div');actions.className='habit-buttons';const done=document.createElement('button');done.type='button';done.className=state==='done'?'done-active':'';done.textContent='✓ Сделано';done.setAttribute('aria-pressed',state==='done'?'true':'false');done.setAttribute('aria-label',`Сделано: ${h.id}`);done.onclick=()=>setHabit(h.id,'done');const skip=document.createElement('button');skip.type='button';skip.className=state==='skip'?'skip-active':'';skip.textContent='☾ Сегодня нет';skip.setAttribute('aria-pressed',state==='skip'?'true':'false');skip.setAttribute('aria-label',`Сегодня нет: ${h.id}`);skip.onclick=()=>setHabit(h.id,'skip');actions.append(done,skip);if(state){const reset=document.createElement('button');reset.type='button';reset.className='reset';reset.textContent='↶';reset.title=`Сбросить: ${h.id}`;reset.setAttribute('aria-label',`Сбросить: ${h.id}`);reset.onclick=()=>setHabit(h.id,null);actions.append(reset)}card.append(top,actions);list.append(card)});$('done-counter').innerHTML=count+'<small>/6</small>';$('daily-caption').textContent=count===6?'Все шесть. Легенда!':count?'Отличное начало':'Всё впереди'}
