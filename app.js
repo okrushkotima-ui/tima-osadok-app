@@ -99,6 +99,72 @@ function analyticsDays(){
   const out=[];for(let day=start;day<=end&&out.length<400;day=shift(day,1))out.push(day);
   return out;
 }
+
+let analyticsChart='ring';
+function drawAnalyticsPlot(){
+  const panel=$('analytics-plot-panel'),ring=$('analytics-ring-panel'),isRing=analyticsChart==='ring';
+  ring.hidden=!isRing;panel.hidden=isRing;
+  document.querySelectorAll('.analytics-chart-btn').forEach(b=>{const active=b.dataset.chart===analyticsChart;b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))});
+  if(isRing)return;
+  const days=analyticsDays(),svg=$('analytics-plot'),ns='http://www.w3.org/2000/svg';
+  svg.replaceChildren();
+  function node(tag,attrs={},txt){const el=document.createElementNS(ns,tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));if(txt!==undefined)el.textContent=txt;svg.append(el);return el}
+  const x0=56,x1=652,y0=24,y1=236;
+  let dataPoints=[],unit='день';
+  const ratioFor=day=>Object.values(data.checks[day]||{}).filter(x=>x==='done').length/6*100;
+  if(analyticsPeriod==='day'){
+    dataPoints=HABITS.map((h,i)=>({label:h.id==='Сон по режиму'?'Сон':h.id==='Без переедания'?'Питание':h.id,short:['Трен.','Зар.','Вода','Шаги','Сон','Питан.'][i],score:statusFor(selected,h.id)==='done'?100:0}));
+    unit='привычка';$('plot-caption').textContent='X — привычки выбранного дня · Y — выполнено, %';
+  }else if(analyticsPeriod==='all'){
+    const months=new Map();
+    for(const day of days){
+      const k=day.slice(0,7);const item=months.get(k)||{sum:0,count:0};
+      item.sum+=ratioFor(day);item.count++;months.set(k,item);
+    }
+    dataPoints=Array.from(months,([month,item])=>({label:month,score:item.sum/item.count,short:month.slice(5)+'.'+month.slice(2,4)}));
+    if(dataPoints.length>24)dataPoints=dataPoints.slice(-24);
+    unit='месяц';$('plot-caption').textContent='X — месяцы (последние 24) · Y — среднее выполнение, %';
+  }else{
+    dataPoints=days.map(day=>({label:dateHuman(day),short:day.slice(8,10)+'.'+day.slice(5,7),score:ratioFor(day)}));
+    $('plot-caption').textContent='X — даты · Y — доля выполненных привычек, %';
+  }
+  for(let p=0;p<=100;p+=25){
+    const y=y1-(p/100)*(y1-y0);
+    node('line',{x1:x0,y1:y,x2:x1,y2:y,stroke:'#34434d','stroke-dasharray':p===0?'0':'3 6','stroke-width':p===0?1.6:1});
+    node('text',{x:x0-12,y:y+4,fill:'#94a4b2','font-size':12,'text-anchor':'end'},p+'%');
+  }
+  const count=dataPoints.length;
+  const step=(x1-x0)/Math.max(count,1);
+  const xs=dataPoints.map((p,i)=>x0+step*(i+.5));
+  const ys=dataPoints.map(p=>y1-p.score/100*(y1-y0));
+  const labEvery=Math.max(1,Math.ceil(count/7));
+  if(analyticsChart==='bars'){
+    const width=Math.max(5,Math.min(42,step*.64));
+    dataPoints.forEach((p,i)=>{
+      const h=Math.max(p.score>0?3:0,y1-ys[i]);
+      const bar=node('rect',{x:xs[i]-width/2,y:y1-h,width,height:h,rx:Math.min(6,width/4),fill:'#9edebf'});
+      const t=document.createElementNS(ns,'title');t.textContent=p.label+': '+Math.round(p.score)+'%';bar.append(t);
+    });
+  }else{
+    if(count>1){
+      const points=xs.map((x,i)=>x+','+ys[i]).join(' ');
+      node('polyline',{points,fill:'none',stroke:'#a5e2c4','stroke-width':3.4,'stroke-linejoin':'round','stroke-linecap':'round'});
+    }
+    dataPoints.forEach((p,i)=>{
+      const cir=node('circle',{cx:xs[i],cy:ys[i],r:count>20?3:4.5,fill:'#e3fff0',stroke:'#457a68','stroke-width':1.4});
+      const t=document.createElementNS(ns,'title');t.textContent=p.label+': '+Math.round(p.score)+'%';cir.append(t)
+    });
+  }
+  dataPoints.forEach((p,i)=>{
+    if(i%labEvery!==0&&i!==count-1)return;
+    node('text',{x:xs[i],y:259,fill:'#aebac5','font-size':count>18?10:11,'text-anchor':'middle'},p.short)
+  });
+  node('text',{x:(x0+x1)/2,y:287,fill:'#8495a2','font-size':11,'text-anchor':'middle'},'Время / '+unit);
+}
+document.querySelectorAll('.analytics-chart-btn').forEach(button=>button.addEventListener('click',()=>{
+  analyticsChart=button.dataset.chart;drawAnalyticsPlot();
+}));
+
 function renderAnalytics(){
   const days=analyticsDays(),numDays=days.length||1;
   const tally={};HABITS.forEach(h=>tally[h.id]={done:0,skip:0});
@@ -129,6 +195,7 @@ function renderAnalytics(){
   }
   $('analytics-habits').replaceChildren(frag);
   document.querySelectorAll('.analytics-tab').forEach(btn=>{const active=btn.dataset.period===analyticsPeriod;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active))});
+  drawAnalyticsPlot();
 }
 document.querySelectorAll('.analytics-tab').forEach(btn=>btn.addEventListener('click',()=>{analyticsPeriod=btn.dataset.period;renderAnalytics()}));
 
