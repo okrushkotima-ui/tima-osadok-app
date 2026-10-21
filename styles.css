@@ -150,3 +150,78 @@ body.modal-open{overflow:auto!important}
   .analytics-chart-btn{font-size:11px;padding:10px 11px}
 }
 @media(prefers-reduced-motion:reduce){.app-view{animation:none}.bottom-nav button,.sleep-save,.analytics-chart-btn{transition:none}}
+
+
+/* RITM v13 — iPhone-first, tactile low-friction experience */
+:root{--bg:#080b10;--mint:#a5eac8}
+html{background:#080b10;-webkit-text-size-adjust:100%}
+body{background:radial-gradient(ellipse 760px 490px at 53% -260px,#23323a55 0%,transparent 75%),#080b10!important;-webkit-tap-highlight-color:transparent}
+button,input,textarea{touch-action:manipulation}
+.shell{padding-top:max(17px,env(safe-area-inset-top));padding-bottom:calc(116px + env(safe-area-inset-bottom))}
+.topbar{align-items:center;margin-bottom:19px;min-height:76px}
+.brand{gap:10px;min-width:0;user-select:none;-webkit-user-select:none}
+.brand-wordmark{width:151px;height:auto;max-width:100%;min-width:0;flex:none;object-fit:contain;display:block;filter:drop-shadow(0 5px 16px #b4bece22);user-select:none;-webkit-user-select:none;-webkit-user-drag:none;-webkit-touch-callout:none;pointer-events:none}
+.brand-name{font-size:22px;line-height:1;white-space:nowrap;letter-spacing:.085em}
+.brand-name small{font-size:10px!important;letter-spacing:.04em!important;color:#91a4aa}
+.top-actions{gap:8px;margin-left:auto;flex-shrink:0}
+.icon-btn,.sound-btn{flex-shrink:0;display:grid;place-items:center;min-width:44px;min-height:44px;border-color:#36434d;background:#151e25}
+.today-dashboard{border:1px solid #34453f;border-radius:25px;padding:23px 22px 17px;background:radial-gradient(ellipse at 95% 0%,#3957484d,transparent 70%),linear-gradient(145deg,#1a2526,#111820);box-shadow:inset 0 1px #ffffff1c,0 14px 30px #0004;margin:8px 0 19px}
+.today-greeting{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.tiny-upper{font-weight:800;letter-spacing:.15em;font-size:10px;color:#b5d6c8}
+.today-greeting h1{font-size:clamp(23px,4vw,33px);line-height:1.13;margin:10px 0 9px;letter-spacing:-.045em;color:#f0f7f3}
+.today-greeting p{font-size:13px;line-height:1.5;margin:0;color:#9fb4ac}
+.today-progress{height:106px;width:106px;flex:0 0 106px;display:flex;justify-content:center;align-items:center;flex-direction:column;border-radius:50%;border:7px solid transparent;background:linear-gradient(#121c1e,#121c1e) padding-box,conic-gradient(#9beac4 calc(var(--today-percent)*1%),#364940 0) border-box;box-shadow:0 9px 21px #0003,inset 0 2px 4px #0005}
+.today-progress strong{font-size:24px;letter-spacing:-.07em;color:#f5fef9}.today-progress small{font-size:9px;color:#adc5bb}
+.today-bottom{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #ffffff1a;margin-top:21px;padding-top:15px;color:#a4b7b6;font-size:12px}
+.today-bottom button{background:#223630;color:#b5f9d4;border:1px solid #405e4f;border-radius:12px;font-size:11px;font-weight:700;padding:8px 10px}
+.day-nav{overflow:hidden}
+.day{min-width:0}
+.day.selected{background:#a2e6c4;color:#14221c}
+.habit-buttons button{min-height:46px}
+.habit-buttons button.done-active{background:#acefcb}
+.habit:focus-within{border-color:#729f8b}
+.journal-card{background:linear-gradient(140deg,#1b252c,#121921);border:1px solid #36444e;border-radius:21px;margin-top:19px;overflow:hidden}
+.journal-card summary{display:flex;align-items:center;gap:12px;list-style:none;cursor:pointer;padding:17px 19px;user-select:none}
+.journal-card summary::-webkit-details-marker{display:none}
+.journal-card summary>span:first-child{font-size:23px;color:#b5e4cf}
+.journal-card summary>span:nth-child(2){display:flex;flex-direction:column;gap:4px;flex:1}
+.journal-card summary strong{font-size:14px;color:#edf5f1}
+.journal-card summary small{font-size:11px;color:#96a6ae}
+.journal-chevron{font-size:24px;transition:transform .2s;color:#a3bcb0}
+.journal-card[open] .journal-chevron{transform:rotate(180deg)}
+.journal-content{border-top:1px solid #314047;padding:17px}
+.journal-content textarea{width:100%;resize:vertical;min-height:104px;max-height:350px;border:1px solid #3c4a54;border-radius:15px;background:#101921;color:#ebf5ee;padding:13px;font:inherit;font-size:14px;line-height:1.55;outline-offset:2px}
+.note-status{display:block;color:#a3b8ad;font-size:11px;margin-top:9px}
+.visually-hidden{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.install-guide{display:flex;gap:14px;align-items:flex-start;background:#192827;border:1px solid #335d51;border-radius:17px;padding:17px;margin:22px 0;color:#daf4e4}
+.install-guide-icon{font-size:28px;line-height:1;color:#b0eacb}
+.install-guide strong{font-size:15px}.install-guide p{color:#b0c8be;line-height:1.65;font-size:12px;margin:8px 0 0}
+.ios-install-tip{position:fixed;z-index:24;bottom:calc(92px + env(safe-area-inset-bottom));left:15px;right:15px;max-width:420px;margin:auto;padding:14px 46px 15px 17px;border-radius:18px;background:#24392fee;border:1px solid #74b18c;box-shadow:0 14px 35px #000b;backdrop-filter:blur(14px)}
+.ios-install-tip[hidden]{display:none!important}
+.ios-install-tip strong{font-size:13px;color:#dcfaea}.ios-install-tip p{font-size:11px;line-height:1.45;color:#b9dfcb;margin:5px 0 0}
+.ios-install-tip button{position:absolute;right:11px;top:10px;width:30px;height:30px;border:0;border-radius:9px;background:#3a5849;color:white;font-size:21px;cursor:pointer}
+.bottom-nav{bottom:calc(9px + env(safe-area-inset-bottom));border:1px solid #45534e9c;background:#192524f2}
+.bottom-nav button.selected{background:#2b4339!important}
+@media(max-width:700px){
+  .topbar{gap:5px;margin:0 0 14px;min-height:71px}
+  .brand{gap:3px}
+  .brand-wordmark{width:120px;height:auto}
+  .brand-name{font-size:18px}
+  .brand-name small{font-size:8px!important}
+  .top-actions{gap:5px}
+  .sound-btn,.icon-btn{min-width:40px!important;min-height:42px!important;width:40px;height:42px}
+  .shell{padding:calc(8px + env(safe-area-inset-top)) 12px calc(116px + env(safe-area-inset-bottom))}
+  .today-dashboard{padding:18px 15px 14px;margin:5px 0 16px;border-radius:21px}
+  .today-greeting h1{font-size:22px}
+  .today-greeting p{font-size:12px}
+  .today-progress{height:89px;width:89px;flex-basis:89px;border-width:6px}
+  .today-progress strong{font-size:22px}
+  .habits-section{margin-top:0!important}
+  .habits-section .section-desc{margin-bottom:13px}
+  .habit{border-radius:17px}
+  .habit-buttons button{min-height:44px}
+  .bottom-nav{width:calc(100% - 20px)}
+  .bottom-nav button{min-height:49px}
+}
+@media(max-width:365px){.brand-wordmark{width:103px}.brand-name{font-size:16px}.today-greeting h1{font-size:20px}.today-progress{height:80px;width:80px;flex-basis:80px}}
+@media(prefers-reduced-motion:reduce){.journal-chevron{transition:none}}
