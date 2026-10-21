@@ -1,10 +1,10 @@
 (()=>{'use strict';
-const KEY='weight-tracke-v4',LEGACY='weight-tracke-demo-3',HABITS=[{id:'Тренировка',icon:'🏋️',sub:'Любое движение считается'},{id:'Зарядка',icon:'⚡',sub:'Хотя бы пять минут'},{id:'Вода',icon:'💧',sub:'Следить за питьём'},{id:'Прогулка',icon:'🌳',sub:'Свежий воздух и шаги'},{id:'Сон по режиму',icon:'🌙',sub:'Дать себе восстановиться'},{id:'Без переедания',icon:'🥗',sub:'Бережное питание'}];
+const KEY='weight-tracke-v4',LEGACY='weight-tracke-demo-3',HABITS=[{"id":"Тренировка","icon":"🏋️","short":"Трен.","sub":"Движение каждый день","group":"body"},{"id":"Зарядка","icon":"⚡","short":"Заряд.","sub":"5 минут тоже считаются","group":"body"},{"id":"Вода","icon":"💧","short":"Вода","sub":"Поддерживай водный баланс","group":"body"},{"id":"Прогулка","icon":"🌿","short":"Прогул.","sub":"Свежий воздух и шаги","group":"body"},{"id":"Сон по режиму","icon":"🌙","short":"Сон","sub":"Восстанавливай силы","group":"body"},{"id":"Без переедания","icon":"🥗","short":"Питан.","sub":"Бережно к себе","group":"body"},{"id":"Чтение книг","icon":"📚","short":"Книги","sub":"Хотя бы 10 минут чтения","group":"mind"},{"id":"Саморазвитие","icon":"✨","short":"Развит.","sub":"Изучи что-то новое","group":"mind"}];
 const wins=['Ёбаный насос, какой же ты красавчик!','ВОТ ЭТО ТЫ ДАЛ, БРАТ!','Легенда, ещё одна победа!','Тимоха, это чистый разъёб!','Уровень босса разблокирован!','Ну всё, мощь пошла!','Кто сегодня машина? Ты машина!','Шаг за шагом — и ты уже сильнее!','Это называется держать слово себе!','Фейерверк заслужен, чемпион!','Да ты просто чемпион дисциплины!','Опа! Ещё один кирпичик в новую форму!'];
 const encouragement=['Не каждый день обязан быть идеальным.','Завтра — новый лист, без долгов перед вчера.','Сделать паузу — не значит сдаться.','Даже большая дорога начинается с короткого шага.','Отдых — часть маршрута, брат.','Не получилось сегодня — попробуем завтра.','Стабильность важнее безупречности.','Сонный тигр тоже тигр.','Одна неудача не определяет всю историю.','Сохраняй курс, даже если сегодня тихо.','Прогресс — это возвращаться, а не не ошибаться.','Ты не обязан побеждать каждую минуту.'];
-const $=id=>document.getElementById(id);const empty=()=>({weights:{},checks:{},calories:{},sleep:{},notes:{},goal:70});
+const $=id=>document.getElementById(id);const empty=()=>({weights:{},checks:{},calories:{},sleep:{},notes:{},profileName:'',goal:70});
 function validNum(n,min,max){return typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max}
-function sanitize(input){const d=empty();if(!input||typeof input!=='object')return d;if(validNum(Number(input.goal),25,350))d.goal=Number(input.goal);for(const [date,v] of Object.entries(input.weights||{}))if(/^\d{4}-\d\d-\d\d$/.test(date)&&validNum(Number(v),25,350))d.weights[date]=Number(v);for(const [date,v] of Object.entries(input.calories||{}))if(/^\d{4}-\d\d-\d\d$/.test(date)&&validNum(Number(v),0,10000))d.calories[date]=Number(v);for(const [date,habits] of Object.entries(input.checks||{})){if(!/^\d{4}-\d\d-\d\d$/.test(date)||!habits||typeof habits!=='object')continue;const item={};for(const h of HABITS){if(habits[h.id]===true||habits[h.id]==='done')item[h.id]='done';else if(habits[h.id]==='skip')item[h.id]='skip'}if(Object.keys(item).length)d.checks[date]=item}for(const [date,entry] of Object.entries(input.sleep||{})){if(!/^\d{4}-\d\d-\d\d$/.test(date)||!entry||typeof entry!=='object')continue;const bed=typeof entry.bed==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.bed)?entry.bed:'';const wake=typeof entry.wake==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.wake)?entry.wake:'';if(bed||wake)d.sleep[date]={bed,wake}}for(const [date,note] of Object.entries(input.notes||{})){if(/^\d{4}-\d\d-\d\d$/.test(date)&&typeof note==='string'&&note.trim())d.notes[date]=note.slice(0,2000)}return d}
+function sanitize(input){const d=empty();if(!input||typeof input!=='object')return d;if(validNum(Number(input.goal),25,350))d.goal=Number(input.goal);if(typeof input.profileName==='string')d.profileName=input.profileName.slice(0,30).trim();for(const [date,v] of Object.entries(input.weights||{}))if(/^\d{4}-\d\d-\d\d$/.test(date)&&validNum(Number(v),25,350))d.weights[date]=Number(v);for(const [date,v] of Object.entries(input.calories||{}))if(/^\d{4}-\d\d-\d\d$/.test(date)&&validNum(Number(v),0,10000))d.calories[date]=Number(v);for(const [date,habits] of Object.entries(input.checks||{})){if(!/^\d{4}-\d\d-\d\d$/.test(date)||!habits||typeof habits!=='object')continue;const item={};for(const h of HABITS){if(habits[h.id]===true||habits[h.id]==='done')item[h.id]='done';else if(habits[h.id]==='skip')item[h.id]='skip'}if(Object.keys(item).length)d.checks[date]=item}for(const [date,entry] of Object.entries(input.sleep||{})){if(!/^\d{4}-\d\d-\d\d$/.test(date)||!entry||typeof entry!=='object')continue;const bed=typeof entry.bed==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.bed)?entry.bed:'';const wake=typeof entry.wake==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.wake)?entry.wake:'';if(bed||wake)d.sleep[date]={bed,wake}}for(const [date,note] of Object.entries(input.notes||{})){if(/^\d{4}-\d\d-\d\d$/.test(date)&&typeof note==='string'&&note.trim())d.notes[date]=note.slice(0,2000)}return d}
 let data;try{const raw=localStorage.getItem(KEY)||localStorage.getItem(LEGACY);data=sanitize(raw?JSON.parse(raw):null)}catch{data=empty()}
 const dateKey=(dt)=>`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
 const parseKey=key=>{const [y,m,d]=key.split('-').map(Number);return new Date(y,m-1,d,12)};const shift=(key,days)=>{const d=parseKey(key);d.setDate(d.getDate()+days);return dateKey(d)};
@@ -76,10 +76,100 @@ function playSkip(){
 }
 
 function setHabit(h,state){data.checks[selected]??={};if(state===null)delete data.checks[selected][h];else data.checks[selected][h]=state;if(Object.keys(data.checks[selected]).length===0)delete data.checks[selected];save();render();if(state==='done'){playWin();fireworks();const [msg,i]=pickText(wins,lastWin);lastWin=i;notice(msg,h+' — выполнено. Едем дальше!','🎉')}else if(state==='skip'){playSkip();const [msg,i]=pickText(encouragement,lastSkip);lastSkip=i;notice('Пауза тоже часть ритма.',msg,'🌙')}}
-function renderDays(){const dates=[];for(let i=-3;i<=3;i++)dates.push(shift(selected,i));$('days').replaceChildren(...dates.map(day=>{const d=parseKey(day),dayOfWeek=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'][d.getDay()];const b=document.createElement('button');b.type='button';b.className='day'+(day===selected?' selected':'')+(Object.values(data.checks[day]||{}).includes('done')?' has-done':'');b.innerHTML=`<span>${dayOfWeek}</span><strong>${d.getDate()}</strong>`;b.title=dateHuman(day);b.setAttribute('aria-label',dateHuman(day));b.setAttribute('aria-pressed',day===selected?'true':'false');b.onclick=()=>{selected=day;render()};return b}));$('next-day').disabled=selected>=TODAY();$('next-day').style.opacity=selected>=TODAY()?'.35':'1';$('active-day-label').textContent=selected===TODAY()?'Сегодня':dateHuman(selected)}
-function renderHabits(){const list=$('habit-list');list.replaceChildren();let count=0;HABITS.forEach(h=>{const state=statusFor(selected,h.id);if(state==='done')count++;const card=document.createElement('article');card.className='habit';card.dataset.state=state||'neutral';const top=document.createElement('div');top.className='habit-top';const icon=document.createElement('div');icon.className='habit-icon';icon.textContent=h.icon;const label=document.createElement('div');const name=document.createElement('div');name.className='habit-name';name.textContent=h.id;const note=document.createElement('div');note.className='habit-note';note.textContent=state==='done'?'✦ Выполнено!':state==='skip'?'☾ Сегодня пропущено':h.sub;label.append(name,note);top.append(icon,label);const actions=document.createElement('div');actions.className='habit-buttons';const done=document.createElement('button');done.type='button';done.className=state==='done'?'done-active':'';done.textContent='✓ Сделано';done.setAttribute('aria-pressed',state==='done'?'true':'false');done.setAttribute('aria-label',`Сделано: ${h.id}`);done.onclick=()=>setHabit(h.id,'done');const skip=document.createElement('button');skip.type='button';skip.className=state==='skip'?'skip-active':'';skip.textContent='☾ Сегодня нет';skip.setAttribute('aria-pressed',state==='skip'?'true':'false');skip.setAttribute('aria-label',`Сегодня нет: ${h.id}`);skip.onclick=()=>setHabit(h.id,'skip');actions.append(done,skip);if(state){const reset=document.createElement('button');reset.type='button';reset.className='reset';reset.textContent='↶';reset.title=`Сбросить: ${h.id}`;reset.setAttribute('aria-label',`Сбросить: ${h.id}`);reset.onclick=()=>setHabit(h.id,null);actions.append(reset)}card.append(top,actions);list.append(card)});$('done-counter').innerHTML=count+'<small>/6</small>';$('daily-caption').textContent=count===6?'Все шесть. Легенда!':count?'Отличное начало':'Всё впереди'}
+
+const shortDays=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
+let calendarMonth=null;
+function renderDays(){
+  const dates=[];
+  for(let i=-3;i<=3;i++)dates.push(shift(selected,i));
+  $('days').replaceChildren(...dates.map(day=>{
+    const d=parseKey(day),future=day>TODAY(),done=HABITS.filter(h=>statusFor(day,h.id)==='done').length;
+    const b=document.createElement('button');
+    b.type='button';b.className='day'+(day===selected?' selected':'')+(done?' has-done':'')+(future?' future':'');
+    b.innerHTML='<span>'+shortDays[d.getDay()]+'</span><strong>'+d.getDate()+'</strong>';
+    b.title=dateHuman(day)+(done?' · '+done+' выполнено':'');
+    b.setAttribute('aria-label',b.title);b.setAttribute('aria-pressed',String(day===selected));
+    b.disabled=future;
+    b.onclick=()=>{selected=day;calendarMonth=day.slice(0,7);render()};
+    return b;
+  }));
+  $('next-day').disabled=selected>=TODAY();
+  $('next-day').style.opacity=selected>=TODAY()?'.35':'1';
+  $('active-day-label').textContent=selected===TODAY()?'Сегодня':dateHuman(selected);
+}
+function renderCalendar(){
+  const panel=$('calendar-panel');
+  if(panel.hidden)return;
+  const month=calendarMonth||selected.slice(0,7);
+  const [y,m]=month.split('-').map(Number);
+  const first=new Date(y,m-1,1,12);
+  const count=new Date(y,m,0,12).getDate();
+  const offset=(first.getDay()+6)%7;
+  $('calendar-month-title').textContent=new Intl.DateTimeFormat('ru-RU',{month:'long',year:'numeric'}).format(first);
+  $('calendar-next').disabled=month>=TODAY().slice(0,7);
+  const nodes=[];
+  for(let i=0;i<offset;i++){const e=document.createElement('span');e.className='calendar-blank';nodes.push(e)}
+  for(let day=1;day<=count;day++){
+    const key=dateKey(new Date(y,m-1,day,12)),future=key>TODAY();
+    const done=HABITS.filter(h=>statusFor(key,h.id)==='done').length;
+    const skipped=HABITS.filter(h=>statusFor(key,h.id)==='skip').length;
+    const b=document.createElement('button');
+    b.type='button';b.className='calendar-date'+(key===TODAY()?' calendar-today':'')+(key===selected?' calendar-selected':'')+(done?' calendar-completed':'')+(future?' calendar-future':'');
+    b.style.setProperty('--heat',done/HABITS.length);
+    b.innerHTML='<span>'+day+'</span><i></i>';
+    b.setAttribute('aria-label',dateHuman(key)+'. Выполнено '+done+' из '+HABITS.length+(skipped?', пропущено '+skipped:''));
+    b.setAttribute('aria-pressed',String(key===selected));
+    b.disabled=future;
+    b.onclick=()=>{selected=key;calendarMonth=key.slice(0,7);render()};
+    nodes.push(b);
+  }
+  $('calendar-month-grid').replaceChildren(...nodes);
+}
+function setCalendarOpen(open){
+  $('calendar-panel').hidden=!open;
+  $('calendar-toggle').setAttribute('aria-expanded',String(open));
+  if(open){calendarMonth=selected.slice(0,7);renderCalendar()}
+}
+$('calendar-toggle').onclick=()=>setCalendarOpen($('calendar-panel').hidden);
+$('calendar-close').onclick=()=>setCalendarOpen(false);
+$('calendar-prev').onclick=()=>{const [y,m]=(calendarMonth||selected.slice(0,7)).split('-').map(Number);calendarMonth=dateKey(new Date(y,m-2,1,12)).slice(0,7);renderCalendar()};
+$('calendar-next').onclick=()=>{
+  const [y,m]=(calendarMonth||selected.slice(0,7)).split('-').map(Number);
+  const next=dateKey(new Date(y,m,1,12)).slice(0,7);
+  if(next<=TODAY().slice(0,7)){calendarMonth=next;renderCalendar()}
+};
+function renderHabits(){
+  const list=$('habit-list');list.replaceChildren();
+  let doneCount=0;
+  for(const group of ['body','mind']){
+    const label=document.createElement('div');
+    label.className='habit-group-heading';
+    label.innerHTML=group==='body'?'<span>01</span> ТЕЛО И ЗДОРОВЬЕ':'<span>02</span> УМ И РАЗВИТИЕ';
+    list.append(label);
+    for(const h of HABITS.filter(h=>h.group===group)){
+      const state=statusFor(selected,h.id);
+      if(state==='done')doneCount++;
+      const card=document.createElement('article');card.className='habit';card.dataset.state=state||'neutral';
+      const top=document.createElement('div');top.className='habit-top';
+      const icon=document.createElement('div');icon.className='habit-icon';icon.textContent=h.icon;
+      const label=document.createElement('div'),name=document.createElement('div'),note=document.createElement('div');
+      name.className='habit-name';name.textContent=h.id;
+      note.className='habit-note';note.textContent=state==='done'?'✦ Выполнено!':state==='skip'?'☾ Сегодня пропущено':h.sub;
+      label.append(name,note);top.append(icon,label);
+      const actions=document.createElement('div');actions.className='habit-buttons';
+      const done=document.createElement('button');done.type='button';done.className=state==='done'?'done-active':'';done.textContent='✓ Сделано';done.setAttribute('aria-pressed',String(state==='done'));done.setAttribute('aria-label','Сделано: '+h.id);done.onclick=()=>setHabit(h.id,'done');
+      const skip=document.createElement('button');skip.type='button';skip.className=state==='skip'?'skip-active':'';skip.textContent='☾ Сегодня нет';skip.setAttribute('aria-pressed',String(state==='skip'));skip.setAttribute('aria-label','Сегодня нет: '+h.id);skip.onclick=()=>setHabit(h.id,'skip');
+      actions.append(done,skip);
+      if(state){const reset=document.createElement('button');reset.type='button';reset.className='reset';reset.textContent='↶';reset.title='Сбросить: '+h.id;reset.setAttribute('aria-label',reset.title);reset.onclick=()=>setHabit(h.id,null);actions.append(reset)}
+      card.append(top,actions);list.append(card);
+    }
+  }
+  $('done-counter').innerHTML=doneCount+'<small>/'+HABITS.length+'</small>';
+  $('daily-caption').textContent=doneCount===HABITS.length?'Все цели выполнены!':doneCount?'Хороший старт':'Начни с малого';
+}
+
 function renderSleep(){const entry=data.sleep[selected]||{};$('sleep-bed').value=entry.bed||'';$('sleep-wake').value=entry.wake||'';const out=$('sleep-result');if(!entry.bed&&!entry.wake){out.textContent='За этот день пока нет записи о сне';return}if(entry.bed&&entry.wake){const toMins=t=>{const [h,m]=t.split(':').map(Number);return h*60+m};const total=(toMins(entry.wake)-toMins(entry.bed)+1440)%1440;const h=Math.floor(total/60),m=total%60;out.textContent=total?'🌙 '+h+' ч '+(m?m+' мин':'')+' между отметками сна':'Уточни время — отметки совпадают'}else out.textContent='✓ Записано: '+(entry.bed?'уснул в '+entry.bed:'проснулся в '+entry.wake)}
-function renderOverview(){const all=Object.entries(data.weights).sort((a,b)=>a[0].localeCompare(b[0]));const last=all.at(-1);$('current-weight').textContent=last?last[1].toLocaleString('ru-RU')+' кг':'—';$('weight-caption').textContent=last?'От '+new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short'}).format(parseKey(last[0])):'Первая запись впереди';$('goal-value').innerHTML=data.goal.toLocaleString('ru-RU')+' <small>кг</small>';$('goal-input').value=data.goal;$('weight-input').value=data.weights[selected]??'';$('cal-input').value=data.calories[selected]??'';$('cal-hint').textContent=data.calories[selected]!==undefined?'Сохранено: '+data.calories[selected]+' ккал':'Можно пропускать без последствий.';$('human-date').textContent=new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric'}).format(parseKey(TODAY()))}
+function renderOverview(){const all=Object.entries(data.weights).sort((a,b)=>a[0].localeCompare(b[0]));const last=all.at(-1);$('current-weight').textContent=last?last[1].toLocaleString('ru-RU')+' кг':'—';$('weight-caption').textContent=last?'От '+new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short'}).format(parseKey(last[0])):'Первая запись впереди';$('goal-value').innerHTML=data.goal.toLocaleString('ru-RU')+' <small>кг</small>';$('goal-input').value=data.goal;$('profile-name').value=data.profileName||'';$('weight-input').value=data.weights[selected]??'';$('cal-input').value=data.calories[selected]??'';$('cal-hint').textContent=data.calories[selected]!==undefined?'Сохранено: '+data.calories[selected]+' ккал':'Можно пропускать без последствий.';$('human-date').textContent=new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'long',year:'numeric'}).format(parseKey(TODAY()))}
 function chart(){const all=Object.entries(data.weights).sort((a,b)=>a[0].localeCompare(b[0])).slice(-24);const svg=$('weight-chart');svg.replaceChildren();const ns='http://www.w3.org/2000/svg';function el(name,attrs,text){const n=document.createElementNS(ns,name);Object.entries(attrs||{}).forEach(([k,v])=>n.setAttribute(k,String(v)));if(text!==undefined)n.textContent=text;svg.append(n);return n}for(let i=0;i<4;i++)el('line',{x1:35,x2:622,y1:22+i*48,y2:22+i*48,stroke:'#2d4055','stroke-dasharray':'4 7'});if(!all.length){el('text',{x:320,y:106,'text-anchor':'middle',fill:'#91a6c1','font-size':16},'Запиши первый вес — появится график');$('chart-caption').textContent='Пока нет измерений';return}const values=all.map(x=>x[1]),lo=Math.min(...values)-.6,hi=Math.max(...values)+.6,range=Math.max(hi-lo,1);const points=all.map(([date,v],i)=>[35+(all.length===1?0.5:i/(all.length-1))*587,171-(v-lo)/range*137]);if(points.length>1)el('polyline',{points:points.map(p=>p.join(',')).join(' '),fill:'none',stroke:'#a7f8c2','stroke-width':4,'stroke-linecap':'round','stroke-linejoin':'round'});points.forEach(([x,y])=>el('circle',{cx:x,cy:y,r:4.5,fill:'#b9ffe1',stroke:'#244c4a','stroke-width':2}));el('text',{x:35,y:201,fill:'#98acc5','font-size':13},new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short'}).format(parseKey(all[0][0])));el('text',{x:622,y:201,fill:'#98acc5','font-size':13,'text-anchor':'end'},new Intl.DateTimeFormat('ru-RU',{day:'numeric',month:'short'}).format(parseKey(all.at(-1)[0])));const delta=Math.round((values.at(-1)-values[0])*10)/10;$('chart-caption').textContent=all.length===1?'Одна запись':all.length+' записей · '+(delta>0?'+':'')+delta+' кг за период'}
 function renderWeek(){const now=TODAY();const dow=(parseKey(now).getDay()+6)%7,mon=shift(now,-dow);const weeks=[];let active=0;for(let i=0;i<7;i++){const day=shift(mon,i),isFuture=day>now,hit=Object.values(data.checks[day]||{}).includes('done');if(hit)active++;const box=document.createElement('div');box.className='week-cell';const label=document.createElement('span');label.textContent=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'][i];const b=document.createElement('b');b.className=(hit?'hit ':'')+(day===now?'today':'');b.textContent=isFuture?'·':hit?'✓':'—';box.append(label,b);weeks.push(box)}$('week-grid').replaceChildren(...weeks);$('week-summary').textContent=active+' из 7 дней с победами ✦';$('week-insight').textContent=active===0?'Начни с одного маленького действия — этого достаточно, чтобы сдвинуться с места.':active===7?'Каждый день этой недели с маленькой победой. Вот это серия!':`На этой неделе уже ${active} ${active===1?'день':active<5?'дня':'дней'} с победами. Не идеальность, а возвращение к привычкам.`}
 
@@ -106,9 +196,9 @@ function drawAnalyticsPlot(){
   function node(tag,attrs={},txt){const el=document.createElementNS(ns,tag);for(const [k,v] of Object.entries(attrs))el.setAttribute(k,String(v));if(txt!==undefined)el.textContent=txt;svg.append(el);return el}
   const x0=56,x1=652,y0=24,y1=236;
   let dataPoints=[],unit='день';
-  const ratioFor=day=>Object.values(data.checks[day]||{}).filter(x=>x==='done').length/6*100;
+  const ratioFor=day=>HABITS.filter(h=>statusFor(day,h.id)==='done').length/HABITS.length*100;
   if(analyticsPeriod==='day'){
-    dataPoints=HABITS.map((h,i)=>({label:h.id==='Сон по режиму'?'Сон':h.id==='Без переедания'?'Питание':h.id,short:['Трен.','Зар.','Вода','Шаги','Сон','Питан.'][i],score:statusFor(selected,h.id)==='done'?100:0}));
+    dataPoints=HABITS.map((h,i)=>({label:h.id==='Сон по режиму'?'Сон':h.id==='Без переедания'?'Питание':h.id,short:h.short,score:statusFor(selected,h.id)==='done'?100:0}));
     unit='привычка';$('plot-caption').textContent='X — привычки выбранного дня · Y — выполнено, %';
   }else if(analyticsPeriod==='all'){
     const months=new Map();
@@ -165,7 +255,7 @@ function renderAnalytics(){
   const tally={};HABITS.forEach(h=>tally[h.id]={done:0,skip:0});
   let done=0,skipped=0,active=0;
   for(const day of days){let any=false;for(const h of HABITS){const st=statusFor(day,h.id);if(st==='done'){done++;any=true;tally[h.id].done++}else if(st==='skip'){skipped++;tally[h.id].skip++}}if(any)active++}
-  const total=6*numDays,pct=Math.round(done/total*100);
+  const total=HABITS.length*numDays,pct=Math.round(done/total*100);
   const labels={day:'За день',week:'За неделю',month:'За месяц',all:'За всё время'};
   $('analytics-orb').style.setProperty('--percent',pct);
   $('analytics-percent').textContent=pct+'%';
@@ -176,7 +266,7 @@ function renderAnalytics(){
   $('analytics-skipped').textContent=skipped;
   $('analytics-active').textContent=active;
   $('analytics-period-label').textContent=analyticsPeriod==='day'?dateHuman(selected):analyticsPeriod==='all'?'Все отмеченные дни':dateHuman(days[0])+' — '+dateHuman(days.at(-1));
-  $('analytics-footnote').textContent=analyticsPeriod==='all'?'За всё время считаются дни, когда ты отмечал привычки.':('В периоде '+numDays+' '+(numDays===1?'день':numDays<5?'дня':'дней')+'. Максимум — 6 привычек в день.');
+  $('analytics-footnote').textContent=analyticsPeriod==='all'?'За всё время считаются дни, когда ты отмечал привычки.':('В периоде '+numDays+' '+(numDays===1?'день':numDays<5?'дня':'дней')+'. Максимум — '+HABITS.length+' привычек в день.');
   const frag=document.createDocumentFragment();
   for(const h of HABITS){
     const item=document.createElement('div');item.className='analytics-habit';
@@ -203,7 +293,7 @@ function renderTodaySummary(){
   const percent=Math.round(done/total*100);
   $('today-progress').style.setProperty('--today-percent',String(percent));
   $('today-count').textContent=done+'/'+total;
-  $('today-headline').textContent=isToday?'Сегодня — твой день':'Твой день';
+  $('today-headline').textContent=isToday?(data.profileName?data.profileName+', это твой день':'Сегодня — твой день'):'Твой день';
   $('today-message').textContent=done===total?'Все привычки выполнены. Красота!':done===0?'Начни с одного небольшого шага.':done+' из '+total+' уже сделано. Двигаемся.';
   $('today-date-label').textContent=dateHuman(selected);
   $('jump-today').hidden=isToday;
@@ -221,7 +311,7 @@ $('day-note').addEventListener('input',()=>{
   const ok=save();
   $('note-status').textContent=ok?'✓ Сохранено на этом устройстве':'Не удалось сохранить запись';
 });
-$('jump-today').onclick=()=>{selected=TODAY();render()};
+$('jump-today').onclick=()=>{selected=TODAY();calendarMonth=selected.slice(0,7);render()};
 function setupIosInstallTip(){
   const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent||'');
   const standalone=window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
@@ -233,8 +323,8 @@ function setupIosInstallTip(){
 }
 setupIosInstallTip();
 
-function render(){renderOverview();renderDays();renderHabits();renderSleep();renderWeek();chart();renderAnalytics();renderTodaySummary();renderNotes()}
-$('prev-day').onclick=()=>{selected=shift(selected,-1);render()};$('next-day').onclick=()=>{if(selected<TODAY()){selected=shift(selected,1);render()}};
+function render(){renderOverview();renderDays();renderHabits();renderSleep();renderWeek();chart();renderAnalytics();renderTodaySummary();renderNotes();renderCalendar()}
+$('prev-day').onclick=()=>{selected=shift(selected,-1);calendarMonth=selected.slice(0,7);render()};$('next-day').onclick=()=>{if(selected<TODAY()){selected=shift(selected,1);calendarMonth=selected.slice(0,7);render()}};
 $('weight-form').onsubmit=e=>{e.preventDefault();const n=Number($('weight-input').value);if(!validNum(n,25,350))return notice('Проверь вес','Можно указать значение от 25 до 350 кг.','⚠️');data.weights[selected]=n;save();render();notice('Вес записан','Важно видеть тенденцию, а не одну цифру.','⚖️')};
 $('cal-form').onsubmit=e=>{e.preventDefault();const n=Number($('cal-input').value);if($('cal-input').value.trim()===''||!validNum(n,0,10000))return notice('Проверь калории','Можно указать значение от 0 до 10 000.','⚠️');data.calories[selected]=n;save();render();notice('Записано','Без погони за идеальными цифрами.','🍽️')};
 $('goal-form').onsubmit=e=>{e.preventDefault();const n=Number($('goal-input').value);if(!validNum(n,25,350))return notice('Проверь цель','Допустимое значение от 25 до 350 кг.','⚠️');data.goal=n;save();render();notice('Цель сохранена','Менять цель — нормально.','🎯')};
@@ -247,6 +337,7 @@ function setView(name){
 }
 document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>setView(button.dataset.view)));
 $('settings-toggle').onclick=()=>setView('settings');
+$('profile-form').onsubmit=e=>{e.preventDefault();data.profileName=$('profile-name').value.trim().slice(0,30);save();renderTodaySummary();notice('Профиль сохранён','Это имя видно только на твоём устройстве.','✓')};
 $('sleep-form').onsubmit=e=>{
   e.preventDefault();
   const bed=$('sleep-bed').value,wake=$('sleep-wake').value;
@@ -256,7 +347,10 @@ $('sleep-form').onsubmit=e=>{
 };
 $('export-btn').onclick=()=>{const blob=new Blob([JSON.stringify({app:'tima-osadok-tracker',version:4,exportedAt:new Date().toISOString(),data},null,2)],{type:'application/json'});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='ritm-backup-'+TODAY()+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),2000);notice('Резервная копия скачана','Сохрани файл в надёжном месте.','💾')};
 $('import-file').onchange=async e=>{const file=e.target.files?.[0];if(!file)return;try{if(file.size>2e6)throw Error('Слишком большой файл');const raw=JSON.parse(await file.text());if(!['moya-forma','tima-osadok-tracker'].includes(raw.app)||raw.version!==4||!raw.data||typeof raw.data!=='object')throw Error('Неверный формат');if(!confirm('Заменить текущие записи данными из копии?'))return;data=sanitize(raw.data);save();selected=TODAY();render();notice('Данные восстановлены','Записи из резервной копии загружены.','✅')}catch{notice('Не удалось загрузить','Выбери резервную копию из этого приложения.','⚠️')}finally{e.target.value=''}};
-let lastDate=TODAY();document.addEventListener('visibilitychange',()=>{if(!document.hidden&&lastDate!==TODAY()){if(selected===lastDate)selected=TODAY();lastDate=TODAY();render()}});
+let lastDate=TODAY();document.addEventListener('visibilitychange',()=>{if(!document.hidden&&lastDate!==TODAY()){if(selected===lastDate)selected=TODAY();calendarMonth=selected.slice(0,7);lastDate=TODAY();render()}});
+window.addEventListener('focus',()=>{if(lastDate!==TODAY()){if(selected===lastDate)selected=TODAY();calendarMonth=selected.slice(0,7);lastDate=TODAY();render()}});
+window.addEventListener('pageshow',()=>{if(lastDate!==TODAY()){if(selected===lastDate)selected=TODAY();calendarMonth=selected.slice(0,7);lastDate=TODAY();render()}});
+setInterval(()=>{if(lastDate!==TODAY()){if(selected===lastDate)selected=TODAY();calendarMonth=selected.slice(0,7);lastDate=TODAY();render()}},60000);
 if('serviceWorker' in navigator&&/^https?:$/.test(location.protocol))window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 render();
 })();
