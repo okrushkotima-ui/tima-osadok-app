@@ -93,3 +93,60 @@ body{background:radial-gradient(ellipse 760px 400px at 48% -20%,#1b2531 0,transp
 .settings-close{width:39px;height:39px;flex:none;border-radius:12px;background:#2a3440;border:1px solid #4b5762;color:#f3f4f7;font-size:28px;line-height:1;cursor:pointer}
 body.modal-open{overflow:hidden}
 @media(max-width:700px){.brand-mark.brand-cloud{width:47px;min-width:47px;height:44px;border-radius:17px}.brand-cloud .cloud-tima{font-size:12px}.brand-cloud .cloud-osadok{font-size:10px}.brand-name{font-size:20px}.hero-compact{padding:18px 17px!important}.hero-tag{font-size:10px}.analytics-panel{padding:15px 13px;border-radius:18px}.analytics-tabs{width:100%;justify-content:space-around}.analytics-tab{padding:9px 8px}.analytics-orb{width:102px;height:102px}.orb-inner strong{font-size:23px}.analytics-summary{gap:14px}.analytics-number{font-size:30px}.analytics-metrics>div{padding:11px 8px}.analytics-metrics strong{font-size:21px}.analytics-metrics span{font-size:10px}.analytics-habits{grid-template-columns:1fr;gap:12px}.settings.section{max-height:86dvh}}
+
+
+/* RITM v11: app tabs, sleep input, comparative charts */
+.app-view[hidden],.analytics-summary[hidden],.analytics-plot-panel[hidden]{display:none!important}
+.app-view{animation:viewIn .28s ease both}
+@keyframes viewIn{from{opacity:.2;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+#main-content>.app-view>.section:first-child{margin-top:8px}
+#main-content>.app-view>.hero{margin-top:8px}
+.bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr));max-width:560px}
+.bottom-nav button{cursor:pointer;border-radius:15px;transition:background .2s,color .2s,transform .2s}
+.bottom-nav .nav-tab.selected{background:linear-gradient(148deg,#34433f,#253336);color:#bcf4d9;box-shadow:inset 0 1px #9accab24}
+.bottom-nav .nav-tab.selected span{color:#b5ffcf}
+.bottom-nav .nav-tab:active{transform:scale(.96)}
+.settings.section{position:relative!important;z-index:auto!important;inset:auto!important;top:auto!important;left:auto!important;transform:none!important;width:auto!important;max-height:none!important;overflow:visible!important;margin:8px 0 28px!important;padding:28px!important;background:linear-gradient(160deg,#171e27,#11161e)!important;border-radius:25px!important;box-shadow:inset 0 1px #ffffff10,0 12px 35px #0004!important}
+.settings-backdrop{display:none!important}
+body.modal-open{overflow:auto!important}
+.settings .goal-form{max-width:460px}
+#view-settings .section-head{margin-bottom:25px}
+#view-settings .backup{margin:28px 0}
+#view-settings .tiny{max-width:590px;line-height:1.7}
+.sleep-card{margin-top:24px;padding:22px;border-radius:23px;background:radial-gradient(ellipse at 105% -15%,#43405b35,transparent 65%),linear-gradient(145deg,#1e2633,#121a24);border:1px solid #414459;box-shadow:inset 0 1px #ffffff14,0 14px 30px #0004}
+.sleep-heading{display:flex;align-items:center;gap:15px}
+.sleep-symbol{width:50px;height:50px;display:grid;place-items:center;flex:none;border-radius:18px;color:#e0d2ff;background:linear-gradient(145deg,#41405d,#262a42);font-size:31px;box-shadow:inset 0 1px #ffffff25}
+.sleep-heading h3{margin:3px 0 4px;font-size:21px;letter-spacing:-.035em}
+.sleep-heading p{margin:3px 0;color:#9ca9b9;font-size:12px;line-height:1.55}
+.sleep-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr)) auto;align-items:end;gap:11px;margin-top:22px}
+.sleep-form label{min-width:0;display:flex;flex-direction:column;gap:9px;color:#cbd1db;font-size:13px;font-weight:700}
+.sleep-form input[type=time]{color-scheme:dark;width:100%;min-width:0;background:#0e151f;color:#f5f5ff;border:1px solid #4a5060;border-radius:13px;padding:13px 12px;font-size:16px;min-height:47px;outline-offset:3px}
+.sleep-form input[type=time]:focus-visible{outline:2px solid #b9b0e3}
+.sleep-save{min-height:47px;padding:11px 17px;background:linear-gradient(145deg,#c7bbf3,#b1a6d7);color:#1b2031;border:0;border-radius:13px;font-size:12px;font-weight:900;transition:transform .18s,filter .18s;white-space:nowrap}
+.sleep-save:hover{transform:translateY(-2px);filter:brightness(1.1)}
+.sleep-result{margin-top:15px;min-height:20px;font-size:12px;color:#c2b7ea;line-height:1.55}
+.analytics-panel{margin:20px 0 36px}
+.analytics-charts{display:flex;gap:7px;flex-wrap:wrap;margin:2px 0 22px;padding-bottom:17px;border-bottom:1px solid #333e46}
+.analytics-chart-btn{border:1px solid #37444d;border-radius:12px;background:#131a22;color:#aebac5;padding:10px 13px;font-size:12px;font-weight:750;cursor:pointer;transition:transform .2s,background .2s,border-color .2s}
+.analytics-chart-btn:hover{transform:translateY(-2px);border-color:#719a85}
+.analytics-chart-btn.active{background:#27443b;border-color:#6da88f;color:#d1ffe6}
+.analytics-plot-panel{margin:8px 0 22px;padding:15px 13px 6px;background:#101821;border:1px solid #33404a;border-radius:20px}
+.plot-axis-note{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:11px;color:#9fb1ba;padding:1px 7px 10px}
+.plot-scroller{width:100%;min-width:0}
+.plot-scroller svg{width:100%;height:auto;max-height:360px;display:block}
+.plot-caption{color:#90a6af;text-align:center;font-size:11px;margin:5px 0 15px}
+#view-week .hero-compact{margin-bottom:17px}
+#view-week .overview{margin:0 0 20px}
+#view-week .insight{margin:0 0 20px}
+#view-week .analytics-panel{margin:20px 0 25px}
+@media(max-width:700px){
+  .settings.section{padding:22px 16px!important;margin-top:8px!important}
+  .sleep-card{padding:18px 14px}
+  .sleep-form{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 10px}
+  .sleep-save{grid-column:1/-1}
+  .analytics-plot-panel{padding:10px 4px 5px}
+  .plot-axis-note{font-size:10px}
+  .analytics-charts{gap:6px}
+  .analytics-chart-btn{font-size:11px;padding:10px 11px}
+}
+@media(prefers-reduced-motion:reduce){.app-view{animation:none}.bottom-nav button,.sleep-save,.analytics-chart-btn{transition:none}}
