@@ -11,30 +11,58 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=10">
+  <link rel="stylesheet" href="./styles.css?v=11">
   <title>РИТМ — by тима осадок</title>
 </head>
 <body>
   <div id="app" class="shell">
     <header class="topbar">
       <div class="brand"><span class="brand-mark brand-cloud" aria-hidden="true"><span class="cloud-tima">тима</span><span class="cloud-osadok">осадок</span></span><span class="brand-name">РИТМ <small>by тима осадок</small></span></div>
-      <div class="top-actions"><button type="button" class="sound-btn icon-btn" id="sound-toggle" aria-label="Выключить звуки" aria-pressed="true" title="Звуки включены">♫</button><button type="button" class="icon-btn" id="settings-toggle" aria-label="Настройки и резервная копия" aria-expanded="false">⚙</button></div>
+      <div class="top-actions"><button type="button" class="sound-btn icon-btn" id="sound-toggle" aria-label="Выключить звуки" aria-pressed="true" title="Звуки включены">♫</button><button type="button" class="icon-btn" id="settings-toggle" aria-label="Перейти к настройкам">⚙</button></div>
     </header>
-    <main>
-      <section class="hero hero-compact" aria-label="Твой ритм">
-        <div class="hero-top"><div class="eyebrow"><span class="live-dot"></span> ДЕНЬ ЗА ДНЁМ <span class="eyebrow-divider">/</span> В СВОЁМ РИТМЕ</div><span class="hero-tag">Без гонки. Только движение.</span></div>
-        <div class="hero-bottom"><span id="human-date"></span><span class="hero-streak" id="week-summary">Неделя начинается ✨</span></div>
-      </section>
-      <section class="overview" aria-label="Мои показатели">
-        <div class="stat"><div class="stat-label">ПОСЛЕДНИЙ ВЕС</div><strong id="current-weight">—</strong><span id="weight-caption">Первая запись впереди</span></div>
-        <div class="stat"><div class="stat-label">ЦЕЛЬ</div><strong id="goal-value">70 <small>кг</small></strong><span>В своём темпе</span></div>
-        <div class="stat"><div class="stat-label">ПРОГРЕСС ДНЯ</div><strong id="done-counter">0<small>/6</small></strong><span id="daily-caption">Всё впереди</span></div>
-      </section>
-      <section class="section habits-section" aria-labelledby="habits-title">
+
+    <main id="main-content">
+      <div class="app-view" id="view-habits" data-view-panel="habits">
+        <section class="section habits-section" aria-labelledby="habits-title">
         <div class="section-head"><div><span class="section-kicker">01 / КАЖДЫЙ ДЕНЬ</span><h2 id="habits-title">Маленькие победы</h2></div><span class="mini-pill" id="active-day-label">Сегодня</span></div>
         <p class="section-desc">Нажми «Сделано» — устроим праздник. Пропуск тоже можно отметить без чувства вины.</p>
         <div class="day-nav"><button class="day-move" id="prev-day" aria-label="Предыдущий день">‹</button><div id="days" class="days" aria-label="Выбор дня"></div><button class="day-move" id="next-day" aria-label="Следующий день">›</button></div>
         <div id="habit-list" class="habits" aria-live="off"></div>
+
+
+        <section class="sleep-card" aria-labelledby="sleep-card-title">
+          <div class="sleep-heading"><div class="sleep-symbol" aria-hidden="true">☾</div><div><span class="section-kicker">НОЧНОЙ РИТМ</span><h3 id="sleep-card-title">Режим сна</h3><p>Отмечай, когда уснул и когда проснулся. День записи — день пробуждения.</p></div></div>
+          <form id="sleep-form" class="sleep-form">
+            <label><span>🌙 Уснул</span><input type="time" id="sleep-bed" aria-label="Время засыпания"></label>
+            <label><span>☀️ Проснулся</span><input type="time" id="sleep-wake" aria-label="Время пробуждения"></label>
+            <button type="submit" class="sleep-save">Сохранить сон</button>
+          </form>
+          <div class="sleep-result" id="sleep-result" aria-live="polite">Пока нет записи за выбранный день</div>
+        </section>
+      </section>
+      </div>
+      <div class="app-view" id="view-weight" data-view-panel="weight" hidden>
+        <section class="section tracking" aria-labelledby="weight-title">
+        <div class="section-head"><div><span class="section-kicker">02 / ТВОИ ЦИФРЫ</span><h2 id="weight-title">Вес и питание</h2></div><span class="soft-icon">↗</span></div>
+        <div class="measure-grid">
+          <form class="entry" id="weight-form"><label for="weight-input">Вес, кг</label><div class="entry-row"><input id="weight-input" inputmode="decimal" type="number" min="25" max="350" step="0.1" placeholder="Например, 85" required><button type="submit">Сохранить</button></div><span class="field-hint">Необязательно взвешиваться каждый день.</span></form>
+          <form class="entry" id="cal-form"><label for="cal-input">Калории за день</label><div class="entry-row"><input id="cal-input" inputmode="numeric" type="number" min="0" max="10000" step="1" placeholder="Если считаешь" required><button type="submit">Записать</button></div><span class="field-hint" id="cal-hint">Можно пропускать без последствий.</span></form>
+        </div>
+        <div class="chart-head"><strong>Как меняется вес</strong><span id="chart-caption">Появится после первой записи</span></div>
+        <div class="chart-box"><svg id="weight-chart" viewBox="0 0 640 210" role="img" aria-label="График изменений веса"></svg></div>
+      </section>
+      </div>
+      <div class="app-view" id="view-week" data-view-panel="week" hidden>
+        <section class="hero hero-compact" aria-label="Твой ритм">
+        <div class="hero-top"><div class="eyebrow"><span class="live-dot"></span> ДЕНЬ ЗА ДНЁМ <span class="eyebrow-divider">/</span> В СВОЁМ РИТМЕ</div><span class="hero-tag">Без гонки. Только движение.</span></div>
+        <div class="hero-bottom"><span id="human-date"></span><span class="hero-streak" id="week-summary">Неделя начинается ✨</span></div>
+      </section>
+        <section class="overview" aria-label="Мои показатели">
+        <div class="stat"><div class="stat-label">ПОСЛЕДНИЙ ВЕС</div><strong id="current-weight">—</strong><span id="weight-caption">Первая запись впереди</span></div>
+        <div class="stat"><div class="stat-label">ЦЕЛЬ</div><strong id="goal-value">70 <small>кг</small></strong><span>В своём темпе</span></div>
+        <div class="stat"><div class="stat-label">ПРОГРЕСС ДНЯ</div><strong id="done-counter">0<small>/6</small></strong><span id="daily-caption">Всё впереди</span></div>
+      </section>
+        <section class="section insight" aria-labelledby="momentum-title"><div class="section-head"><div><span class="section-kicker">03 / ДЛИННАЯ ДИСТАНЦИЯ</span><h2 id="momentum-title">Твоя неделя</h2></div><span class="soft-icon">✺</span></div><div class="week-grid" id="week-grid"></div><p class="insight-copy" id="week-insight">Начни с одного маленького действия — этого достаточно, чтобы сдвинуться с места.</p></section>
         <section class="analytics-panel" id="analytics" aria-labelledby="analytics-title">
           <div class="analytics-head">
             <div><span class="section-kicker">ТВОИ ЦИФРЫ</span><h3 id="analytics-title">Аналитика</h3></div>
@@ -45,13 +73,24 @@
               <button type="button" class="analytics-tab" data-period="all" aria-pressed="false">Всё время</button>
             </div>
           </div>
-          <div class="analytics-summary">
+
+            <div class="analytics-charts" role="group" aria-label="Тип графика">
+              <button type="button" class="analytics-chart-btn active" data-chart="ring" aria-pressed="true">◉ Кольцо</button>
+              <button type="button" class="analytics-chart-btn" data-chart="bars" aria-pressed="false">▥ Столбцы</button>
+              <button type="button" class="analytics-chart-btn" data-chart="line" aria-pressed="false">⌁ Линия</button>
+            </div>
+          <div class="analytics-summary" id="analytics-ring-panel">
             <div class="analytics-orb" id="analytics-orb" style="--percent:0"><div class="orb-inner"><strong id="analytics-percent">0%</strong><small>ритм</small></div></div>
             <div class="analytics-overview">
               <span class="analytics-range" id="analytics-range">Сегодня</span>
               <strong class="analytics-number" id="analytics-main">0 <small>из 6</small></strong>
               <span class="analytics-annotation" id="analytics-caption">Каждый шаг имеет значение</span>
             </div>
+          </div>
+          <div id="analytics-plot-panel" class="analytics-plot-panel" hidden>
+            <div class="plot-axis-note"><span>Y — выполнение привычек, %</span><span>X — дни / время</span></div>
+            <div class="plot-scroller"><svg id="analytics-plot" viewBox="0 0 680 292" role="img" aria-label="График выполнения привычек по времени"></svg></div>
+            <div class="plot-caption" id="plot-caption">Процент выполненных привычек по дням</div>
           </div>
           <div class="analytics-metrics">
             <div><strong id="analytics-done">0</strong><span>Выполнено</span></div>
@@ -62,24 +101,20 @@
           <div class="analytics-habits" id="analytics-habits"></div>
           <p class="analytics-footnote" id="analytics-footnote">Процент считается от шести привычек в день.</p>
         </section>
-      </section>
-      <section class="section tracking" aria-labelledby="weight-title">
-        <div class="section-head"><div><span class="section-kicker">02 / ТВОИ ЦИФРЫ</span><h2 id="weight-title">Вес и питание</h2></div><span class="soft-icon">↗</span></div>
-        <div class="measure-grid">
-          <form class="entry" id="weight-form"><label for="weight-input">Вес, кг</label><div class="entry-row"><input id="weight-input" inputmode="decimal" type="number" min="25" max="350" step="0.1" placeholder="Например, 85" required><button type="submit">Сохранить</button></div><span class="field-hint">Необязательно взвешиваться каждый день.</span></form>
-          <form class="entry" id="cal-form"><label for="cal-input">Калории за день</label><div class="entry-row"><input id="cal-input" inputmode="numeric" type="number" min="0" max="10000" step="1" placeholder="Если считаешь" required><button type="submit">Записать</button></div><span class="field-hint" id="cal-hint">Можно пропускать без последствий.</span></form>
-        </div>
-        <div class="chart-head"><strong>Как меняется вес</strong><span id="chart-caption">Появится после первой записи</span></div>
-        <div class="chart-box"><svg id="weight-chart" viewBox="0 0 640 210" role="img" aria-label="График изменений веса"></svg></div>
-      </section>
-      <section class="section insight" aria-labelledby="momentum-title"><div class="section-head"><div><span class="section-kicker">03 / ДЛИННАЯ ДИСТАНЦИЯ</span><h2 id="momentum-title">Твоя неделя</h2></div><span class="soft-icon">✺</span></div><div class="week-grid" id="week-grid"></div><p class="insight-copy" id="week-insight">Начни с одного маленького действия — этого достаточно, чтобы сдвинуться с места.</p></section>
-      <section class="settings section" id="settings" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden><div class="section-head"><div><span class="section-kicker">РИТМ / НАСТРОЙКИ</span><h2 id="settings-title">Под себя</h2></div><button type="button" class="settings-close" id="settings-close" aria-label="Закрыть настройки">×</button></div><form id="goal-form" class="goal-form"><label for="goal-input">Мой желаемый вес, кг</label><div class="entry-row"><input type="number" id="goal-input" min="25" max="350" step="0.1" required><button type="submit">Изменить</button></div></form><div class="backup"><button id="export-btn" type="button" class="ghost">↓ Скачать резервную копию</button><label class="ghost upload">↑ Загрузить копию<input type="file" id="import-file" accept="application/json,.json" hidden></label></div><p class="tiny">Данные хранятся на этом устройстве в браузере. Пока нет синхронизации между iPhone и Windows. Не удаляй данные браузера без резервной копии.</p></section>
+      </div>
+      <div class="app-view" id="view-settings" data-view-panel="settings" hidden>
+        <section class="settings section" id="settings" aria-labelledby="settings-title"><div class="section-head"><div><span class="section-kicker">РИТМ / НАСТРОЙКИ</span><h2 id="settings-title">Под себя</h2></div></div><form id="goal-form" class="goal-form"><label for="goal-input">Мой желаемый вес, кг</label><div class="entry-row"><input type="number" id="goal-input" min="25" max="350" step="0.1" required><button type="submit">Изменить</button></div></form><div class="backup"><button id="export-btn" type="button" class="ghost">↓ Скачать резервную копию</button><label class="ghost upload">↑ Загрузить копию<input type="file" id="import-file" accept="application/json,.json" hidden></label></div><p class="tiny">Данные хранятся на этом устройстве в браузере. Пока нет синхронизации между iPhone и Windows. Не удаляй данные браузера без резервной копии.</p></section>
+      </div>
     </main>
-    <nav class="bottom-nav" aria-label="Навигация"><a href="#habits-title" aria-label="К привычкам"><span>✓</span>Привычки</a><a href="#weight-title" aria-label="К весу"><span>⚖</span>Вес</a><a href="#momentum-title" aria-label="К неделе"><span>▥</span>Неделя</a><button type="button" id="settings-bottom"><span>⚙</span>Настройки</button></nav>
+    <nav class="bottom-nav" aria-label="Разделы приложения">
+      <button type="button" data-view="habits" class="nav-tab selected" aria-current="page"><span>✓</span>Привычки</button>
+      <button type="button" data-view="weight" class="nav-tab"><span>⚖</span>Вес</button>
+      <button type="button" data-view="week" class="nav-tab"><span>▥</span>Неделя</button>
+      <button type="button" data-view="settings" class="nav-tab"><span>⚙</span>Настройки</button>
+    </nav>
   </div>
-  <div class="settings-backdrop" id="settings-backdrop" hidden></div>
   <div class="celebration" id="celebration" role="status" aria-live="polite" aria-atomic="true"><span id="toast-icon">✨</span><strong id="toast-title"></strong><p id="toast-desc"></p></div>
   <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
-  <script src="./app.js?v=10" defer></script>
+  <script src="./app.js?v=11" defer></script>
 </body>
 </html>
