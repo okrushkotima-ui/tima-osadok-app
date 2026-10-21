@@ -2,9 +2,9 @@
 const KEY='weight-tracke-v4',LEGACY='weight-tracke-demo-3',HABITS=[{id:'Тренировка',icon:'🏋️',sub:'Любое движение считается'},{id:'Зарядка',icon:'⚡',sub:'Хотя бы пять минут'},{id:'Вода',icon:'💧',sub:'Следить за питьём'},{id:'Прогулка',icon:'🌳',sub:'Свежий воздух и шаги'},{id:'Сон по режиму',icon:'🌙',sub:'Дать себе восстановиться'},{id:'Без переедания',icon:'🥗',sub:'Бережное питание'}];
 const wins=['Ёбаный насос, какой же ты красавчик!','ВОТ ЭТО ТЫ ДАЛ, БРАТ!','Легенда, ещё одна победа!','Тимоха, это чистый разъёб!','Уровень босса разблокирован!','Ну всё, мощь пошла!','Кто сегодня машина? Ты машина!','Шаг за шагом — и ты уже сильнее!','Это называется держать слово себе!','Фейерверк заслужен, чемпион!','Да ты просто чемпион дисциплины!','Опа! Ещё один кирпичик в новую форму!'];
 const encouragement=['Не каждый день обязан быть идеальным.','Завтра — новый лист, без долгов перед вчера.','Сделать паузу — не значит сдаться.','Даже большая дорога начинается с короткого шага.','Отдых — часть маршрута, брат.','Не получилось сегодня — попробуем завтра.','Стабильность важнее безупречности.','Сонный тигр тоже тигр.','Одна неудача не определяет всю историю.','Сохраняй курс, даже если сегодня тихо.','Прогресс — это возвращаться, а не не ошибаться.','Ты не обязан побеждать каждую минуту.'];
-const $=id=>document.getElementById(id);const empty=()=>({weights:{},checks:{},calories:{},sleep:{},goal:70});
+const $=id=>document.getElementById(id);const empty=()=>({weights:{},checks:{},calories:{},sleep:{},notes:{},goal:70});
 function validNum(n,min,max){return typeof n==='number'&&Number.isFinite(n)&&n>=min&&n<=max}
-function sanitize(input){const d=empty();if(!input||typeof input!=='object')return d;if(validNum(Number(input.goal),25,350))d.goal=Number(input.goal);for(const [date,v] of Object.entries(input.weights||{}))if(/^\d{4}-\d\d-\d\d$/.test(date)&&validNum(Number(v),25,350))d.weights[date]=Number(v);for(const [date,v] of Object.entries(input.calories||{}))if(/^\d{4}-\d\d-\d\d$/.test(date)&&validNum(Number(v),0,10000))d.calories[date]=Number(v);for(const [date,habits] of Object.entries(input.checks||{})){if(!/^\d{4}-\d\d-\d\d$/.test(date)||!habits||typeof habits!=='object')continue;const item={};for(const h of HABITS){if(habits[h.id]===true||habits[h.id]==='done')item[h.id]='done';else if(habits[h.id]==='skip')item[h.id]='skip'}if(Object.keys(item).length)d.checks[date]=item}for(const [date,entry] of Object.entries(input.sleep||{})){if(!/^\d{4}-\d\d-\d\d$/.test(date)||!entry||typeof entry!=='object')continue;const bed=typeof entry.bed==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.bed)?entry.bed:'';const wake=typeof entry.wake==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.wake)?entry.wake:'';if(bed||wake)d.sleep[date]={bed,wake}}return d}
+function sanitize(input){const d=empty();if(!input||typeof input!=='object')return d;if(validNum(Number(input.goal),25,350))d.goal=Number(input.goal);for(const [date,v] of Object.entries(input.weights||{}))if(/^\d{4}-\d\d-\d\d$/.test(date)&&validNum(Number(v),25,350))d.weights[date]=Number(v);for(const [date,v] of Object.entries(input.calories||{}))if(/^\d{4}-\d\d-\d\d$/.test(date)&&validNum(Number(v),0,10000))d.calories[date]=Number(v);for(const [date,habits] of Object.entries(input.checks||{})){if(!/^\d{4}-\d\d-\d\d$/.test(date)||!habits||typeof habits!=='object')continue;const item={};for(const h of HABITS){if(habits[h.id]===true||habits[h.id]==='done')item[h.id]='done';else if(habits[h.id]==='skip')item[h.id]='skip'}if(Object.keys(item).length)d.checks[date]=item}for(const [date,entry] of Object.entries(input.sleep||{})){if(!/^\d{4}-\d\d-\d\d$/.test(date)||!entry||typeof entry!=='object')continue;const bed=typeof entry.bed==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.bed)?entry.bed:'';const wake=typeof entry.wake==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(entry.wake)?entry.wake:'';if(bed||wake)d.sleep[date]={bed,wake}}for(const [date,note] of Object.entries(input.notes||{})){if(/^\d{4}-\d\d-\d\d$/.test(date)&&typeof note==='string'&&note.trim())d.notes[date]=note.slice(0,2000)}return d}
 let data;try{const raw=localStorage.getItem(KEY)||localStorage.getItem(LEGACY);data=sanitize(raw?JSON.parse(raw):null)}catch{data=empty()}
 const dateKey=(dt)=>`${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
 const parseKey=key=>{const [y,m,d]=key.split('-').map(Number);return new Date(y,m-1,d,12)};const shift=(key,days)=>{const d=parseKey(key);d.setDate(d.getDate()+days);return dateKey(d)};
@@ -194,7 +194,46 @@ function renderAnalytics(){
 }
 document.querySelectorAll('.analytics-tab').forEach(btn=>btn.addEventListener('click',()=>{analyticsPeriod=btn.dataset.period;renderAnalytics()}));
 
-function render(){renderOverview();renderDays();renderHabits();renderSleep();renderWeek();chart();renderAnalytics()}
+
+function renderTodaySummary(){
+  const total=HABITS.length;
+  const done=HABITS.filter(h=>statusFor(selected,h.id)==='done').length;
+  const skipped=HABITS.filter(h=>statusFor(selected,h.id)==='skip').length;
+  const isToday=selected===TODAY();
+  const percent=Math.round(done/total*100);
+  $('today-progress').style.setProperty('--today-percent',String(percent));
+  $('today-count').textContent=done+'/'+total;
+  $('today-headline').textContent=isToday?'Сегодня — твой день':'Твой день';
+  $('today-message').textContent=done===total?'Все привычки выполнены. Красота!':done===0?'Начни с одного небольшого шага.':done+' из '+total+' уже сделано. Двигаемся.';
+  $('today-date-label').textContent=dateHuman(selected);
+  $('jump-today').hidden=isToday;
+}
+function renderNotes(){
+  const current=data.notes?.[selected]||'';
+  const note=$('day-note');
+  if(note.value!==current)note.value=current;
+  $('note-status').textContent=current?'✓ Запись сохранена на этом устройстве':'Сохраняется автоматически на этом устройстве';
+}
+$('day-note').addEventListener('input',()=>{
+  const str=$('day-note').value.slice(0,2000);
+  data.notes??={};
+  if(str.trim())data.notes[selected]=str;else delete data.notes[selected];
+  const ok=save();
+  $('note-status').textContent=ok?'✓ Сохранено на этом устройстве':'Не удалось сохранить запись';
+});
+$('jump-today').onclick=()=>{selected=TODAY();render()};
+function setupIosInstallTip(){
+  const ios=/iPhone|iPad|iPod/i.test(navigator.userAgent||'');
+  const standalone=window.navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+  let suppressed=false;
+  try{suppressed=localStorage.getItem('ritm-install-dismissed')==='yes'}catch{}
+  const banner=$('ios-install-tip');
+  banner.hidden=!(ios&&!standalone&&!suppressed);
+  $('dismiss-install').onclick=()=>{banner.hidden=true;try{localStorage.setItem('ritm-install-dismissed','yes')}catch{}};
+}
+setupIosInstallTip();
+
+function render(){renderOverview();renderDays();renderHabits();renderSleep();renderWeek();chart();renderAnalytics();renderTodaySummary();renderNotes()}
 $('prev-day').onclick=()=>{selected=shift(selected,-1);render()};$('next-day').onclick=()=>{if(selected<TODAY()){selected=shift(selected,1);render()}};
 $('weight-form').onsubmit=e=>{e.preventDefault();const n=Number($('weight-input').value);if(!validNum(n,25,350))return notice('Проверь вес','Можно указать значение от 25 до 350 кг.','⚠️');data.weights[selected]=n;save();render();notice('Вес записан','Важно видеть тенденцию, а не одну цифру.','⚖️')};
 $('cal-form').onsubmit=e=>{e.preventDefault();const n=Number($('cal-input').value);if($('cal-input').value.trim()===''||!validNum(n,0,10000))return notice('Проверь калории','Можно указать значение от 0 до 10 000.','⚠️');data.calories[selected]=n;save();render();notice('Записано','Без погони за идеальными цифрами.','🍽️')};
