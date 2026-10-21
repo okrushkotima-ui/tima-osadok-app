@@ -13,69 +13,44 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/ritm-192.png">
   <link rel="icon" href="./icons/ritm-192.png">
-  <link rel="stylesheet" href="./styles.css?v=14">
+  <link rel="stylesheet" href="./styles.css?v=15">
   <title>РИТМ — by тима осадок</title>
 </head>
 <body>
-  <div id="app" class="shell">
-    <header class="topbar">
-      <div class="brand"><img class="brand-wordmark" src="./assets/ritm-cloud-lettering.webp" draggable="false" alt="тима осадок" width="145" height="69"><span class="brand-name">РИТМ <small>день за днём</small></span></div>
-      <div class="top-actions"><button type="button" class="sound-btn icon-btn" id="sound-toggle" aria-label="Выключить звуки" aria-pressed="true" title="Звуки включены">♫</button><button type="button" class="icon-btn" id="settings-toggle" aria-label="Перейти к настройкам">⚙</button></div>
-    </header>
-
-    <main id="main-content">
-      <div class="app-view" id="view-habits" data-view-panel="habits">
-        <section class="today-dashboard" aria-label="Краткий итог дня"><span class="sky-veil" aria-hidden="true"></span><div class="today-greeting"><div><span class="tiny-upper">ТВОЙ СЕГОДНЯШНИЙ РИТМ</span><h1 id="today-headline">Сегодня — твой день</h1><p id="today-message">Один шаг тоже считается.</p></div><div class="today-progress" id="today-progress" style="--today-percent:0"><strong id="today-count">0/8</strong><small>выполнено</small></div></div><div class="today-bottom"><span id="today-date-label">Сегодня</span><button id="jump-today" type="button" hidden>Вернуться к сегодня →</button></div></section>
-        <section class="section habits-section" aria-labelledby="habits-title">
-        <div class="section-head habit-section-head"><div><span class="section-kicker">01 / КАЖДЫЙ ДЕНЬ</span><h2 id="habits-title">Маленькие победы</h2></div><div class="habit-head-actions"><span class="mini-pill" id="active-day-label">Сегодня</span><button type="button" id="calendar-toggle" class="calendar-toggle" aria-expanded="false" aria-controls="calendar-panel">▦ <span>Календарь</span></button></div></div>
-        <p class="section-desc">Восемь маленьких целей: движение, здоровье и развитие. Выбирай свой темп.</p>
-        <div class="day-nav"><button class="day-move" id="prev-day" aria-label="Предыдущий день">‹</button><div id="days" class="days" aria-label="Выбор дня"></div><button class="day-move" id="next-day" aria-label="Следующий день">›</button></div>
-        <div id="calendar-panel" class="calendar-panel" hidden>
+<div id="app" class="shell"><header class="topbar cinematic-header">
+<button type="button" class="header-icon" id="settings-toggle" aria-label="Открыть настройки">⚙</button>
+<div class="brand centered-brand"><img class="brand-wordmark" src="./assets/ritm-cloud-lettering.webp" draggable="false" alt="тима осадок" width="180" height="86"></div>
+<button type="button" class="header-icon" id="header-calendar" aria-label="Открыть календарь">▦</button></header>
+<main id="main-content"><div class="app-view" id="view-habits" data-view-panel="habits">
+<section class="date-strip" aria-label="Выбор дня"><div class="day-nav"><button class="day-move" id="prev-day" aria-label="Предыдущий день">‹</button><div id="days" class="days" aria-label="Выбор дня"></div><button class="day-move" id="next-day" aria-label="Следующий день">›</button></div><div class="date-strip-detail"><span class="mini-pill" id="active-day-label">Сегодня</span><button type="button" class="calendar-toggle" id="calendar-toggle" aria-controls="calendar-panel" aria-expanded="false">Весь календарь <span>↗</span></button></div><div id="calendar-panel" class="calendar-panel" hidden>
   <div class="calendar-panel-top"><div><span class="section-kicker">ИСТОРИЯ ПО ДНЯМ</span><h3>Твой календарь</h3></div><button type="button" id="calendar-close" class="calendar-close" aria-label="Закрыть календарь">×</button></div>
   <div class="calendar-month-nav"><button id="calendar-prev" type="button" aria-label="Предыдущий месяц">‹</button><strong id="calendar-month-title">Октябрь 2026</strong><button id="calendar-next" type="button" aria-label="Следующий месяц">›</button></div>
   <div class="calendar-weekdays" aria-hidden="true"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
   <div id="calendar-month-grid" class="calendar-month-grid" role="group" aria-label="Дни месяца"></div>
   <div class="calendar-legend"><span><i class="dot dot-done"></i> Выполнено</span><span><i class="dot dot-today"></i> Сегодня</span><span><i class="dot dot-empty"></i> Без записей</span></div>
   <p class="calendar-caption">Дата берётся из календаря твоего телефона. Записи привязаны к каждому дню.</p>
-</div>
-<div id="habit-list" class="habits" aria-live="off"></div>
-
-
-        <section class="sleep-card" aria-labelledby="sleep-card-title">
-          <div class="sleep-heading"><div class="sleep-symbol" aria-hidden="true">☾</div><div><span class="section-kicker">НОЧНОЙ РИТМ</span><h3 id="sleep-card-title">Режим сна</h3><p>Отмечай, когда уснул и когда проснулся. День записи — день пробуждения.</p></div></div>
-          <form id="sleep-form" class="sleep-form">
-            <label><span>🌙 Уснул</span><input type="time" id="sleep-bed" aria-label="Время засыпания"></label>
-            <label><span>☀️ Проснулся</span><input type="time" id="sleep-wake" aria-label="Время пробуждения"></label>
-            <button type="submit" class="sleep-save">Сохранить сон</button>
-          </form>
-          <div class="sleep-result" id="sleep-result" aria-live="polite">Пока нет записи за выбранный день</div>
-        </section>
-        <details class="journal-card"><summary><span>✎</span><span><strong>Заметки дня</strong><small>Как прошёл день, что помогло тебе?</small></span><span class="journal-chevron">⌄</span></summary><div class="journal-content"><label for="day-note" class="visually-hidden">Заметка за день</label><textarea id="day-note" placeholder="Что сегодня получилось? Что хочется запомнить?" maxlength="2000" rows="4"></textarea><span id="note-status" class="note-status">Сохраняется автоматически</span></div></details>
-      </section>
-      </div>
-      <div class="app-view" id="view-weight" data-view-panel="weight" hidden>
-        <section class="section tracking" aria-labelledby="weight-title">
-        <div class="section-head"><div><span class="section-kicker">02 / ТВОИ ЦИФРЫ</span><h2 id="weight-title">Вес и питание</h2></div><span class="soft-icon">↗</span></div>
-        <div class="measure-grid">
-          <form class="entry" id="weight-form"><label for="weight-input">Вес, кг</label><div class="entry-row"><input id="weight-input" inputmode="decimal" type="number" min="25" max="350" step="0.1" placeholder="Например, 85" required><button type="submit">Сохранить</button></div><span class="field-hint">Необязательно взвешиваться каждый день.</span></form>
-          <form class="entry" id="cal-form"><label for="cal-input">Калории за день</label><div class="entry-row"><input id="cal-input" inputmode="numeric" type="number" min="0" max="10000" step="1" placeholder="Если считаешь" required><button type="submit">Записать</button></div><span class="field-hint" id="cal-hint">Можно пропускать без последствий.</span></form>
-        </div>
-        <div class="chart-head"><strong>Как меняется вес</strong><span id="chart-caption">Появится после первой записи</span></div>
-        <div class="chart-box"><svg id="weight-chart" viewBox="0 0 640 210" role="img" aria-label="График изменений веса"></svg></div>
-      </section>
-      </div>
-      <div class="app-view" id="view-week" data-view-panel="week" hidden>
-        <section class="hero hero-compact" aria-label="Твой ритм">
-        <div class="hero-top"><div class="eyebrow"><span class="live-dot"></span> ДЕНЬ ЗА ДНЁМ <span class="eyebrow-divider">/</span> В СВОЁМ РИТМЕ</div><span class="hero-tag">Без гонки. Только движение.</span></div>
-        <div class="hero-bottom"><span id="human-date"></span><span class="hero-streak" id="week-summary">Неделя начинается ✨</span></div>
-      </section>
-        <section class="overview" aria-label="Мои показатели">
-        <div class="stat"><div class="stat-label">ПОСЛЕДНИЙ ВЕС</div><strong id="current-weight">—</strong><span id="weight-caption">Первая запись впереди</span></div>
-        <div class="stat"><div class="stat-label">ЦЕЛЬ</div><strong id="goal-value">70 <small>кг</small></strong><span>В своём темпе</span></div>
-        <div class="stat"><div class="stat-label">ПРОГРЕСС ДНЯ</div><strong id="done-counter">0<small>/8</small></strong><span id="daily-caption">Всё впереди</span></div>
-      </section>
-        <section class="section insight" aria-labelledby="momentum-title"><div class="section-head"><div><span class="section-kicker">03 / ДЛИННАЯ ДИСТАНЦИЯ</span><h2 id="momentum-title">Твоя неделя</h2></div><span class="soft-icon">✺</span></div><div class="week-grid" id="week-grid"></div><p class="insight-copy" id="week-insight">Начни с одного маленького действия — этого достаточно, чтобы сдвинуться с места.</p></section>
-        <section class="analytics-panel" id="analytics" aria-labelledby="analytics-title">
+</div></section>
+<section class="today-dashboard glass-card" aria-label="Прогресс дня"><span class="sky-veil" aria-hidden="true"></span>
+<div class="progress-top"><h1 id="today-headline">Прогресс дня</h1><span class="subtle-spark" aria-hidden="true">✳</span></div>
+<div class="today-greeting"><div class="today-progress" id="today-progress" style="--today-percent:0"><strong id="today-percent">0%</strong><small id="today-count">0 из 8</small></div>
+<div class="today-progress-detail"><p id="today-message">Держишь темп, брат. Главное — не останавливаться.</p>
+<div class="today-summary-tiles">
+<div class="summary-mini"><span class="summary-icon success">✓</span><strong id="summary-done">0</strong><small>выполнено</small></div>
+<div class="summary-mini"><span class="summary-icon pending">◯</span><strong id="summary-left">8</strong><small>осталось</small></div>
+<div class="summary-mini"><span class="summary-icon missed">✕</span><strong id="summary-skip">0</strong><small>пропущено</small></div>
+<div class="summary-mini"><span class="summary-icon fire">♨</span><strong id="summary-streak">0</strong><small>дней подряд</small></div></div></div></div>
+<div class="today-bottom"><span id="today-date-label">Сегодня</span><button type="button" id="jump-today" hidden>Вернуться к сегодня →</button></div></section>
+<section class="habit-showcase glass-card" aria-labelledby="habits-title"><div class="showcase-head"><h2 id="habits-title">Привычки</h2><button type="button" id="expand-habits" aria-controls="habit-list-container" aria-expanded="false">Все привычки <span>›</span></button></div>
+<div class="habit-preview" id="habit-preview" role="list" aria-label="Быстрые отметки привычек"></div><div class="habit-full-details" id="habit-list-container" hidden><p>Здесь можно отметить пропуск или сбросить отметку.</p><div id="habit-list" class="habits" aria-live="off"></div></div></section>
+<div class="overview-duo">
+<section class="mini-overview sleep-overview glass-card" aria-label="Сон">
+<button id="open-sleep" class="mini-overview-head" type="button"><span class="sleep-icon">☾</span><strong>Сон</strong><span class="mini-arrow">›</span></button>
+<div class="mini-sleep-grid"><div><span>Уснул</span><strong id="sleep-mini-bed">—</strong></div><div><span>Проснулся</span><strong id="sleep-mini-wake">—</strong></div></div>
+<div class="sleep-mini-foot"><span>Продолжительность</span><strong id="sleep-mini-total">Нет записи</strong></div></section>
+<section class="mini-overview weight-overview glass-card" aria-label="Вес">
+<button id="open-weight" class="mini-overview-head" type="button"><span class="weight-icon">▥</span><strong>Вес</strong><span class="mini-arrow">›</span></button>
+<strong class="weight-mini-value" id="weight-mini-value">—</strong><p id="weight-mini-change">Добавь первый вес</p><svg id="weight-mini-chart" class="weight-mini-chart" viewBox="0 0 330 110" role="img" aria-label="Мини-график веса"></svg></section></div>
+<section class="analytics-panel" id="analytics" aria-labelledby="analytics-title">
           <div class="analytics-head">
             <div><span class="section-kicker">ТВОИ ЦИФРЫ</span><h3 id="analytics-title">Аналитика</h3></div>
             <div class="analytics-tabs" role="group" aria-label="Период статистики">
@@ -111,15 +86,42 @@
           </div>
           <div class="analytics-detail-head"><span>Привычки за период</span><span id="analytics-period-label">Сегодня</span></div>
           <div class="analytics-habits" id="analytics-habits"></div>
-          <p class="analytics-footnote" id="analytics-footnote">Процент считается от шести привычек в день.</p>
-        </section>
-      </div>
-      <div class="app-view" id="view-settings" data-view-panel="settings" hidden>
+          <p class="analytics-footnote" id="analytics-footnote">Процент считается от шести привычек в день.</p></section>
+<details class="sleep-editor glass-card" id="sleep-editor"><summary><span>☾</span> Записать время сна <span class="summary-tail">⌄</span></summary><section class="sleep-card" aria-labelledby="sleep-card-title">
+          <div class="sleep-heading"><div class="sleep-symbol" aria-hidden="true">☾</div><div><span class="section-kicker">НОЧНОЙ РИТМ</span><h3 id="sleep-card-title">Режим сна</h3><p>Отмечай, когда уснул и когда проснулся. День записи — день пробуждения.</p></div></div>
+          <form id="sleep-form" class="sleep-form">
+            <label><span>🌙 Уснул</span><input type="time" id="sleep-bed" aria-label="Время засыпания"></label>
+            <label><span>☀️ Проснулся</span><input type="time" id="sleep-wake" aria-label="Время пробуждения"></label>
+            <button type="submit" class="sleep-save">Сохранить сон</button>
+          </form>
+          <div class="sleep-result" id="sleep-result" aria-live="polite">Пока нет записи за выбранный день</div>
+        </section></details>
+<details class="journal-card"><summary><span>✎</span><span><strong>Заметки дня</strong><small>Как прошёл день, что помогло тебе?</small></span><span class="journal-chevron">⌄</span></summary><div class="journal-content"><label for="day-note" class="visually-hidden">Заметка за день</label><textarea id="day-note" placeholder="Что сегодня получилось? Что хочется запомнить?" maxlength="2000" rows="4"></textarea><span id="note-status" class="note-status">Сохраняется автоматически</span></div></details>
+</div><div class="app-view" id="view-weight" data-view-panel="weight" hidden>
+        <section class="section tracking" aria-labelledby="weight-title">
+        <div class="section-head"><div><span class="section-kicker">02 / ТВОИ ЦИФРЫ</span><h2 id="weight-title">Вес и питание</h2></div><span class="soft-icon">↗</span></div>
+        <div class="measure-grid">
+          <form class="entry" id="weight-form"><label for="weight-input">Вес, кг</label><div class="entry-row"><input id="weight-input" inputmode="decimal" type="number" min="25" max="350" step="0.1" placeholder="Например, 85" required><button type="submit">Сохранить</button></div><span class="field-hint">Необязательно взвешиваться каждый день.</span></form>
+          <form class="entry" id="cal-form"><label for="cal-input">Калории за день</label><div class="entry-row"><input id="cal-input" inputmode="numeric" type="number" min="0" max="10000" step="1" placeholder="Если считаешь" required><button type="submit">Записать</button></div><span class="field-hint" id="cal-hint">Можно пропускать без последствий.</span></form>
+        </div>
+        <div class="chart-head"><strong>Как меняется вес</strong><span id="chart-caption">Появится после первой записи</span></div>
+        <div class="chart-box"><svg id="weight-chart" viewBox="0 0 640 210" role="img" aria-label="График изменений веса"></svg></div>
+      </section>
+      </div><div class="app-view" id="view-week" data-view-panel="week" hidden>
+        <section class="hero hero-compact" aria-label="Твой ритм">
+        <div class="hero-top"><div class="eyebrow"><span class="live-dot"></span> ДЕНЬ ЗА ДНЁМ <span class="eyebrow-divider">/</span> В СВОЁМ РИТМЕ</div><span class="hero-tag">Без гонки. Только движение.</span></div>
+        <div class="hero-bottom"><span id="human-date"></span><span class="hero-streak" id="week-summary">Неделя начинается ✨</span></div>
+      </section>
+        <section class="overview" aria-label="Мои показатели">
+        <div class="stat"><div class="stat-label">ПОСЛЕДНИЙ ВЕС</div><strong id="current-weight">—</strong><span id="weight-caption">Первая запись впереди</span></div>
+        <div class="stat"><div class="stat-label">ЦЕЛЬ</div><strong id="goal-value">70 <small>кг</small></strong><span>В своём темпе</span></div>
+        <div class="stat"><div class="stat-label">ПРОГРЕСС ДНЯ</div><strong id="done-counter">0<small>/8</small></strong><span id="daily-caption">Всё впереди</span></div>
+      </section>
+        <section class="section insight" aria-labelledby="momentum-title"><div class="section-head"><div><span class="section-kicker">03 / ДЛИННАЯ ДИСТАНЦИЯ</span><h2 id="momentum-title">Твоя неделя</h2></div><span class="soft-icon">✺</span></div><div class="week-grid" id="week-grid"></div><p class="insight-copy" id="week-insight">Начни с одного маленького действия — этого достаточно, чтобы сдвинуться с места.</p></section>
+        </div><div class="app-view" id="view-settings" data-view-panel="settings" hidden>
         <section class="settings section" id="settings" aria-labelledby="settings-title"><div class="section-head"><div><span class="section-kicker">РИТМ / НАСТРОЙКИ</span><h2 id="settings-title">Под себя</h2></div></div><form id="goal-form" class="goal-form"><label for="goal-input">Мой желаемый вес, кг</label><div class="entry-row"><input type="number" id="goal-input" min="25" max="350" step="0.1" required><button type="submit">Изменить</button></div></form><div class="install-guide"><span class="install-guide-icon" aria-hidden="true">↗</span><div><strong>РИТМ на экране iPhone</strong><p><b>1.</b> Открой эту страницу именно в Safari (не внутри Telegram или ChatGPT). <b>2.</b> Нажми значок «Поделиться» — квадрат со стрелкой вверх, обычно внизу Safari. <b>3.</b> Прокрути меню вниз и выбери «На экран Домой», затем «Добавить».</p><p>Не видишь этот пункт? Прокрути меню до «Изменить действия» или открой меню страницы Safari и найди «На экран Домой». Названия могут различаться в версиях iOS.</p><p>При запуске с домашнего экрана интерфейса Safari не будет.</p></div></div><div class="personal-profile"><div><span class="section-kicker">ЛИЧНЫЙ ПРОФИЛЬ</span><h3>РИТМ под тебя</h3><p>У каждого человека свои записи. Укажи имя, которое будет показываться только на твоём устройстве.</p></div><form id="profile-form" class="profile-form"><label for="profile-name">Как к тебе обращаться</label><div class="entry-row"><input id="profile-name" type="text" maxlength="30" autocomplete="nickname" placeholder="Например, Тима"><button type="submit">Сохранить</button></div></form></div>
-<div class="backup"><button id="export-btn" type="button" class="ghost">↓ Скачать резервную копию</button><label class="ghost upload">↑ Загрузить копию<input type="file" id="import-file" accept="application/json,.json" hidden></label></div><p class="tiny">Данные хранятся на этом устройстве в браузере. Пока нет синхронизации между устройствами. У каждого пользователя свои локальные данные. Не удаляй данные браузера без резервной копии.</p></section>
-      </div>
-    </main>
-    <aside id="ios-install-tip" class="ios-install-tip" hidden><strong>РИТМ на главном экране</strong><p>Safari → Поделиться → На экран «Домой»</p><button type="button" id="dismiss-install" aria-label="Закрыть подсказку">×</button></aside>
+<div class="audio-preference"><div><strong>Звуки интерфейса</strong><span>Короткие сигналы при выполнении привычек</span></div><button type="button" id="sound-toggle" class="sound-btn icon-btn" aria-label="Выключить звуки" aria-pressed="true">♫</button></div><div class="backup"><button id="export-btn" type="button" class="ghost">↓ Скачать резервную копию</button><label class="ghost upload">↑ Загрузить копию<input type="file" id="import-file" accept="application/json,.json" hidden></label></div><p class="tiny">Данные хранятся на этом устройстве в браузере. Пока нет синхронизации между устройствами. У каждого пользователя свои локальные данные. Не удаляй данные браузера без резервной копии.</p></section>
+      </div></main>    <aside id="ios-install-tip" class="ios-install-tip" hidden><strong>РИТМ на главном экране</strong><p>Safari → Поделиться → На экран «Домой»</p><button type="button" id="dismiss-install" aria-label="Закрыть подсказку">×</button></aside>
     <nav class="bottom-nav" aria-label="Разделы приложения">
       <button type="button" data-view="habits" class="nav-tab selected" aria-current="page"><span>✓</span>Привычки</button>
       <button type="button" data-view="weight" class="nav-tab"><span>⚖</span>Вес</button>
@@ -129,6 +131,6 @@
   </div>
   <div class="celebration" id="celebration" role="status" aria-live="polite" aria-atomic="true"><span id="toast-icon">✨</span><strong id="toast-title"></strong><p id="toast-desc"></p></div>
   <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
-  <script src="./app.js?v=14" defer></script>
+  <script src="./app.js?v=15" defer></script>
 </body>
 </html>
