@@ -1,5 +1,5 @@
-const CACHE='ritm-shell-v11';
-const ASSETS=['./','./index.html','./styles.css?v=11','./app.js?v=11','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
+const CACHE='ritm-shell-v12';
+const ASSETS=['./','./index.html','./styles.css?v=12','./app.js?v=12','./manifest.webmanifest','./sounds/success.wav','./sounds/impact.wav','./sounds/soft-no.wav','./sounds/tap.wav','./sounds/warm.wav','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(ASSETS.map(path=>cache.add(path)))).then(()=>self.skipWaiting()));
 });
