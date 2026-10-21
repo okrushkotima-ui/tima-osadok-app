@@ -1,0 +1,54 @@
+{
+  "name": "ritm-by-tima-osadok",
+  "version": "1.0.0",
+  "private": true,
+  "description": "РИТМ — личный трекер привычек, веса и сна",
+  "main": "desktop/main.cjs",
+  "author": "Тима Осадок",
+  "license": "UNLICENSED",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "ru.timaosadok.ritm",
+    "productName": "РИТМ",
+    "directories": {
+      "output": "dist"
+    },
+    "asar": true,
+    "files": [
+      "desktop/**/*",
+      "index.html",
+      "app.js",
+      "styles.css",
+      "manifest.webmanifest",
+      "icons/**/*",
+      "sounds/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "icons/app.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "РИТМ",
+      "artifactName": "RITM-Setup-${version}-${arch}.${ext}"
+    }
+  }
+}
