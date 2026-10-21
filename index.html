@@ -4,27 +4,27 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b1020">
-  <meta name="description" content="РИТМ — привычки, вес и маленькие победы каждый день.">
+  <meta name="description" content="РИТМ by тима осадок — привычки, движение и маленькие победы каждый день.">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="РИТМ">
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
   <link rel="icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css">
-  <title>РИТМ — твой прогресс</title>
+  <link rel="stylesheet" href="./styles.css?v=8">
+  <title>РИТМ — by тима осадок</title>
 </head>
 <body>
   <div id="app" class="shell">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark" aria-hidden="true">Р</span><span>РИТМ <small style="font-size:0.65em;text-transform:none;letter-spacing:0.02em">by тима осадок</small></span></div>
-      <button type="button" class="icon-btn" id="settings-toggle" aria-label="Настройки и резервная копия" aria-expanded="false">⚙</button>
+      <div class="brand"><span class="brand-mark" aria-hidden="true">Р</span><span class="brand-name">РИТМ <small>by тима осадок</small></span></div>
+      <div class="top-actions"><button type="button" class="sound-btn icon-btn" id="sound-toggle" aria-label="Выключить звуки" aria-pressed="true" title="Звуки включены">♫</button><button type="button" class="icon-btn" id="settings-toggle" aria-label="Настройки и резервная копия" aria-expanded="false">⚙</button></div>
     </header>
     <main>
       <section class="hero" aria-labelledby="hero-title">
-        <div class="eyebrow"><span class="live-dot"></span> ТИМА ОСАДОК ТРЕКЕР <span class="eyebrow-divider">/</span> ТВОЙ НОВЫЙ ДЕНЬ</div>
+        <div class="eyebrow"><span class="live-dot"></span> РИТМ <span class="eyebrow-divider">/</span> ТВОЙ НОВЫЙ ДЕНЬ</div>
         <h1 id="hero-title">Твоя форма.<br><em>Твои правила.</em></h1>
-        <p class="hero-sub">Не идеальный день, а ещё один шаг вперёд. РИТМ — без скучных клеток и чувства вины.</p>
+        <p class="hero-sub">Маленькие шаги. Большие перемены. Выбирай свой темп — и возвращайся к нему каждый день.</p>
         <div class="hero-bottom"><span id="human-date"></span><span class="hero-streak" id="week-summary">Неделя начинается ✨</span></div>
       </section>
       <section class="overview" aria-label="Мои показатели">
@@ -55,6 +55,6 @@
   </div>
   <div class="celebration" id="celebration" role="status" aria-live="polite" aria-atomic="true"><span id="toast-icon">✨</span><strong id="toast-title"></strong><p id="toast-desc"></p></div>
   <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
-  <script src="./app.js" defer></script>
+  <script src="./app.js?v=8" defer></script>
 </body>
 </html>
