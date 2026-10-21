@@ -3,26 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#0b1020">
+  <meta name="theme-color" content="#080b10">
   <meta name="description" content="РИТМ by тима осадок — привычки, движение и маленькие победы каждый день.">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="РИТМ">
   <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <link rel="icon" href="./icons/icon-192.png">
-  <link rel="stylesheet" href="./styles.css?v=12">
+  <link rel="apple-touch-icon" href="./icons/ritm-192.png">
+  <link rel="icon" href="./icons/ritm-192.png">
+  <link rel="stylesheet" href="./styles.css?v=13">
   <title>РИТМ — by тима осадок</title>
 </head>
 <body>
   <div id="app" class="shell">
     <header class="topbar">
-      <div class="brand"><span class="brand-mark brand-cloud" aria-hidden="true"><span class="cloud-tima">тима</span><span class="cloud-osadok">осадок</span></span><span class="brand-name">РИТМ <small>by тима осадок</small></span></div>
+      <div class="brand"><img class="brand-wordmark" src="./assets/ritm-cloud-lettering.webp" draggable="false" alt="тима осадок" width="145" height="69"><span class="brand-name">РИТМ <small>день за днём</small></span></div>
       <div class="top-actions"><button type="button" class="sound-btn icon-btn" id="sound-toggle" aria-label="Выключить звуки" aria-pressed="true" title="Звуки включены">♫</button><button type="button" class="icon-btn" id="settings-toggle" aria-label="Перейти к настройкам">⚙</button></div>
     </header>
 
     <main id="main-content">
       <div class="app-view" id="view-habits" data-view-panel="habits">
+        <section class="today-dashboard" aria-label="Краткий итог дня"><div class="today-greeting"><div><span class="tiny-upper">ТВОЙ СЕГОДНЯШНИЙ РИТМ</span><h1 id="today-headline">Сегодня — твой день</h1><p id="today-message">Один шаг тоже считается.</p></div><div class="today-progress" id="today-progress" style="--today-percent:0"><strong id="today-count">0/6</strong><small>выполнено</small></div></div><div class="today-bottom"><span id="today-date-label">Сегодня</span><button id="jump-today" type="button" hidden>Вернуться к сегодня →</button></div></section>
         <section class="section habits-section" aria-labelledby="habits-title">
         <div class="section-head"><div><span class="section-kicker">01 / КАЖДЫЙ ДЕНЬ</span><h2 id="habits-title">Маленькие победы</h2></div><span class="mini-pill" id="active-day-label">Сегодня</span></div>
         <p class="section-desc">Нажми «Сделано» — устроим праздник. Пропуск тоже можно отметить без чувства вины.</p>
@@ -39,6 +42,7 @@
           </form>
           <div class="sleep-result" id="sleep-result" aria-live="polite">Пока нет записи за выбранный день</div>
         </section>
+        <details class="journal-card"><summary><span>✎</span><span><strong>Заметки дня</strong><small>Как прошёл день, что помогло тебе?</small></span><span class="journal-chevron">⌄</span></summary><div class="journal-content"><label for="day-note" class="visually-hidden">Заметка за день</label><textarea id="day-note" placeholder="Что сегодня получилось? Что хочется запомнить?" maxlength="2000" rows="4"></textarea><span id="note-status" class="note-status">Сохраняется автоматически</span></div></details>
       </section>
       </div>
       <div class="app-view" id="view-weight" data-view-panel="weight" hidden>
@@ -103,9 +107,10 @@
         </section>
       </div>
       <div class="app-view" id="view-settings" data-view-panel="settings" hidden>
-        <section class="settings section" id="settings" aria-labelledby="settings-title"><div class="section-head"><div><span class="section-kicker">РИТМ / НАСТРОЙКИ</span><h2 id="settings-title">Под себя</h2></div></div><form id="goal-form" class="goal-form"><label for="goal-input">Мой желаемый вес, кг</label><div class="entry-row"><input type="number" id="goal-input" min="25" max="350" step="0.1" required><button type="submit">Изменить</button></div></form><div class="backup"><button id="export-btn" type="button" class="ghost">↓ Скачать резервную копию</button><label class="ghost upload">↑ Загрузить копию<input type="file" id="import-file" accept="application/json,.json" hidden></label></div><p class="tiny">Данные хранятся на этом устройстве в браузере. Пока нет синхронизации между iPhone и Windows. Не удаляй данные браузера без резервной копии.</p></section>
+        <section class="settings section" id="settings" aria-labelledby="settings-title"><div class="section-head"><div><span class="section-kicker">РИТМ / НАСТРОЙКИ</span><h2 id="settings-title">Под себя</h2></div></div><form id="goal-form" class="goal-form"><label for="goal-input">Мой желаемый вес, кг</label><div class="entry-row"><input type="number" id="goal-input" min="25" max="350" step="0.1" required><button type="submit">Изменить</button></div></form><div class="install-guide"><span class="install-guide-icon" aria-hidden="true">↗</span><div><strong>Установить РИТМ на iPhone</strong><p>Открой сайт в Safari → нажми «Поделиться» → «На экран Домой» → «Добавить». РИТМ будет запускаться без панели Safari.</p></div></div><div class="backup"><button id="export-btn" type="button" class="ghost">↓ Скачать резервную копию</button><label class="ghost upload">↑ Загрузить копию<input type="file" id="import-file" accept="application/json,.json" hidden></label></div><p class="tiny">Данные хранятся на этом устройстве в браузере. Пока нет синхронизации между iPhone и Windows. Не удаляй данные браузера без резервной копии.</p></section>
       </div>
     </main>
+    <aside id="ios-install-tip" class="ios-install-tip" hidden><strong>РИТМ на главном экране</strong><p>Safari → Поделиться → На экран «Домой»</p><button type="button" id="dismiss-install" aria-label="Закрыть подсказку">×</button></aside>
     <nav class="bottom-nav" aria-label="Разделы приложения">
       <button type="button" data-view="habits" class="nav-tab selected" aria-current="page"><span>✓</span>Привычки</button>
       <button type="button" data-view="weight" class="nav-tab"><span>⚖</span>Вес</button>
@@ -115,6 +120,6 @@
   </div>
   <div class="celebration" id="celebration" role="status" aria-live="polite" aria-atomic="true"><span id="toast-icon">✨</span><strong id="toast-title"></strong><p id="toast-desc"></p></div>
   <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
-  <script src="./app.js?v=12" defer></script>
+  <script src="./app.js?v=13" defer></script>
 </body>
 </html>
