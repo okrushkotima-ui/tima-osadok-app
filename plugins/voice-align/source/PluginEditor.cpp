@@ -92,7 +92,7 @@ void SyncEditor::paint(juce::Graphics &g){
     g.setColour(gold);g.setFont(juce::Font(14.f));
     g.drawText(juce::String::fromUTF8("by тима осадок"),769,36,220,28,juce::Justification::centredRight);
     g.setColour(muted);g.setFont(juce::Font(10.6f));
-    g.drawText("VOCAL STACK / ALIGN TIMING + OPTIONAL TUNE NOTES / DRAG RESULTS",39,81,820,18,juce::Justification::centredLeft);
+    g.drawText("VOCAL STACK  /  ALL BACKS IN ONE SESSION  /  F5: BROWSER  /  CTRL+F2: FLOAT EDITOR",39,81,900,18,juce::Justification::centredLeft);
     g.setColour(juce::Colour(0xff39424a));g.drawHorizontalLine(113,35,993);
     auto card=[&](juce::Rectangle<float> rect,juce::Colour stroke){
         g.setColour(juce::Colours::black.withAlpha(.28f));g.fillRoundedRectangle(rect.translated(0,6),14);
@@ -234,8 +234,10 @@ void SyncEditor::importHostEvents(bool importLead){
         for(auto *region:seq->getPlaybackRegions())addRegion(region);
     // Each back can have its own Event FX instance. Collect ALL live docs.
     std::vector<juce::ARAPlaybackRegion*> external;
-    synchronCollectActiveARARegions(external);
-    for(auto *region:external)addRegion(region);
+    if(!importLead) {
+        synchronCollectActiveARARegions(external);
+        for(auto *region:external)addRegion(region);
+    }
     std::sort(regions.begin(),regions.end(),[](auto *a,auto *b){
         return a->getStartInPlaybackTime()<b->getStartInPlaybackTime();
     });
