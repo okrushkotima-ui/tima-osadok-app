@@ -1,15 +1,19 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
-class SyncProcessor final:public juce::AudioProcessor {
+class SyncProcessor final:public juce::AudioProcessor, public juce::AudioProcessorARAExtension {
 public:
     SyncProcessor():juce::AudioProcessor(BusesProperties().withInput("Input",juce::AudioChannelSet::stereo(),true).withOutput("Output",juce::AudioChannelSet::stereo(),true)){}
-    void prepareToPlay(double,int) override {}
-    void releaseResources() override {}
+    void prepareToPlay(double sr,int block) override { prepareToPlayForARA(sr,block,getMainBusNumOutputChannels(),getProcessingPrecision()); }
+    void releaseResources() override {releaseResourcesForARA();}
     bool isBusesLayoutSupported(const BusesLayout &layout) const override {
         const auto main=layout.getMainInputChannelSet();
         return (main==juce::AudioChannelSet::mono()||main==juce::AudioChannelSet::stereo()) && main==layout.getMainOutputChannelSet();
     }
-    void processBlock(juce::AudioBuffer<float>&,juce::MidiBuffer&) override {}
+    void processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffer&) override {
+        processBlockForARA(buffer,isRealtime(),getPlayHead());
+    }
+    juce::AudioProcessorARAExtension* getARAClientExtensions() override {return this;}
+    juce::ARAEditorRenderer* hostEditorRenderer() const noexcept {return getEditorRenderer();}
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override {return true;}
     const juce::String getName() const override {return JucePlugin_Name;}
