@@ -1,4 +1,5 @@
 #include "SidechainEngine.h"
+#include "KickScope.h"
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
@@ -46,7 +47,35 @@ try{
             require(std::abs(lowBand.process(x,1.f)-x)<1.e-5f,"low-band unity null fail");
         }
     }
-    std::cout<<"PASS: curves, triggers, tempo, dry bypass, bass-only at 44.1/48/96/192 kHz\n";
+    // The scope follows the actual kick transient, and never shows old
+    // captures as part of a newly triggered cycle.
+    sidechain::KickScope scope;
+    scope.reset();
+    scope.next(0.f,.9f,.2f,true,true);
+    for(int i=1;i<=300;++i)
+        scope.next(i/400.f,.9f*std::exp(-i/35.f),.2f+.002f*i,false,true);
+    auto view=scope.read();
+    require(view.valid,"kick scope missing waveform");
+    require(view.kick[0]>.7f,"kick attack peak missing");
+    require(view.kick[150]<view.kick[0],"kick tail is not decaying");
+    require(view.appliedGain[0]<.3f,"applied gain trace missing");
+    const auto oldEpoch=view.generation;
+    scope.next(0.f,.7f,.15f,true,true);
+    view=scope.read();
+    require(view.generation!=oldEpoch,"kick trigger did not reset capture epoch");
+    require(view.seen[0] && !view.seen[250],"stale kick waveform leaked across triggers");
+    scope.next(.1f,0.f,.5f,false,false);
+    view=scope.read();
+    require(view.phase>=.99f,"inactive kick scope should park the playhead");
+    scope.reset();
+    for(int i=0;i<sidechain::KickScope::bins;++i)
+        scope.next(static_cast<float>(i)/sidechain::KickScope::bins,.5f,1.f,false,true);
+    auto firstCycle=scope.read();
+    scope.next(0.f,.8f,.25f,false,true);
+    auto nextCycle=scope.read();
+    require(nextCycle.generation!=firstCycle.generation,"tempo sync wrap not detected");
+    require(!nextCycle.seen[190],"previous cycle leaked");
+    std::cout<<"PASS: curves, triggers, tempo, dry bypass, bass-only, live kick scope at 44.1/48/96/192 kHz\n";
     return 0;
 }catch(const std::exception& e){std::cerr<<"FAIL: "<<e.what()<<"\n";return 1;}
 }

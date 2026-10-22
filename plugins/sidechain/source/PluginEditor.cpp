@@ -102,6 +102,11 @@ void SidechainEditor::timerCallback(){
     displayGain=processor.displayGain.load(std::memory_order_relaxed);
     displayKick=processor.displayKick.load(std::memory_order_relaxed);
     displayConnected=processor.sidechainConnected.load(std::memory_order_relaxed);
+    displayTempo=processor.displayTempo.load(std::memory_order_relaxed);
+    kickWave=processor.kickScope.read();
+    const auto hits=processor.triggerCount.load(std::memory_order_relaxed);
+    if(hits!=lastTriggerCount){lastTriggerCount=hits;triggerGlowFrames=7;}
+    else if(triggerGlowFrames>0)--triggerGlowFrames;
     repaint();
 }
 sidechain::Curve SidechainEditor::readCurve()const{
@@ -160,7 +165,7 @@ void SidechainEditor::paint(juce::Graphics&g){
     g.setColour(yellow);g.setFont(juce::Font(13.f));
     g.drawText(juce::String::fromUTF8("by тима осадок"),876,41,163,25,juce::Justification::centredRight);
     g.setColour(muted);g.setFont(juce::Font(12.f));
-    g.drawText("RHYTHM-SHAPED DUCKING   /   WINDOWS VST3   /   v0.1.0",43,84,440,24,juce::Justification::centredLeft);
+    g.drawText("KICK WAVEFORM MONITOR  /  LIVE GAIN TRACE  /  v0.2.0",43,84,470,24,juce::Justification::centredLeft);
     g.setColour(line);g.drawHorizontalLine(141,40,1039);
     g.setColour(muted);g.setFont(juce::Font(10.f,juce::Font::bold));
     g.drawText("TRIGGER",526,76,155,17,juce::Justification::centredLeft);
@@ -177,6 +182,77 @@ void SidechainEditor::paint(juce::Graphics&g){
         const float x=graph.getX()+column*graph.getWidth()/8;
         g.setColour(line.withAlpha(.37f));g.drawVerticalLine(static_cast<int>(x),graph.getY(),graph.getBottom());
     }
+    // Live kick signal uses the same time axis as the actual gain envelope.
+    // The raw sidechain peak is autoscaled for visibility, while the numeric
+    // peak and threshold labels preserve the physical amplitude information.
+    const float phaseShift=static_cast<float>(shift.getValue());
+    const auto wrapPhase=[](float x){return x-std::floor(x);};
+    const float kickBaseY=graph.getY()+graph.getHeight()*.61f;
+    const float maxAmp=std::max(.04f,*std::max_element(kickWave.kick.begin(),kickWave.kick.end()));
+    const float kickHeight=graph.getHeight()*.24f;
+    g.setColour(teal.withAlpha(.27f));
+    g.drawHorizontalLine(static_cast<int>(kickBaseY),graph.getX(),graph.getRight());
+    if(displayConnected && kickWave.valid){
+        juce::Path actualGain;
+        bool gainStarted=false;
+        float previousX=-1.f;
+        for(int i=0;i<sidechain::KickScope::bins;++i){
+            if(!kickWave.seen[static_cast<size_t>(i)]){gainStarted=false;continue;}
+            const float phase=(static_cast<float>(i)+.5f)/sidechain::KickScope::bins;
+            const float shifted=wrapPhase(phase+phaseShift);
+            const float x=graph.getX()+shifted*graph.getWidth();
+            const float amplitude=kickWave.kick[static_cast<size_t>(i)];
+            const float height=std::sqrt(std::max(0.f,amplitude/maxAmp))*kickHeight;
+            if(amplitude>0.001f){
+                g.setColour(teal.withAlpha(.15f+.60f*std::min(1.f,amplitude/maxAmp)));
+                g.drawVerticalLine(static_cast<int>(x),kickBaseY-height,kickBaseY+height);
+            }
+            // Gain trace uses a separate dotted-white line at the same phase.
+            // Keep the line disconnected at waveform wrap and missing bins.
+            const float yGain=graph.getBottom()-kickWave.appliedGain[static_cast<size_t>(i)]*graph.getHeight();
+            if(!gainStarted||x<previousX){actualGain.startNewSubPath(x,yGain);gainStarted=true;}
+            else actualGain.lineTo(x,yGain);
+            previousX=x;
+        }
+        g.setColour(cream.withAlpha(.75f));
+        juce::PathStrokeType stroke(1.2f);
+        const float dashes[2]={3.f,5.f};
+        juce::Path dashed;
+        stroke.createDashedStroke(dashed,actualGain,dashes,2);
+        g.strokePath(dashed,juce::PathStrokeType(1.2f));
+    }
+    // Trigger is the vertical golden marker; playhead follows the real cycle.
+    if(displayConnected){
+        const float triggerX=graph.getX()+wrapPhase(phaseShift)*graph.getWidth();
+        g.setColour(yellow.withAlpha(triggerGlowFrames>0?.88f:.31f));
+        g.drawVerticalLine(static_cast<int>(triggerX),graph.getY()+8,graph.getBottom()-8);
+        if(triggerGlowFrames>0){
+            g.setColour(yellow);
+            g.fillEllipse(triggerX-4,graph.getY()+6,8,8);
+        }
+    }
+    const float markerPhase=wrapPhase(kickWave.phase+phaseShift);
+    if(kickWave.valid && displayConnected && kickWave.phase<.999f){
+        const float marker=graph.getX()+markerPhase*graph.getWidth();
+        g.setColour(cream.withAlpha(.66f));
+        g.drawVerticalLine(static_cast<int>(marker),graph.getY()+7,graph.getBottom()-7);
+    }
+    g.setFont(juce::Font(11.f,juce::Font::bold));
+    g.setColour(teal);
+    g.drawText(displayConnected?"KICK  /  INPUT WAVEFORM":"KICK  /  NO SIDECHAIN INPUT",
+               58,188,310,19,juce::Justification::centredLeft);
+    g.setColour(muted);
+    g.setFont(juce::Font(10.f));
+    const float peakDb=20.f*std::log10(std::max(.00001f,maxAmp));
+    const auto note=displayConnected?
+        ("PEAK "+juce::String(peakDb,1)+" dB    /    THRESH "+juce::String(threshold.getValue(),1)+" dB"):
+        "ENABLE SIDECHAIN + SEND KICK TO SEE WAVE";
+    g.drawText(note,410,188,406,19,juce::Justification::centredRight);
+    g.setColour(teal.withAlpha(.70f));
+    g.setFont(juce::Font(10.f));
+    g.drawText("KICK ATTACK",58,graph.getBottom()-39,170,18,juce::Justification::centredLeft);
+    g.drawText("TAIL / RELEASE",600,graph.getBottom()-39,220,18,juce::Justification::centredRight);
+
     // The graph visualises the actual DSP curve, not a decorative approximation.
     juce::Path curve,under;
     for(int i=0;i<=500;++i){
@@ -201,7 +277,9 @@ void SidechainEditor::paint(juce::Graphics&g){
     }
     g.setColour(muted);g.setFont(juce::Font(10.f));
     g.drawText("DUCK",51,165,110,18,juce::Justification::centredLeft);
-    g.drawText("RECOVERY →",691,434,140,18,juce::Justification::centredRight);
+    const double cycleMs=60000.0/std::max(20.0,displayTempo)
+                            *sidechain::quarterNotes(length.getSelectedId()-1);
+    g.drawText(juce::String("0 ms  →  ")+juce::String(static_cast<int>(std::round(cycleMs)))+" ms",646,434,184,18,juce::Justification::centredRight);
     g.drawText("100%",48,146,70,17,juce::Justification::centredLeft);
 
     g.setColour(panel);g.fillRoundedRectangle(865.f,165.f,172.f,332.f,13.f);
@@ -234,8 +312,8 @@ void SidechainEditor::paint(juce::Graphics&g){
     g.setColour(teal);g.fillRoundedRectangle(x+106,barY,68*std::clamp(displayKick*2.5f,0.f,1.f),13,5);
     const auto activeMode=mode.getSelectedId();
     const auto status=activeMode==2?
-       (displayConnected?"AUDIO KICK: sidechain bus active. Send kick from Studio One.":
-                         "AUDIO KICK: enable sidechain in Studio One and route kick → Sidechain."):
+       (displayConnected?"KICK WAVE: teal  |  GAIN: white  |  CURVE: gold":
+                         "AUDIO KICK: enable sidechain and send kick from Studio One."):
        (activeMode==3?"MIDI: send note-on events to trigger ducking.":"SYNC: follows Studio One tempo. No routing required.");
     g.setColour(activeMode==2&&!displayConnected?yellow:teal);
     g.fillEllipse(864,572,8,8);
