@@ -34,9 +34,12 @@ private:
     blizhe::VocalEngine engine;
     std::unique_ptr<juce::dsp::Oversampling<float>> oversampling;
     juce::dsp::DryWetMixer<float> dryWet{64};
+    juce::SmoothedValue<float,juce::ValueSmoothingTypes::Linear> inputGainSmooth,outputGainSmooth;
     int latency=0,capacity=512;
     std::atomic<float>* amountParam=nullptr;
     std::atomic<float>* mixParam=nullptr;
     std::atomic<float>* enabledParam=nullptr;
+    std::atomic<float>* inputGainParam=nullptr;
+    std::atomic<float>* outputGainParam=nullptr;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BlizheProcessor)
 };
