@@ -184,6 +184,7 @@ inline double pitchHz(const Audio &a,int64_t sample) {
     }
     if(power/window<1.e-6)return 0;
     double bestScore=0;int bestLag=0;
+    std::vector<double> scores(static_cast<size_t>(maxLag+1),0);
     for(int lag=minLag;lag<=maxLag;++lag){
         double dot=0,p1=0,p2=0;
         for(int i=0;i<window-lag;++i){
@@ -191,9 +192,19 @@ inline double pitchHz(const Audio &a,int64_t sample) {
             dot+=x*y;p1+=x*x;p2+=y*y;
         }
         const double score=dot/std::sqrt(std::max(1.e-12,p1*p2));
+        scores[static_cast<size_t>(lag)]=score;
         if(score>bestScore){bestScore=score;bestLag=lag;}
     }
-    return bestScore>.70 && bestLag>0?rate/bestLag:0;
+    if(bestScore<=.70 || bestLag<=0)return 0;
+    // The earliest strong autocorrelation peak is the fundamental candidate;
+    // a global maximum alone often locks onto 2x/3x the period (octave errors).
+    for(int lag=minLag+1;lag<maxLag;++lag)
+        if(scores[static_cast<size_t>(lag)]>=scores[static_cast<size_t>(lag-1)] &&
+           scores[static_cast<size_t>(lag)]>=scores[static_cast<size_t>(lag+1)] &&
+           scores[static_cast<size_t>(lag)]>=.92*bestScore &&
+           scores[static_cast<size_t>(lag)]>.72)
+            return rate/lag;
+    return rate/bestLag;
 }
 
 // Relative correction: do not force a third/fifth/harmony onto the lead pitch.
