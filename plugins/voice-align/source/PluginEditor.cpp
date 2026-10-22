@@ -8,7 +8,7 @@ juce::String display(const juce::File &f){return f.getFileNameWithoutExtension()
 
 SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
     formats.registerBasicFormats();
-    setSize(920,630);setResizable(false,false);
+    setSize(1030,730);setResizable(false,false);
     auto style=[this](juce::TextButton &button,bool primary){
         button.setColour(juce::TextButton::buttonColourId,primary?juce::Colour(0xffba9160):juce::Colour(0xff303640));
         button.setColour(juce::TextButton::textColourOffId,primary?ink:juce::Colour(0xfff0eae2));
@@ -29,61 +29,143 @@ SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
         chooser->launchAsync(juce::FileBrowserComponent::openMode|juce::FileBrowserComponent::canSelectDirectories,
             [safe](const juce::FileChooser &fc){if(safe){auto folder=fc.getResult();if(folder.isDirectory())safe->exportWavs(folder);}});
     };
-    info(juce::String::fromUTF8("Перетащи лид в верхнюю область, бэки — в нижнюю. WAV файлы должны начинаться от одной точки."));
+    info(juce::String::fromUTF8("LEAD → BACKS → ALIGN TIMING. Файлы WAV/AIFF с общей точкой старта."));
 }
+
 
 void SyncEditor::resized(){
-    chooseLead.setBounds(690,126,192,36);
-    addBack.setBounds(690,269,192,36);
-    timing.setBounds(30,517,260,50);
-    pitch.setBounds(307,517,260,50);
-    exportButton.setBounds(584,517,306,50);
-    status.setBounds(30,581,850,37);
+    chooseLead.setBounds(546,153,171,32);
+    addBack.setBounds(546,312,171,32);
+    timing.setBounds(36,612,288,52);
+    pitch.setBounds(336,612,288,52);
+    exportButton.setBounds(636,612,358,52);
+    status.setBounds(42,673,938,37);
 }
-void SyncEditor::paint(juce::Graphics &g){
-    g.fillAll(ink);
-    g.setGradientFill(juce::ColourGradient(juce::Colour(0xff242a32),0,0,ink,920,620,false));g.fillAll();
-    g.setColour(juce::Colour(0xffeee8dc));g.setFont(juce::Font(36.f,juce::Font::bold));
-    g.drawText(juce::String::fromUTF8("Синхрон"),30,25,360,49,juce::Justification::centredLeft);
+void SyncEditor::paintAudioWave(juce::Graphics &g,const synchro::Audio *audio,juce::Rectangle<float> box,juce::Colour colour) const {
+    auto center=box.getCentreY();
+    g.setColour(colour.withAlpha(.14f));
+    g.drawHorizontalLine(static_cast<int>(center),box.getX(),box.getRight());
+    if(audio==nullptr||!audio->valid()||audio->channels.empty())return;
+    auto &samples=audio->channels[0];
+    auto length=static_cast<int64_t>(samples.size());
+    int bins=std::max(1,static_cast<int>(box.getWidth()/3.0f));
+    for(int x=0;x<bins;++x) {
+        const auto first=length*x/bins,last=std::min<int64_t>(length, length*(x+1)/bins);
+        const auto stride=std::max<int64_t>(1,(last-first)/48);
+        float peak=0;
+        for(auto i=first;i<last;i+=stride)peak=std::max(peak,std::abs(samples[static_cast<size_t>(i)]));
+        const auto height=std::max(.8f,std::min(1.f,peak*2.4f)*box.getHeight()*.47f);
+        auto width=std::max(1.0f,box.getWidth()/bins-1.0f);
+        g.setColour(colour.withAlpha(.34f+.56f*std::min(1.f,peak*3.f)));
+        g.fillRoundedRectangle(box.getX()+x*box.getWidth()/bins,center-height,width,height*2.f,.8f);
+    }
+}
+void SyncEditor::paint(juce::Graphics &g) {
+    const juce::Colour surface(0xff1e242a),surfaceDeep(0xff171c21),
+                       border(0xff3b454e),paper(0xfff4ecdf);
+    g.setGradientFill(juce::ColourGradient(juce::Colour(0xff292c31),0,0,juce::Colour(0xff12171c),1030,730,false));
+    g.fillAll();
+    // Lighting: warm bloom at the top and cool fill at the right.
+    g.setGradientFill(juce::ColourGradient(gold.withAlpha(.085f),380,28,ink.withAlpha(0.f),440,390,true));
+    g.fillEllipse(108,0,620,400);
+    g.setGradientFill(juce::ColourGradient(green.withAlpha(.055f),1000,300,ink.withAlpha(0.f),650,350,true));
+    g.fillEllipse(610,70,460,540);
+    g.setColour(paper);g.setFont(juce::Font(38.f,juce::Font::bold));
+    g.drawText(juce::String::fromUTF8("Синхрон"),36,27,340,48,juce::Justification::centredLeft);
     g.setColour(gold);g.setFont(juce::Font(14.f));
-    g.drawText(juce::String::fromUTF8("by тима осадок"),696,38,190,28,juce::Justification::centredRight);
-    g.setColour(muted);g.setFont(juce::Font(12.f));
-    g.drawText("VOCAL STACK  /  OFFLINE ALIGNMENT  /  BETA 0.1",31,75,800,22,juce::Justification::centredLeft);
-    g.setColour(juce::Colour(0xff303741));g.drawHorizontalLine(101,27,894);
-    auto panel=[&](juce::Rectangle<int> area,juce::Colour border){
-        g.setColour(juce::Colour(0xff20262d));g.fillRoundedRectangle(area.toFloat(),10);
-        g.setColour(border);g.drawRoundedRectangle(area.toFloat(),10,1.5f);
+    g.drawText(juce::String::fromUTF8("by тима осадок"),769,36,220,28,juce::Justification::centredRight);
+    g.setColour(muted);g.setFont(juce::Font(10.6f));
+    g.drawText("VOCAL STACK  /  TIMING + OPTIONAL TUNING",39,81,550,18,juce::Justification::centredLeft);
+    g.setColour(juce::Colour(0xff39424a));g.drawHorizontalLine(113,35,993);
+    // Two premium waveform panels.
+    auto card=[&](juce::Rectangle<float> rect,juce::Colour stroke){
+        g.setColour(juce::Colours::black.withAlpha(.28f));g.fillRoundedRectangle(rect.translated(0,7),16);
+        g.setGradientFill(juce::ColourGradient(surface,rect.getTopLeft(),surfaceDeep,rect.getBottomRight(),false));
+        g.fillRoundedRectangle(rect,16);
+        g.setColour(stroke);g.drawRoundedRectangle(rect,16,1.35f);
     };
-    panel({27,119,866,118},reference?gold:juce::Colour(0xff46505a));
-    panel({27,248,866,257},backups.empty()?juce::Colour(0xff46505a):green);
-    g.setColour(gold);g.setFont(juce::Font(12.f,juce::Font::bold));
-    g.drawText("LEAD   /   REFERENCE",48,132,400,24,juce::Justification::centredLeft);
-    g.setColour(juce::Colour(0xffebe5da));g.setFont(juce::Font(18.f));
-    g.drawText(reference?display(reference->source):juce::String::fromUTF8("Перетащи лид сюда ↓"),48,163,618,47,juce::Justification::centredLeft);
-    g.setColour(green);g.setFont(juce::Font(12.f,juce::Font::bold));
-    g.drawText("BACKS / DOUBLES",48,261,410,22,juce::Justification::centredLeft);
-    g.setColour(muted);g.setFont(juce::Font(12.f));
-    if(backups.empty())g.drawText(juce::String::fromUTF8("Перетащи сюда до 8 бэков или даблов (WAV/AIFF)"),49,313,570,28,juce::Justification::centredLeft);
-    for(size_t i=0;i<backups.size();++i){
-        auto y=298+static_cast<int>(i)*24;
-        g.setColour(juce::Colour(0xffc6cfce));g.setFont(juce::Font(12.f));
-        g.drawText(juce::String(static_cast<int>(i+1))+"  "+display(backups[i].source),49,y,580,20,juce::Justification::centredLeft);
-        if(i<rendered.size()){
+    const auto leadPanel=juce::Rectangle<float>(35,137,707,143);
+    const auto backPanel=juce::Rectangle<float>(35,293,707,282);
+    card(leadPanel,dragActive&&dragIntoLead?gold:(reference?gold.withAlpha(.64f):border));
+    card(backPanel,dragActive&&!dragIntoLead?green:(backups.empty()?border:green.withAlpha(.65f)));
+    g.setColour(gold);g.setFont(juce::Font(11.f,juce::Font::bold));
+    g.drawText("01    LEAD  /  REFERENCE",55,149,440,26,juce::Justification::centredLeft);
+    g.setColour(paper);g.setFont(juce::Font(17.f,juce::Font::bold));
+    g.drawFittedText(reference?display(reference->source):juce::String::fromUTF8("Перетащи лид сюда"),56,184,470,29,juce::Justification::centredLeft,1);
+    g.setColour(muted);g.setFont(juce::Font(11.f));
+    g.drawText(reference?juce::String::fromUTF8("Эталон синхронизации"):juce::String::fromUTF8("WAV / AIFF   •   дорожка-ориентир"),56,212,455,16,juce::Justification::centredLeft);
+    paintAudioWave(g,reference?&reference->audio:nullptr,{55,233,657,30},gold);
+    g.setColour(green);g.setFont(juce::Font(11.f,juce::Font::bold));
+    g.drawText("02    BACKS / DOUBLES",55,302,425,24,juce::Justification::centredLeft);
+    g.setColour(muted);g.setFont(juce::Font(10.5f));
+    g.drawText(juce::String(static_cast<int>(backups.size()))+" / 8  LOADED",55,328,460,19,juce::Justification::centredLeft);
+    if(backups.empty()){
+        g.setColour(juce::Colour(0xffbfcac7));g.setFont(juce::Font(17.f));
+        g.drawText(juce::String::fromUTF8("Перетащи бэки и даблы сюда"),55,399,490,35,juce::Justification::centredLeft);
+        g.setColour(muted);g.setFont(juce::Font(12.f));
+        g.drawText(juce::String::fromUTF8("Каждый дубль обрабатывается отдельно"),55,433,490,24,juce::Justification::centredLeft);
+    } else {
+        const auto rowStart=358.f;
+        const auto height=25.8f;
+        for(size_t i=0;i<backups.size();++i){
+            const float y=rowStart+static_cast<float>(i)*height;
+            g.setColour(i%2?juce::Colour(0xff202830):juce::Colour(0xff263038));
+            g.fillRoundedRectangle(52,y,673,23,5);
+            g.setColour(green.withAlpha(.9f));g.fillRoundedRectangle(56,y+5,3,13,1.5f);
+            g.setColour(paper.withAlpha(.9f));g.setFont(juce::Font(11.2f));
+            g.drawFittedText(juce::String(static_cast<int>(i+1)).paddedLeft('0',2)+"   "+display(backups[i].source),
+                             67,static_cast<int>(y)+2,250,19,juce::Justification::centredLeft,1);
+            paintAudioWave(g,&backups[i].audio,{323,y+4,255,15},green);
             g.setColour(i<rendered.size()?green:muted);
-            g.drawText(hasPitch?juce::String::fromUTF8("TIMED + TUNED"):juce::String::fromUTF8("TIMED"),667,y,190,20,juce::Justification::centredRight);
+            g.setFont(juce::Font(10.0f,juce::Font::bold));
+            g.drawText(i<rendered.size()?(hasPitch?"TUNED":"ALIGNED"):"READY",
+                      584,static_cast<int>(y)+2,125,18,juce::Justification::centredRight);
         }
     }
-    g.setColour(muted);g.setFont(juce::Font(11.f));
-    g.drawText(juce::String::fromUTF8("1 — Тайминг слогов     2 — Ноты отдельно, сохранение терций     3 — Экспорт отдельных дорожек"),30,490,860,21,juce::Justification::centredLeft);
+    // Side column: progress and actual Studio One workflow.
+    const auto side=juce::Rectangle<float>(756,137,238,438);
+    card(side,border);
+    g.setColour(gold);g.setFont(juce::Font(11.f,juce::Font::bold));
+    g.drawText("WORKFLOW",779,158,180,22,juce::Justification::centredLeft);
+    g.setColour(juce::Colour(0xff464f55));g.drawHorizontalLine(189,778,976);
+    auto stage=[&](int y,int number,const juce::String& name,const juce::String &info,bool done) {
+        g.setColour(done?green:juce::Colour(0xff65717b));
+        g.fillEllipse(777.f,static_cast<float>(y),21.f,21.f);
+        g.setColour(ink);g.setFont(juce::Font(11.3f,juce::Font::bold));
+        g.drawText(juce::String(number),777,y,21,21,juce::Justification::centred);
+        g.setColour(paper);g.setFont(juce::Font(12.3f,juce::Font::bold));
+        g.drawText(name,809,y-2,161,24,juce::Justification::centredLeft);
+        g.setColour(muted);g.setFont(juce::Font(10.f));
+        g.drawFittedText(info,809,y+20,157,29,juce::Justification::topLeft,2);
+    };
+    stage(209,1,"LEAD",juce::String::fromUTF8("Выбери ориентир"),reference!=nullptr);
+    stage(282,2,"BACKS",juce::String::fromUTF8("Добавь дубли"),!backups.empty());
+    stage(355,3,"ALIGN TIMING",juce::String::fromUTF8("Сведи тайминг"),hasTiming);
+    stage(428,4,"TUNE NOTES",juce::String::fromUTF8("По желанию"),hasPitch);
+    g.setColour(gold.withAlpha(.20f));g.fillRoundedRectangle(775.f,505.f,197.f,49.f,7.f);
+    g.setColour(juce::Colour(0xffdcc7a6));g.setFont(juce::Font(10.2f));
+    g.drawFittedText(juce::String::fromUTF8("Studio One: Аудио из Files или Проводника. ARA — в разработке."),
+                     785,510,180,38,juce::Justification::centredLeft,3);
+    g.setColour(muted);g.setFont(juce::Font(10.8f));
+    g.drawText(juce::String::fromUTF8("ТАЙМИНГ  /  СЛОГИ"),38,582,290,23,juce::Justification::centredLeft);
+    g.drawText(juce::String::fromUTF8("НОТЫ  /  ГАРМОНИИ"),340,582,290,23,juce::Justification::centredLeft);
+    g.drawText(juce::String::fromUTF8("ОТДЕЛЬНЫЕ WAV"),640,582,320,23,juce::Justification::centredLeft);
+    g.setColour(juce::Colour(0xff424a51));g.drawHorizontalLine(671,36,994);
 }
 
+void SyncEditor::fileDragEnter(const juce::StringArray &,int,int y){
+    dragActive=true;dragIntoLead=y<286;repaint();
+}
+void SyncEditor::fileDragExit(const juce::StringArray &){
+    dragActive=false;repaint();
+}
 bool SyncEditor::isInterestedInFileDrag(const juce::StringArray &files){
     for(const auto &f:files)
         if(juce::File(f).hasFileExtension("wav;aif;aiff"))return true;
     return false;
 }
 void SyncEditor::filesDropped(const juce::StringArray &files,int,int y){
-    loadFiles(files,y<247);
+    dragActive=false;loadFiles(files,y<287);
 }
 void SyncEditor::selectFiles(bool lead){
     chooser=std::make_unique<juce::FileChooser>(lead?juce::String::fromUTF8("Выбери лид"):juce::String::fromUTF8("Выбери бэки"),juce::File(),"*.wav;*.aif;*.aiff");
