@@ -3,7 +3,7 @@
 #include "AlignmentEngine.h"
 #include <juce_gui_basics/juce_gui_basics.h>
 #include <juce_audio_formats/juce_audio_formats.h>
-class SyncEditor final : public juce::AudioProcessorEditor,public juce::FileDragAndDropTarget {
+class SyncEditor final : public juce::AudioProcessorEditor,public juce::FileDragAndDropTarget,private juce::Timer {
 public:
     explicit SyncEditor(SyncProcessor&);
     ~SyncEditor() override=default;
@@ -47,6 +47,7 @@ private:
     void alignAll();
     void tuneAll();
     void exportWavs(const juce::File& folder);
+    void timerCallback() override;
     void info(juce::String message);
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SyncEditor)
 };
