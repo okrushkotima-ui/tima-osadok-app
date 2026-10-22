@@ -3,6 +3,9 @@
 #include <map>
 #include <memory>
 #include <cmath>
+#include <mutex>
+#include <vector>
+#include <algorithm>
 
 // Experimental ARA2 bridge: reads Studio One Event FX audio directly from the
 // host-provided ARA model. Never reaches into the DAW's private project files.
@@ -69,9 +72,28 @@ private:
     double sampleRate=48000;int numChannels=2;
 };
 
+// ARA creates a different plug-in instance for each Studio One Event FX.
+// Keep the *live ARA document controllers* discoverable from any editor window,
+// so one LEAD instance can read regions attached to other Synchron Event FX.
+static std::mutex& registryMutex(){static std::mutex lock;return lock;}
+static std::vector<juce::ARADocumentControllerSpecialisation*>& controllers(){
+    static std::vector<juce::ARADocumentControllerSpecialisation*> items;
+    return items;
+}
+
 class HostDocumentController final:public juce::ARADocumentControllerSpecialisation {
 public:
-    using juce::ARADocumentControllerSpecialisation::ARADocumentControllerSpecialisation;
+    HostDocumentController(const ARA::PlugIn::PlugInEntry* entry,
+                           const ARA::ARADocumentControllerHostInstance* host)
+        : juce::ARADocumentControllerSpecialisation(entry,host) {
+        std::lock_guard<std::mutex> guard(registryMutex());
+        controllers().push_back(this);
+    }
+    ~HostDocumentController() override {
+        std::lock_guard<std::mutex> guard(registryMutex());
+        auto& all=controllers();
+        all.erase(std::remove(all.begin(),all.end(),this),all.end());
+    }
 protected:
     juce::ARAPlaybackRenderer* doCreatePlaybackRenderer() override {
         return new HostPlayback(getDocumentController());
@@ -85,4 +107,19 @@ protected:
 }
 const ARA::ARAFactory* JUCE_CALLTYPE createARAFactory(){
     return juce::ARADocumentControllerSpecialisation::createARAFactory<HostDocumentController>();
+}
+
+// Called from Synchron's GUI/message thread only. Returned pointers must only
+// be used synchronously: ARA invalidates them when an Event FX is removed.
+// No ARA source access in the real-time audio callback.
+void synchronCollectActiveARARegions(std::vector<juce::ARAPlaybackRegion*>& regions) {
+    std::lock_guard<std::mutex> guard(registryMutex());
+    for(auto *controller:controllers()) {
+        if(controller==nullptr)continue;
+        if(auto *doc=controller->getDocument())
+            for(auto *sequence:doc->getRegionSequences())
+                for(auto *region:sequence->getPlaybackRegions())
+                    if(region && std::find(regions.begin(),regions.end(),region)==regions.end())
+                        regions.push_back(region);
+    }
 }
