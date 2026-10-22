@@ -1,7 +1,11 @@
 cmake_minimum_required(VERSION 3.22)
-project(Blizhe VERSION 0.1.0 LANGUAGES C CXX)
+project(Blizhe VERSION 0.1.1 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+# Apply UTF-8 to JUCE's generated VST3 wrapper and metadata helper, not only the DSP target.
+if(MSVC)
+  add_compile_options(/utf-8)
+endif()
 include(FetchContent)
 FetchContent_Declare(JUCE GIT_REPOSITORY https://github.com/juce-framework/JUCE.git GIT_TAG 8.0.12 GIT_SHALLOW TRUE)
 FetchContent_MakeAvailable(JUCE)
@@ -11,8 +15,9 @@ juce_add_plugin(Blizhe
     PLUGIN_MANUFACTURER_CODE Tmos
     PLUGIN_CODE Blzh
     FORMATS VST3
-    PRODUCT_NAME "ближе"
-    DESCRIPTION "ближе - vocal presence"
+    PRODUCT_NAME "Ближе by тима осадок"
+    PLUGIN_NAME "Ближе by тима осадок"
+    DESCRIPTION "Ближе by тима осадок - vocal presence"
     IS_SYNTH FALSE
     NEEDS_MIDI_INPUT FALSE
     NEEDS_MIDI_OUTPUT FALSE
