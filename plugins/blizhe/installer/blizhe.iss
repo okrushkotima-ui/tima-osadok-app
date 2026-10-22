@@ -14,4 +14,4 @@ Compression=lzma2
 SolidCompression=yes
 UninstallDisplayName=ближе VST3
 [Files]
-Source: "..\..\..\..\build\blizhe\Blizhe_artefacts\Release\VST3\ближе.vst3\*"; DestDir: "{commoncf64}\VST3\тима осадок\ближе.vst3"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\..\build\blizhe\Blizhe_artefacts\Release\VST3\ближе.vst3\*"; DestDir: "{commoncf64}\VST3\тима осадок\ближе.vst3"; Flags: ignoreversion recursesubdirs createallsubdirs
