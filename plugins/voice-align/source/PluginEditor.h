@@ -11,6 +11,8 @@ public:
     void resized() override;
     bool isInterestedInFileDrag(const juce::StringArray&) override;
     void filesDropped(const juce::StringArray&,int,int) override;
+    void fileDragEnter(const juce::StringArray&,int,int) override;
+    void fileDragExit(const juce::StringArray&) override;
 private:
     struct Track{juce::File source;synchro::Audio audio;};
     SyncProcessor &processor;
@@ -22,7 +24,9 @@ private:
     std::unique_ptr<Track> reference;
     std::vector<Track> backups;
     std::vector<synchro::Audio> rendered;
-    bool hasTiming=false,hasPitch=false;
+    bool hasTiming=false,hasPitch=false,dragActive=false;
+    bool dragIntoLead=false;
+    void paintAudioWave(juce::Graphics&,const synchro::Audio*,juce::Rectangle<float>,juce::Colour) const;
     void selectFiles(bool lead);
     void loadFiles(const juce::StringArray&,bool lead);
     bool readTrack(const juce::File&,Track&,juce::String&);
