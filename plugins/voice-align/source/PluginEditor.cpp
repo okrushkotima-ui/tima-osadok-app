@@ -31,145 +31,151 @@ SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
         chooser->launchAsync(juce::FileBrowserComponent::openMode|juce::FileBrowserComponent::canSelectDirectories,
             [safe](const juce::FileChooser &fc){if(safe){auto folder=fc.getResult();if(folder.isDirectory())safe->exportWavs(folder);}});
     };
-    info(juce::String::fromUTF8("LEAD → BACKS → ALIGN TIMING. Файлы WAV/AIFF с общей точкой старта."));
+    dragDirectory=juce::File::getSpecialLocation(juce::File::userDocumentsDirectory)
+        .getChildFile("Synchron").getChildFile("Drag Outputs");
+    info(juce::String::fromUTF8("LEAD → BACKS → ALIGN TIMING → перетащи готовый RESULT на дорожку Studio One."));
 }
 
 
+
 void SyncEditor::resized(){
-    chooseLead.setBounds(547,153,82,32);
-    hostLead.setBounds(633,153,98,32);
-    addBack.setBounds(547,312,82,32);
-    hostBack.setBounds(633,312,98,32);
-    timing.setBounds(36,612,288,52);
-    pitch.setBounds(336,612,288,52);
-    exportButton.setBounds(636,612,358,52);
-    status.setBounds(42,673,938,37);
+    chooseLead.setBounds(759,154,98,32);
+    hostLead.setBounds(864,154,114,32);
+    addBack.setBounds(286,297,97,31);
+    hostBack.setBounds(390,297,109,31);
+    timing.setBounds(35,615,293,49);
+    pitch.setBounds(342,615,293,49);
+    exportButton.setBounds(650,615,345,49);
+    status.setBounds(38,672,948,41);
 }
 void SyncEditor::paintAudioWave(juce::Graphics &g,const synchro::Audio *audio,juce::Rectangle<float> box,juce::Colour colour) const {
     auto center=box.getCentreY();
     g.setColour(colour.withAlpha(.14f));
     g.drawHorizontalLine(static_cast<int>(center),box.getX(),box.getRight());
     if(audio==nullptr||!audio->valid()||audio->channels.empty())return;
-    auto &samples=audio->channels[0];
-    auto length=static_cast<int64_t>(samples.size());
-    int bins=std::max(1,static_cast<int>(box.getWidth()/3.0f));
+    const auto &samples=audio->channels[0];
+    const int64_t length=static_cast<int64_t>(samples.size());
+    const int bins=std::max(1,static_cast<int>(box.getWidth()/2.9f));
     for(int x=0;x<bins;++x) {
-        const auto first=length*x/bins,last=std::min<int64_t>(length, length*(x+1)/bins);
+        const auto first=length*x/bins,last=std::min<int64_t>(length,length*(x+1)/bins);
         const auto stride=std::max<int64_t>(1,(last-first)/48);
         float peak=0;
         for(auto i=first;i<last;i+=stride)peak=std::max(peak,std::abs(samples[static_cast<size_t>(i)]));
-        const auto height=std::max(.8f,std::min(1.f,peak*2.4f)*box.getHeight()*.47f);
-        auto width=std::max(1.0f,box.getWidth()/bins-1.0f);
-        g.setColour(colour.withAlpha(.34f+.56f*std::min(1.f,peak*3.f)));
-        g.fillRoundedRectangle(box.getX()+x*box.getWidth()/bins,center-height,width,height*2.f,.8f);
+        const auto height=std::max(.6f,std::min(1.f,peak*2.4f)*box.getHeight()*.46f);
+        const auto width=std::max(1.f,box.getWidth()/bins-1.0f);
+        g.setColour(colour.withAlpha(.32f+.61f*std::min(1.f,peak*3.f)));
+        g.fillRoundedRectangle(box.getX()+x*box.getWidth()/bins,center-height,width,height*2.f,.7f);
     }
 }
-void SyncEditor::paint(juce::Graphics &g) {
+juce::Rectangle<int> SyncEditor::resultRowRect(size_t index) const {
+    return juce::Rectangle<int>(543,348+static_cast<int>(index)*29,435,26);
+}
+int SyncEditor::resultAt(juce::Point<int> point) const {
+    for(size_t i=0;i<rendered.size();++i)
+        if(resultRowRect(i).contains(point))return static_cast<int>(i);
+    return -1;
+}
+void SyncEditor::paint(juce::Graphics &g){
     const juce::Colour surface(0xff1e242a),surfaceDeep(0xff171c21),
-                       border(0xff3b454e),paper(0xfff4ecdf);
+                       border(0xff3b454e),paper(0xfff4ecdf),resultBlue(0xff87bed7);
     g.setGradientFill(juce::ColourGradient(juce::Colour(0xff292c31),0,0,juce::Colour(0xff12171c),1030,730,false));
     g.fillAll();
-    // Lighting: warm bloom at the top and cool fill at the right.
     g.setGradientFill(juce::ColourGradient(gold.withAlpha(.085f),380,28,ink.withAlpha(0.f),440,390,true));
     g.fillEllipse(108,0,620,400);
-    g.setGradientFill(juce::ColourGradient(green.withAlpha(.055f),1000,300,ink.withAlpha(0.f),650,350,true));
-    g.fillEllipse(610,70,460,540);
+    g.setGradientFill(juce::ColourGradient(resultBlue.withAlpha(.07f),880,360,ink.withAlpha(0.f),570,600,true));
+    g.fillEllipse(480,190,580,450);
     g.setColour(paper);g.setFont(juce::Font(38.f,juce::Font::bold));
     g.drawText(juce::String::fromUTF8("Синхрон"),36,27,340,48,juce::Justification::centredLeft);
     g.setColour(gold);g.setFont(juce::Font(14.f));
     g.drawText(juce::String::fromUTF8("by тима осадок"),769,36,220,28,juce::Justification::centredRight);
     g.setColour(muted);g.setFont(juce::Font(10.6f));
-    g.drawText("VOCAL STACK  /  TIMING + OPTIONAL TUNING",39,81,550,18,juce::Justification::centredLeft);
+    g.drawText("VOCAL STACK / ALIGN TIMING + OPTIONAL TUNE NOTES / DRAG RESULTS",39,81,820,18,juce::Justification::centredLeft);
     g.setColour(juce::Colour(0xff39424a));g.drawHorizontalLine(113,35,993);
-    // Two premium waveform panels.
     auto card=[&](juce::Rectangle<float> rect,juce::Colour stroke){
-        g.setColour(juce::Colours::black.withAlpha(.28f));g.fillRoundedRectangle(rect.translated(0,7),16);
+        g.setColour(juce::Colours::black.withAlpha(.28f));g.fillRoundedRectangle(rect.translated(0,6),14);
         g.setGradientFill(juce::ColourGradient(surface,rect.getTopLeft(),surfaceDeep,rect.getBottomRight(),false));
-        g.fillRoundedRectangle(rect,16);
-        g.setColour(stroke);g.drawRoundedRectangle(rect,16,1.35f);
+        g.fillRoundedRectangle(rect,14);
+        g.setColour(stroke);g.drawRoundedRectangle(rect,14,1.3f);
     };
-    const auto leadPanel=juce::Rectangle<float>(35,137,707,143);
-    const auto backPanel=juce::Rectangle<float>(35,293,707,282);
-    card(leadPanel,dragActive&&dragIntoLead?gold:(reference?gold.withAlpha(.64f):border));
-    card(backPanel,dragActive&&!dragIntoLead?green:(backups.empty()?border:green.withAlpha(.65f)));
+    card({35,136,960,130},dragActive&&dragIntoLead?gold:(reference?gold.withAlpha(.7f):border));
+    card({35,281,474,306},dragActive&&!dragIntoLead?green:(backups.empty()?border:green.withAlpha(.7f)));
+    card({523,281,472,306},rendered.empty()?border:resultBlue.withAlpha(.75f));
     g.setColour(gold);g.setFont(juce::Font(11.f,juce::Font::bold));
-    g.drawText("01    LEAD  /  REFERENCE",55,149,440,26,juce::Justification::centredLeft);
+    g.drawText("01  /  LEAD REFERENCE",56,146,460,24,juce::Justification::centredLeft);
     g.setColour(paper);g.setFont(juce::Font(17.f,juce::Font::bold));
-    g.drawFittedText(reference?(reference->label.isNotEmpty()?reference->label:display(reference->source)):juce::String::fromUTF8("Перетащи лид сюда"),56,184,470,29,juce::Justification::centredLeft,1);
+    g.drawFittedText(reference?(reference->label.isNotEmpty()?reference->label:display(reference->source)):
+                      juce::String::fromUTF8("Перетащи лид сюда  ↘"),
+                      56,175,565,25,juce::Justification::centredLeft,1);
     g.setColour(muted);g.setFont(juce::Font(11.f));
-    g.drawText(reference?juce::String::fromUTF8("Эталон синхронизации"):juce::String::fromUTF8("WAV / AIFF   •   дорожка-ориентир"),56,212,455,16,juce::Justification::centredLeft);
-    paintAudioWave(g,reference?&reference->audio:nullptr,{55,233,657,30},gold);
+    g.drawText(reference?juce::String::fromUTF8("Ориентир  /  оригинал не изменяется"):
+                           juce::String::fromUTF8("WAV, AIFF или FROM STUDIO ONE через ARA2"),
+               56,201,630,18,juce::Justification::centredLeft);
+    paintAudioWave(g,reference?&reference->audio:nullptr,{56,226,916,25},gold);
+
     g.setColour(green);g.setFont(juce::Font(11.f,juce::Font::bold));
-    g.drawText("02    BACKS / DOUBLES",55,302,425,24,juce::Justification::centredLeft);
-    g.setColour(muted);g.setFont(juce::Font(10.5f));
-    g.drawText(juce::String(static_cast<int>(backups.size()))+" / 8  LOADED",55,328,460,19,juce::Justification::centredLeft);
+    g.drawText("02  /  BACKS & DOUBLES",53,293,225,24,juce::Justification::centredLeft);
+    g.setColour(muted);g.setFont(juce::Font(10.f));
+    g.drawText(juce::String(static_cast<int>(backups.size()))+" / 8  TRACKS",55,324,400,20,juce::Justification::centredLeft);
     if(backups.empty()){
-        g.setColour(juce::Colour(0xffbfcac7));g.setFont(juce::Font(17.f));
-        g.drawText(juce::String::fromUTF8("Перетащи бэки и даблы сюда"),55,399,490,35,juce::Justification::centredLeft);
-        g.setColour(muted);g.setFont(juce::Font(12.f));
-        g.drawText(juce::String::fromUTF8("Каждый дубль обрабатывается отдельно"),55,433,490,24,juce::Justification::centredLeft);
-    } else {
-        const auto rowStart=358.f;
-        const auto height=25.8f;
-        for(size_t i=0;i<backups.size();++i){
-            const float y=rowStart+static_cast<float>(i)*height;
-            g.setColour(i%2?juce::Colour(0xff202830):juce::Colour(0xff263038));
-            g.fillRoundedRectangle(52,y,673,23,5);
-            g.setColour(green.withAlpha(.9f));g.fillRoundedRectangle(56,y+5,3,13,1.5f);
-            g.setColour(paper.withAlpha(.9f));g.setFont(juce::Font(11.2f));
-            g.drawFittedText(juce::String(static_cast<int>(i+1)).paddedLeft('0',2)+"   "+(backups[i].label.isNotEmpty()?backups[i].label:display(backups[i].source)),
-                             67,static_cast<int>(y)+2,250,19,juce::Justification::centredLeft,1);
-            paintAudioWave(g,&backups[i].audio,{323,y+4,255,15},green);
-            g.setColour(i<rendered.size()?green:muted);
-            g.setFont(juce::Font(10.0f,juce::Font::bold));
-            g.drawText(i<rendered.size()?(hasPitch?"TUNED":"ALIGNED"):"READY",
-                      584,static_cast<int>(y)+2,125,18,juce::Justification::centredRight);
+        g.setColour(juce::Colour(0xffbccbc6));g.setFont(juce::Font(15.f));
+        g.drawText(juce::String::fromUTF8("Перетащи сюда бэки"),55,398,430,34,juce::Justification::centred);
+        g.setColour(muted);g.setFont(juce::Font(11.f));
+        g.drawText(juce::String::fromUTF8("Каждый дубль обработается отдельно"),58,435,410,24,juce::Justification::centred);
+    }
+    for(size_t i=0;i<backups.size();++i){
+        const float y=348.f+static_cast<float>(i)*29.f;
+        g.setColour(i%2?juce::Colour(0xff202930):juce::Colour(0xff293038));
+        g.fillRoundedRectangle(52,y,441,26,5.f);
+        g.setColour(green.withAlpha(.9f));g.fillRoundedRectangle(56,y+7,3,13,1.5f);
+        g.setColour(paper);g.setFont(juce::Font(11.f));
+        const auto name=backups[i].label.isNotEmpty()?backups[i].label:display(backups[i].source);
+        g.drawFittedText(juce::String(static_cast<int>(i+1)).paddedLeft('0',2)+" "+name,66,static_cast<int>(y)+3,185,20,juce::Justification::centredLeft,1);
+        paintAudioWave(g,&backups[i].audio,{257,y+4,226,17},green);
+    }
+
+    g.setColour(resultBlue);g.setFont(juce::Font(11.f,juce::Font::bold));
+    g.drawText("03  /  RESULT",542,293,180,23,juce::Justification::centredLeft);
+    g.setFont(juce::Font(10.5f));g.setColour(muted);
+    g.drawText(rendered.empty()?juce::String::fromUTF8("Нажми ALIGN TIMING, чтобы получить готовые дорожки"):
+                                juce::String::fromUTF8("ЗАЖМИ ГОТОВУЮ ВОЛНУ → ПЕРЕТАЩИ В STUDIO ONE"),
+               542,319,434,24,juce::Justification::centredLeft);
+    if(rendered.empty()){
+        g.setColour(resultBlue.withAlpha(.35f));g.setFont(juce::Font(22.f));
+        g.drawText(juce::String::fromUTF8("ГОТОВО"),543,417,433,34,juce::Justification::centred);
+        g.setColour(muted);g.setFont(juce::Font(11.f));
+        g.drawText(juce::String::fromUTF8("Здесь появится звуковая волна выровненного бэка"),
+                   545,453,428,28,juce::Justification::centred);
+    }else{
+        for(size_t i=0;i<rendered.size();++i){
+            auto rect=resultRowRect(i).toFloat();
+            g.setColour(static_cast<int>(i)==selectedResult?juce::Colour(0xff354954):
+                        (i%2?juce::Colour(0xff232e38):juce::Colour(0xff273039)));
+            g.fillRoundedRectangle(rect,5.f);
+            g.setColour(resultBlue);g.fillRoundedRectangle(rect.getX()+5,rect.getY()+7,3,13,1.5f);
+            g.setColour(paper);g.setFont(juce::Font(10.8f));
+            g.drawText(juce::String(static_cast<int>(i+1)).paddedLeft('0',2),rect.getX()+12,rect.getY()+2,28,22,juce::Justification::centredLeft);
+            paintAudioWave(g,&rendered[i],{rect.getX()+46,rect.getY()+4,rect.getWidth()-124,18},resultBlue);
+            g.setColour(green);g.setFont(juce::Font(9.8f,juce::Font::bold));
+            g.drawText(hasPitch?"TUNED":"TIMED",rect.getRight()-81,rect.getY()+3,68,20,juce::Justification::centredRight);
         }
     }
-    // Side column: progress and actual Studio One workflow.
-    const auto side=juce::Rectangle<float>(756,137,238,438);
-    card(side,border);
-    g.setColour(gold);g.setFont(juce::Font(11.f,juce::Font::bold));
-    g.drawText("WORKFLOW",779,158,180,22,juce::Justification::centredLeft);
-    g.setColour(juce::Colour(0xff464f55));g.drawHorizontalLine(189,778,976);
-    auto stage=[&](int y,int number,const juce::String& name,const juce::String &info,bool done) {
-        g.setColour(done?green:juce::Colour(0xff65717b));
-        g.fillEllipse(777.f,static_cast<float>(y),21.f,21.f);
-        g.setColour(ink);g.setFont(juce::Font(11.3f,juce::Font::bold));
-        g.drawText(juce::String(number),777,y,21,21,juce::Justification::centred);
-        g.setColour(paper);g.setFont(juce::Font(12.3f,juce::Font::bold));
-        g.drawText(name,809,y-2,161,24,juce::Justification::centredLeft);
-        g.setColour(muted);g.setFont(juce::Font(10.f));
-        g.drawFittedText(info,809,y+20,157,29,juce::Justification::topLeft,2);
-    };
-    stage(209,1,"LEAD",juce::String::fromUTF8("Выбери ориентир"),reference!=nullptr);
-    stage(282,2,"BACKS",juce::String::fromUTF8("Добавь дубли"),!backups.empty());
-    stage(355,3,"ALIGN TIMING",juce::String::fromUTF8("Сведи тайминг"),hasTiming);
-    stage(428,4,"TUNE NOTES",juce::String::fromUTF8("По желанию"),hasPitch);
-    g.setColour(gold.withAlpha(.20f));g.fillRoundedRectangle(775.f,505.f,197.f,49.f,7.f);
-    g.setColour(juce::Colour(0xffdcc7a6));g.setFont(juce::Font(10.2f));
-    g.drawFittedText(juce::String::fromUTF8("ARA2 beta: добавь Event FX к вокалу, затем FROM STUDIO ONE."),
-                     785,510,180,38,juce::Justification::centredLeft,3);
     g.setColour(muted);g.setFont(juce::Font(10.8f));
-    g.drawText(juce::String::fromUTF8("ТАЙМИНГ  /  СЛОГИ"),38,582,290,23,juce::Justification::centredLeft);
-    g.drawText(juce::String::fromUTF8("НОТЫ  /  ГАРМОНИИ"),340,582,290,23,juce::Justification::centredLeft);
-    g.drawText(juce::String::fromUTF8("ОТДЕЛЬНЫЕ WAV"),640,582,320,23,juce::Justification::centredLeft);
-    g.setColour(juce::Colour(0xff424a51));g.drawHorizontalLine(671,36,994);
+    g.drawText(juce::String::fromUTF8("СЛОГИ  /  ТАЙМИНГ"),39,587,290,22,juce::Justification::centredLeft);
+    g.drawText(juce::String::fromUTF8("НОТЫ  /  ГАРМОНИИ"),344,587,300,22,juce::Justification::centredLeft);
+    g.drawText(juce::String::fromUTF8("ЭКСПОРТ ВСЕХ WAV"),652,587,335,22,juce::Justification::centredLeft);
+    g.setColour(juce::Colour(0xff424a51));g.drawHorizontalLine(670,36,993);
 }
-
-void SyncEditor::fileDragEnter(const juce::StringArray &,int,int y){
-    dragActive=true;dragIntoLead=y<286;repaint();
+void SyncEditor::fileDragEnter(const juce::StringArray &,int x,int y){
+    dragActive=true;dragIntoLead=y<268;repaint();
 }
-void SyncEditor::fileDragExit(const juce::StringArray &){
-    dragActive=false;repaint();
-}
+void SyncEditor::fileDragExit(const juce::StringArray &){dragActive=false;repaint();}
 bool SyncEditor::isInterestedInFileDrag(const juce::StringArray &files){
     for(const auto &f:files)
         if(juce::File(f).hasFileExtension("wav;aif;aiff"))return true;
     return false;
 }
 void SyncEditor::filesDropped(const juce::StringArray &files,int,int y){
-    dragActive=false;loadFiles(files,y<287);
+    dragActive=false;loadFiles(files,y<268);
 }
 void SyncEditor::selectFiles(bool lead){
     chooser=std::make_unique<juce::FileChooser>(lead?juce::String::fromUTF8("Выбери лид"):juce::String::fromUTF8("Выбери бэки"),juce::File(),"*.wav;*.aif;*.aiff");
@@ -277,7 +283,7 @@ void SyncEditor::importHostEvents(bool importLead){
         }
         ++added;
     }
-    rendered.clear();hasTiming=hasPitch=false;
+    rendered.clear();dragFiles.clear();selectedResult=-1;hasTiming=hasPitch=false;
     info(importLead?
          (reference?juce::String::fromUTF8("Лид импортирован из Studio One через ARA2"):
                     juce::String::fromUTF8("ARA не предоставил доступный лид")):
@@ -299,16 +305,91 @@ void SyncEditor::loadFiles(const juce::StringArray &files,bool lead){
         }
         ++loaded;
     }
-    rendered.clear();hasTiming=hasPitch=false;
+    rendered.clear();dragFiles.clear();selectedResult=-1;hasTiming=hasPitch=false;
     info(loaded?juce::String::fromUTF8("Загружено дорожек: ")+juce::String(loaded)+(error.isNotEmpty()?" · "+error:""):error);
     repaint();
 }
+
+bool SyncEditor::writeResultWav(size_t index,const juce::File &target){
+    if(index>=rendered.size())return false;
+    const auto &a=rendered[index];
+    if(!a.valid() || a.samples()>std::numeric_limits<int>::max())return false;
+    auto stream=std::unique_ptr<juce::FileOutputStream>(target.createOutputStream());
+    if(!stream||stream->failedToOpen())return false;
+    juce::WavAudioFormat wav;
+    std::unique_ptr<juce::AudioFormatWriter> writer(
+        wav.createWriterFor(stream.get(),a.rate,static_cast<unsigned int>(a.channels.size()),24,{},0));
+    if(!writer)return false;
+    stream.release(); // ownership transferred to writer
+    const int count=static_cast<int>(a.samples());
+    juce::AudioBuffer<float> buffer(static_cast<int>(a.channels.size()),count);
+    for(int ch=0;ch<buffer.getNumChannels();++ch)
+        buffer.copyFrom(ch,0,a.channels[static_cast<size_t>(ch)].data(),count);
+    return writer->writeFromAudioSampleBuffer(buffer,0,count);
+}
+
+void SyncEditor::prepareDragWavs(){
+    dragFiles.clear();
+    selectedResult=rendered.empty()?-1:0;
+    pressedResult=-1;externalDragStarted=false;
+    if(rendered.empty())return;
+    dragDirectory=juce::File::getSpecialLocation(juce::File::tempDirectory)
+        .getChildFile("Synchron").getChildFile(juce::Uuid().toString());
+    if(!dragDirectory.createDirectory().wasOk()){
+        info(juce::String::fromUTF8("Не могу создать WAV для переноса. Используй EXPORT WAV."));
+        return;
+    }
+    for(size_t i=0;i<rendered.size();++i){
+        const auto &label=backups[i].label;
+        const auto safe=juce::File::createLegalFileName(label.isNotEmpty()?label:juce::String("BACK"));
+        const auto filename=juce::String(static_cast<int>(i+1)).paddedLeft('0',2)+"_"+safe+
+            (hasPitch?"_TUNED.wav":"_ALIGNED.wav");
+        const auto target=dragDirectory.getChildFile(filename);
+        dragFiles.push_back(writeResultWav(i,target)?target:juce::File());
+    }
+}
+
+void SyncEditor::mouseDown(const juce::MouseEvent &event){
+    pressedResult=resultAt(event.getPosition());
+    selectedResult=pressedResult;
+    externalDragStarted=false;
+    if(pressedResult>=0){
+        setMouseCursor(juce::MouseCursor::DraggingHandCursor);
+        repaint();
+    }
+}
+void SyncEditor::mouseDrag(const juce::MouseEvent &event){
+    if(pressedResult<0||externalDragStarted||event.getDistanceFromDragStart()<7)return;
+    const auto index=static_cast<size_t>(pressedResult);
+    if(index>=dragFiles.size()||!dragFiles[index].existsAsFile()){
+        info(juce::String::fromUTF8("Нет готового WAV. Нажми ALIGN TIMING."));
+        return;
+    }
+    externalDragStarted=true;
+    // JUCE invokes native Windows OLE CF_HDROP. Studio One may accept the WAV
+    // into the arranger if its drag target accepts external audio files.
+    juce::StringArray paths; paths.add(dragFiles[index].getFullPathName());
+    juce::Component::SafePointer<SyncEditor> safe(this);
+    const bool started=juce::DragAndDropContainer::performExternalDragDropOfFiles(
+        paths,false,this,[safe]{ if(safe) {safe->externalDragStarted=false;safe->pressedResult=-1;} });
+    if(started)
+        info(juce::String::fromUTF8("Перетащи WAV на новую дорожку Studio One к началу лида (без предварительного экспорта)."));
+    else{
+        externalDragStarted=false;
+        info(juce::String::fromUTF8("Studio One не принял системный перенос — используй EXPORT WAV."));
+    }
+}
+void SyncEditor::mouseUp(const juce::MouseEvent &){
+    pressedResult=-1;
+    setMouseCursor(juce::MouseCursor::NormalCursor);
+}
+
 void SyncEditor::alignAll(){
     if(!reference||backups.empty()){info(juce::String::fromUTF8("Нужны лид и хотя бы один бэк"));return;}
-    rendered.clear();hasPitch=hasTiming=false;
+    rendered.clear();dragFiles.clear();hasPitch=hasTiming=false;
     try {
         for(const auto &track:backups)rendered.push_back(synchro::alignTiming(reference->audio,track.audio));
-        hasTiming=true;info(juce::String::fromUTF8("Тайминг обработан для ")+juce::String(static_cast<int>(rendered.size()))+juce::String::fromUTF8(" дорожек. Тюнинг отключён."));
+        hasTiming=true;prepareDragWavs();info(juce::String::fromUTF8("Тайминг обработан для ")+juce::String(static_cast<int>(rendered.size()))+juce::String::fromUTF8(" дорожек. Тюнинг отключён."));
     }catch(const std::exception &e){rendered.clear();info("Timing error: "+juce::String(e.what()));}
     repaint();
 }
@@ -316,7 +397,7 @@ void SyncEditor::tuneAll(){
     if(!reference||!hasTiming||rendered.empty()){info(juce::String::fromUTF8("Сначала ALIGN TIMING"));return;}
     try {
         for(auto &audio:rendered)audio=synchro::tuneHarmony(reference->audio,audio);
-        hasPitch=true;info(juce::String::fromUTF8("Интонация подровнена, гармонические интервалы сохранены в пределах точности определения нот."));
+        hasPitch=true;prepareDragWavs();info(juce::String::fromUTF8("Интонация подровнена. Перетащи нужный RESULT в Studio One."));
     }catch(const std::exception &e){info("Tuning error: "+juce::String(e.what()));}
     repaint();
 }
@@ -325,7 +406,8 @@ void SyncEditor::exportWavs(const juce::File &folder){
     juce::WavAudioFormat wav;int done=0;
     for(size_t i=0;i<rendered.size();++i){
         auto &a=rendered[i];
-        auto name=backups[i].source.getFileNameWithoutExtension()+"_SYNCHRON_"+(hasPitch?"timed_tuned":"timed")+".wav";
+        auto label=backups[i].label.isNotEmpty()?backups[i].label:backups[i].source.getFileNameWithoutExtension();
+        auto name=juce::File::createLegalFileName(label)+"_SYNCHRON_"+(hasPitch?"timed_tuned":"timed")+".wav";
         auto file=folder.getChildFile(name).getNonexistentSibling(false);
         auto stream=std::unique_ptr<juce::FileOutputStream>(file.createOutputStream());
         if(!stream||stream->failedToOpen())continue;
