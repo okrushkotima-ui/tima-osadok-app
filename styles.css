@@ -461,3 +461,47 @@ body::after{content:"";position:fixed;z-index:0;pointer-events:none;inset:0;back
  .mini-overview-head strong{font-size:14px}
 }
 @media(prefers-reduced-motion:reduce){.habit-tile{transition:none}}
+
+
+/* RITM v17: large centered app name + discreet creator cloud */
+.cinematic-header .ritm-brand{
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:0;
+  height:105px;
+  user-select:none;
+  -webkit-user-select:none;
+}
+.ritm-brand .ritm-title{
+  font-size:clamp(40px,6vw,56px);
+  font-weight:950;
+  line-height:1;
+  letter-spacing:.105em;
+  color:#f3f6ff;
+  white-space:nowrap;
+  text-shadow:0 3px 21px #a4b9d03b,0 9px 26px #0008;
+  transform:translateY(-6px);
+}
+.ritm-brand .ritm-signature-cloud{
+  position:absolute;
+  width:88px;
+  height:auto;
+  top:62px;
+  left:calc(50% + 26px);
+  object-fit:contain;
+  transform:rotate(-6deg);
+  filter:drop-shadow(0 4px 11px #b4bece24);
+  pointer-events:none;
+  -webkit-user-drag:none;
+}
+@media(max-width:700px){
+  .cinematic-header .ritm-brand{height:90px}
+  .ritm-brand .ritm-title{font-size:clamp(38px,10vw,45px);transform:translateY(-5px)}
+  .ritm-brand .ritm-signature-cloud{width:72px;top:54px;left:calc(50% + 21px)}
+}
+@media(max-width:360px){
+  .ritm-brand .ritm-title{font-size:36px}
+  .ritm-brand .ritm-signature-cloud{width:64px;top:52px;left:calc(50% + 17px)}
+}
