@@ -49,7 +49,7 @@ public:
         kickDecayCoefficient=std::exp(-1.f/static_cast<float>(rate*.0015));
         smoothingCoefficient=1.f-std::exp(-1.f/static_cast<float>(rate*.00085));
         gain=1.f;previousKick=0.f;armed=true;
-        envelopeSample=0;active=false;freeCounter=0;lastTriggered=false;
+        envelopeSample=0;active=false;freeCounter=0;lastTriggered=false;displayPhase=0.f;
         cooldown=0;
     }
     void setCurve(const Curve& curve){points=curve;}
@@ -93,6 +93,7 @@ public:
                 if(phase>=1.f) {active=false;phase=1.f;}
             }else phase=1.f; // No kick or MIDI? no artificial pumping.
         }
+        displayPhase=phase;
         if(mode==Sync||active){
             phase+=shift;
             phase-=std::floor(phase);
@@ -106,11 +107,13 @@ public:
     }
     float lastGain() const{return gain;}
     bool triggered() const{return lastTriggered;}
+    float currentCyclePhase() const{return displayPhase;}
+    bool cycleActive() const{return mode==Sync||active;}
 private:
     Curve points=punch;
     double rate=48000,bpm=120,freeCounter=0,envelopeSample=0,periodSamples=24000;
     float gain=1,depth=1,mix=1,threshold=.1f,shift=0,previousKick=0;
-    float kickDecayCoefficient=.98f,smoothingCoefficient=.02f;
+    float kickDecayCoefficient=.98f,smoothingCoefficient=.02f,displayPhase=0.f;
     int mode=Sync,length=2,cooldown=0;
     bool active=false,armed=true,lastTriggered=false;
 };
