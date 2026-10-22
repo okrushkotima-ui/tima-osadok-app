@@ -6,7 +6,7 @@
 class SidechainEditor final:public juce::AudioProcessorEditor,private juce::Timer{
 public:
     explicit SidechainEditor(SidechainProcessor&);
-    ~SidechainEditor() override=default;
+    ~SidechainEditor() override {setLookAndFeel(nullptr);}
     void paint(juce::Graphics&) override;
     void resized() override;
     void mouseDown(const juce::MouseEvent&) override;
