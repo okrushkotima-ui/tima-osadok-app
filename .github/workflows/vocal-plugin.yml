@@ -3,6 +3,8 @@ on:
   push:
     paths: ['plugins/blizhe/**', '.github/workflows/vocal-plugin.yml']
   workflow_dispatch:
+  pull_request:
+    paths: ['plugins/blizhe/**', '.github/workflows/vocal-plugin.yml']
 permissions:
   contents: write
 jobs:
