@@ -20,6 +20,9 @@ SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
         addAndMakeVisible(button);
     };
     style(chooseLead,false);style(addBack,false);style(hostLead,false);style(hostBack,false);style(timing,true);style(pitch,false);style(exportButton,false);
+    exportButton.setButtonText("DRAG TO STUDIO ONE  /  CLICK TO SAVE");
+    exportButton.addMouseListener(this,false);
+    exportButton.setTooltip(juce::String::fromUTF8("Зажми и потяни обработанные WAV на таймлайн Studio One. Обычный клик — экспорт."));
     addAndMakeVisible(status);status.setColour(juce::Label::textColourId,muted);
     status.setFont(juce::Font(14.f));status.setJustificationType(juce::Justification::centredLeft);
     chooseLead.onClick=[this]{selectFiles(true);};
@@ -336,23 +339,69 @@ void SyncEditor::tuneAll(){
     }catch(const std::exception &e){info("Tuning error: "+juce::String(e.what()));}
     repaint();
 }
-void SyncEditor::exportWavs(const juce::File &folder){
-    if(!folder.isDirectory()||!hasTiming)return;
-    juce::WavAudioFormat wav;int done=0;
+juce::StringArray SyncEditor::writeResultFiles(const juce::File &folder){
+    juce::StringArray files;
+    if(!folder.isDirectory()||!hasTiming||rendered.size()!=backups.size())return files;
+    juce::WavAudioFormat wav;
     for(size_t i=0;i<rendered.size();++i){
         auto &a=rendered[i];
-        auto name=backups[i].source.getFileNameWithoutExtension()+"_SYNCHRON_"+(hasPitch?"timed_tuned":"timed")+".wav";
+        if(!a.valid()||a.samples()>std::numeric_limits<int>::max())continue;
+        auto stem=backups[i].source.getFileNameWithoutExtension();
+        if(stem.isEmpty())stem="BACK_"+juce::String(static_cast<int>(i+1)).paddedLeft('0',2);
+        stem=juce::File::createLegalFileName(stem);
+        auto name=stem+"_SYNCHRON_"+(hasPitch?"timed_tuned":"timed")+".wav";
         auto file=folder.getChildFile(name).getNonexistentSibling(false);
         auto stream=std::unique_ptr<juce::FileOutputStream>(file.createOutputStream());
         if(!stream||stream->failedToOpen())continue;
-        auto writer=std::unique_ptr<juce::AudioFormatWriter>(wav.createWriterFor(stream.get(),a.rate,static_cast<unsigned int>(a.channels.size()),24,{},0));
+        auto writer=std::unique_ptr<juce::AudioFormatWriter>(
+            wav.createWriterFor(stream.get(),a.rate,static_cast<unsigned int>(a.channels.size()),24,{},0));
         if(!writer)continue;
         stream.release();
         const auto count=static_cast<int>(a.samples());
         juce::AudioBuffer<float> buffer(static_cast<int>(a.channels.size()),count);
-        for(int c=0;c<buffer.getNumChannels();++c)buffer.copyFrom(c,0,a.channels[static_cast<size_t>(c)].data(),count);
-        if(writer->writeFromAudioSampleBuffer(buffer,0,count))++done;
+        for(int ch=0;ch<buffer.getNumChannels();++ch)
+            buffer.copyFrom(ch,0,a.channels[static_cast<size_t>(ch)].data(),count);
+        if(writer->writeFromAudioSampleBuffer(buffer,0,count))files.add(file.getFullPathName());
     }
-    info(juce::String::fromUTF8("Экспортировано WAV: ")+juce::String(done)+"/"+juce::String(static_cast<int>(rendered.size())));
+    return files;
+}
+void SyncEditor::exportWavs(const juce::File &folder){
+    const auto files=writeResultFiles(folder);
+    info(juce::String::fromUTF8("Экспортировано отдельных WAV: ")+juce::String(files.size()));
+}
+void SyncEditor::beginResultsDrag(){
+    if(!hasTiming || rendered.empty()){
+        info(juce::String::fromUTF8("Сначала нажми ALIGN TIMING"));
+        return;
+    }
+    const auto temp=juce::File::getSpecialLocation(juce::File::tempDirectory)
+        .getChildFile("tima-osadok-synchron")
+        .getChildFile("drag-"+juce::Uuid().toString());
+    if(!temp.createDirectory().wasOk()){
+        info(juce::String::fromUTF8("Не могу создать временные файлы для переноса"));
+        return;
+    }
+    const auto files=writeResultFiles(temp);
+    if(files.isEmpty()){
+        info(juce::String::fromUTF8("Не удалось подготовить WAV для перетаскивания"));
+        return;
+    }
+    // Real Windows OLE file drop: Studio One gets standard filesystem WAV paths.
+    // Host alone decides whether the arrangement accepts these dropped audio files.
+    if(juce::DragAndDropContainer::performExternalDragDropOfFiles(files,false,&exportButton)){
+        info(juce::String::fromUTF8("Перетащи WAV на нужную дорожку Studio One. Место на таймлайне выбираешь сам."));
+    }else{
+        info(juce::String::fromUTF8("Studio One отклонил внешний drag. Используй обычный экспорт."));
+    }
+}
+void SyncEditor::mouseDrag(const juce::MouseEvent &event){
+    if(event.eventComponent==&exportButton && !dragOutStarted &&
+       event.getDistanceFromDragStart()>=9){
+        dragOutStarted=true;
+        beginResultsDrag();
+    }
+}
+void SyncEditor::mouseUp(const juce::MouseEvent &event){
+    if(event.eventComponent==&exportButton)dragOutStarted=false;
 }
 void SyncEditor::info(juce::String message){status.setText(message,juce::dontSendNotification);}
