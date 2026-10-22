@@ -16,10 +16,10 @@ private:
     void meter(juce::Graphics&,float,float,float,const juce::String&);
     BlizheProcessor& processor;
     BlizheLook look;
-    juce::Slider amount,mix;
+    juce::Slider amount,mix,inputGain,outputGain;
     juce::TextButton power{juce::String::fromUTF8("⏻")};
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> amountAttachment,mixAttachment;
-    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> powerAttachment;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> powerAttachment,inputGainAttachment,outputGainAttachment;
     float inLevel=0,outLevel=0,reduction=0,side=0;
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(BlizheEditor)
 };
