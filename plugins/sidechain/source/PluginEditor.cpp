@@ -195,6 +195,7 @@ void SidechainEditor::paint(juce::Graphics&g){
     if(displayConnected && kickWave.valid){
         juce::Path actualGain;
         bool gainStarted=false;
+        float previousX=-1.f;
         for(int i=0;i<sidechain::KickScope::bins;++i){
             if(!kickWave.seen[static_cast<size_t>(i)]){gainStarted=false;continue;}
             const float phase=(static_cast<float>(i)+.5f)/sidechain::KickScope::bins;
@@ -209,8 +210,9 @@ void SidechainEditor::paint(juce::Graphics&g){
             // Gain trace uses a separate dotted-white line at the same phase.
             // Keep the line disconnected at waveform wrap and missing bins.
             const float yGain=graph.getBottom()-kickWave.appliedGain[static_cast<size_t>(i)]*graph.getHeight();
-            if(!gainStarted||shifted<phaseShift){actualGain.startNewSubPath(x,yGain);gainStarted=true;}
+            if(!gainStarted||x<previousX){actualGain.startNewSubPath(x,yGain);gainStarted=true;}
             else actualGain.lineTo(x,yGain);
+            previousX=x;
         }
         g.setColour(cream.withAlpha(.75f));
         juce::PathStrokeType stroke(1.2f);
