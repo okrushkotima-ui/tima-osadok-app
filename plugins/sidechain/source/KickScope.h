@@ -16,6 +16,7 @@ public:
     struct Snapshot {
         std::array<float,bins> kick{};
         std::array<float,bins> appliedGain{};
+        std::array<bool,bins> seen{};
         float phase=0.f;
         unsigned int generation=0;
         bool valid=false;
@@ -62,6 +63,7 @@ public:
         for(int i=0;i<bins;++i){
             const auto packed=signal[static_cast<size_t>(i)].load(std::memory_order_acquire);
             if(static_cast<unsigned int>(packed>>32)!=s.generation)continue;
+            s.seen[static_cast<size_t>(i)]=true;
             s.kick[static_cast<size_t>(i)]=static_cast<float>(packed&0xffffu)/65535.f*8.f;
             s.appliedGain[static_cast<size_t>(i)]=static_cast<float>((packed>>16)&0xffffu)/65535.f;
             s.valid=true;
