@@ -1,0 +1,43 @@
+name: Build Synchron vocal alignment VST3
+on:
+  push:
+    paths: ['plugins/voice-align/**', '.github/workflows/voice-align.yml']
+  pull_request:
+    paths: ['plugins/voice-align/**', '.github/workflows/voice-align.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S plugins/voice-align -B build/voice-align -A x64
+      - name: Compile VST3 and tests
+        run: cmake --build build/voice-align --config Release --parallel 3
+      - name: Run alignment unit tests
+        run: ctest --test-dir build/voice-align -C Release --output-on-failure
+      - name: Verify output exists
+        shell: pwsh
+        run: |
+          $bundle = 'build/voice-align/VoiceAlign_artefacts/Release/VST3/Синхрон by тима осадок.vst3'
+          if (-not (Test-Path -LiteralPath $bundle)) { throw 'Expected VST3 not generated' }
+          $metadata = Join-Path $bundle 'Contents/Resources/moduleinfo.json'
+          if (-not (Test-Path -LiteralPath $metadata)) { throw 'VST3 moduleinfo missing' }
+          $text = Get-Content -LiteralPath $metadata -Raw -Encoding utf8
+          if (-not $text.Contains('Синхрон by тима осадок')) { throw "Bad Unicode metadata: $text" }
+      - name: Create installer
+        shell: pwsh
+        run: |
+          $compiler = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path $compiler)) { choco install innosetup --no-progress -y }
+          & $compiler plugins/voice-align/installer/synchron.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Synchron-VST3-win64-prototype
+          path: |
+            plugins/voice-align/installer/Output/*.exe
+            build/voice-align/VoiceAlign_artefacts/Release/VST3/*
