@@ -1,10 +1,14 @@
 name: Build Synchron ARA2 Event FX VST3
 on:
   push:
+    branches: [main]
     paths: ['plugins/voice-align/**', '.github/workflows/voice-align.yml']
   pull_request:
     paths: ['plugins/voice-align/**', '.github/workflows/voice-align.yml']
   workflow_dispatch:
+concurrency:
+  group: synchron-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
