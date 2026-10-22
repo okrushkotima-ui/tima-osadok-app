@@ -17,4 +17,4 @@ UninstallDisplayName=Ближе by тима осадок VST3
 Type: filesandordirs; Name: "{commoncf64}\VST3\тима осадок\ближе.vst3"
 
 [Files]
-Source: "..\..\..\build\blizhe\Blizhe_artefacts\Release\VST3\Ближе by тима осадок.vst3\*"; DestDir: "{commoncf64}\VST3\тима осадок\ближе.vst3"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\..\..\build\blizhe\Blizhe_artefacts\Release\VST3\Ближе by тима осадок.vst3\*"; DestDir: "{commoncf64}\VST3\тима осадок\Ближе by тима осадок.vst3"; Flags: ignoreversion recursesubdirs createallsubdirs
