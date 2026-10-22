@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(VoiceAlign VERSION 0.2.2 LANGUAGES C CXX)
+project(VoiceAlign VERSION 0.2.3 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 if(MSVC)
@@ -13,6 +13,18 @@ FetchContent_MakeAvailable(signalsmith_stretch)
 
 # Host timeline access requires the Celemony ARA SDK (not bundled with JUCE).
 juce_set_ara_sdk_path("${CMAKE_CURRENT_SOURCE_DIR}/../../external/ARA_SDK")
+# Studio One VST3 Event FX often docks large ARA editors into its Edit pane.
+# Request a non-embedded VST3 view while retaining the ARA audio/region roles.
+# This changes only our fetched JUCE wrapper, not the installed DAW.
+set(_vst3_wrapper "${juce_SOURCE_DIR}/modules/juce_audio_plugin_client/juce_audio_plugin_client_VST3.cpp")
+file(READ "${_vst3_wrapper}" _vst3_source)
+set(_embedded_view_return "return (Steinberg::TBool) dynamic_cast<AudioProcessorARAExtension*> (pluginInstance)->isEditorView();")
+string(FIND "${_vst3_source}" "${_embedded_view_return}" _vst3_embed_pos)
+if(_vst3_embed_pos EQUAL -1)
+  message(FATAL_ERROR "JUCE VST3 Studio One embedding API signature changed")
+endif()
+string(REPLACE "${_embedded_view_return}" "return (Steinberg::TBool) false;" _vst3_source "${_vst3_source}")
+file(WRITE "${_vst3_wrapper}" "${_vst3_source}")
 # JUCE 8.0.12 includes superseded ARAChannelArrangement.cpp; SDK 2.3 has ARAChannelFormat.cpp.
 set(_ara_wrapper "${juce_SOURCE_DIR}/modules/juce_audio_plugin_client/juce_audio_plugin_client_ARA.cpp")
 set(_ara_sdk_util "${CMAKE_CURRENT_SOURCE_DIR}/../../external/ARA_SDK/ARA_Library/Utilities")
