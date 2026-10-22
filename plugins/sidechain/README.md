@@ -1,4 +1,4 @@
-# Sidechain by тима осадок — Windows VST3 (beta 0.1.0)
+# Sidechain by тима осадок — Windows VST3 (beta 0.2.0)
 
 An original C++/JUCE 8 volume-shaper effect. Workflow inspired by Kickstart 2, without copying source or artwork.
 
@@ -18,3 +18,11 @@ STUDIO ONE:
 6. BASS ONLY leaves most highs untouched and ducks mainly below the adjustable cutoff; disable for ordinary full-band pumping.
 
 The Windows VST3 bundle is installed under the standard Common Files/VST3/тима осадок directory. The UI has been implemented in JUCE and is separate from Kickstart 2's original artwork. This beta requires host-level listening tests, including kick-send detection.
+
+## New in 0.2.0: real-time KICK SCOPE
+
+- A **teal kick-input waveform** is recorded directly from the actual VST3 secondary sidechain audio bus in realtime, not a sample image, preview, or animation. Kick energy occupies the same horizontal timing axis as the editable ducking curve; waveform is normalized on screen for easy visibility, while peak dB remains numeric.
+- A **dashed white line** shows the actual applied gain, allowing comparison with the target yellow curve. A gold trigger line flashes at kick detection, and a moving white playhead tracks the envelope. Tempo-relative cycle length is marked in milliseconds.
+- Incoming audio is captured into a fixed-size 384-bin atomic ring-style timeline, reset at each trigger or sync cycle. No locks, dynamic allocations, or GUI calls are made from the audio callback.
+- **IMPORTANT:** To see an actual kick waveform you must choose **AUDIO KICK** and route kick track audio to the plugin's sidechain input in Studio One. A tempo-synced plugin that receives no kick audio cannot show an actual kick waveform, so the editor displays an explicit routing hint rather than inventing a fake signal.
+- For attack tuning, align the beginning of the gold curve's duck with the teal transient. Shape the rising portion of the gold curve to release as the teal kick tail decays; edit the nine white points. Zero-lookahead still applies.
