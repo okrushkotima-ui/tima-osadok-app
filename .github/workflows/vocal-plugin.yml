@@ -1,4 +1,4 @@
-name: Build blizhe VST3
+name: Build Ближе by тима осадок VST3
 on:
   push:
     paths: ['plugins/blizhe/**', '.github/workflows/vocal-plugin.yml']
@@ -17,6 +17,17 @@ jobs:
         run: cmake -S plugins/blizhe -B build/blizhe -A x64
       - name: Build
         run: cmake --build build/blizhe --config Release --parallel 3
+      - name: Verify Unicode VST3 metadata
+        shell: pwsh
+        run: |
+          $bundle = 'build/blizhe/Blizhe_artefacts/Release/VST3/Ближе by тима осадок.vst3'
+          $metaFile = Join-Path $bundle 'Contents/Resources/moduleinfo.json'
+          if (-not (Test-Path -LiteralPath $metaFile)) { throw 'Missing VST3 moduleinfo.json' }
+          $metadata = Get-Content -LiteralPath $metaFile -Raw -Encoding utf8
+          if (-not $metadata.Contains('"Name": "Ближе by тима осадок"')) { throw "Bad VST3 plugin name in moduleinfo: $metadata" }
+          if (-not $metadata.Contains('"Vendor": "тима осадок"')) { throw "Bad VST3 vendor in moduleinfo: $metadata" }
+          $dll = Join-Path $bundle 'Contents/x86_64-win/Ближе by тима осадок.vst3'
+          if (-not (Test-Path -LiteralPath $dll)) { throw "Missing 64-bit plugin binary: $dll" }
       - name: DSP tests
         run: ctest --test-dir build/blizhe -C Release --output-on-failure
       - name: Installer
@@ -27,7 +38,7 @@ jobs:
           if (-not (Test-Path $compiler)) { throw 'Inno Setup compiler is missing' }
           & $compiler plugins/blizhe/installer/blizhe.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          if (-not (Test-Path 'plugins/blizhe/installer/Output/blizhe-Setup-0.1.0-win64.exe')) { throw 'Installer was not created' }
+          if (-not (Test-Path 'plugins/blizhe/installer/Output/Blizhe-by-tima-osadok-Setup-0.1.1-win64.exe')) { throw 'Installer was not created' }
       - uses: actions/upload-artifact@v4
         with:
           name: blizhe-windows-x64
@@ -38,12 +49,12 @@ jobs:
         if: github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: blizhe-v0.1.0-beta
-          name: ближе — Windows VST3 beta 0.1.0
+          tag_name: blizhe-v0.1.1-beta
+          name: Ближе by тима осадок — Windows VST3 beta 0.1.1
           prerelease: true
           make_latest: false
           body: |
             Experimental Windows x64 VST3 — by тима осадок.
             Install the EXE, then rescan VST3 in Studio One.
             Automated DSP tests passed; real DAW/audio validation is still required.
-          files: plugins/blizhe/installer/Output/blizhe-Setup-0.1.0-win64.exe
+          files: plugins/blizhe/installer/Output/Blizhe-by-tima-osadok-Setup-0.1.1-win64.exe
