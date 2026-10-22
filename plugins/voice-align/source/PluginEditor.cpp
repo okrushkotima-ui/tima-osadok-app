@@ -283,7 +283,7 @@ void SyncEditor::importHostEvents(bool importLead){
         }
         ++added;
     }
-    rendered.clear();hasTiming=hasPitch=false;
+    rendered.clear();dragFiles.clear();selectedResult=-1;hasTiming=hasPitch=false;
     info(importLead?
          (reference?juce::String::fromUTF8("Лид импортирован из Studio One через ARA2"):
                     juce::String::fromUTF8("ARA не предоставил доступный лид")):
@@ -305,16 +305,91 @@ void SyncEditor::loadFiles(const juce::StringArray &files,bool lead){
         }
         ++loaded;
     }
-    rendered.clear();hasTiming=hasPitch=false;
+    rendered.clear();dragFiles.clear();selectedResult=-1;hasTiming=hasPitch=false;
     info(loaded?juce::String::fromUTF8("Загружено дорожек: ")+juce::String(loaded)+(error.isNotEmpty()?" · "+error:""):error);
     repaint();
 }
+
+bool SyncEditor::writeResultWav(size_t index,const juce::File &target){
+    if(index>=rendered.size())return false;
+    const auto &a=rendered[index];
+    if(!a.valid() || a.samples()>std::numeric_limits<int>::max())return false;
+    auto stream=std::unique_ptr<juce::FileOutputStream>(target.createOutputStream());
+    if(!stream||stream->failedToOpen())return false;
+    juce::WavAudioFormat wav;
+    std::unique_ptr<juce::AudioFormatWriter> writer(
+        wav.createWriterFor(stream.get(),a.rate,static_cast<unsigned int>(a.channels.size()),24,{},0));
+    if(!writer)return false;
+    stream.release(); // ownership transferred to writer
+    const int count=static_cast<int>(a.samples());
+    juce::AudioBuffer<float> buffer(static_cast<int>(a.channels.size()),count);
+    for(int ch=0;ch<buffer.getNumChannels();++ch)
+        buffer.copyFrom(ch,0,a.channels[static_cast<size_t>(ch)].data(),count);
+    return writer->writeFromAudioSampleBuffer(buffer,0,count);
+}
+
+void SyncEditor::prepareDragWavs(){
+    dragFiles.clear();
+    selectedResult=rendered.empty()?-1:0;
+    pressedResult=-1;externalDragStarted=false;
+    if(rendered.empty())return;
+    dragDirectory=juce::File::getSpecialLocation(juce::File::tempDirectory)
+        .getChildFile("Synchron").getChildFile(juce::Uuid().toString());
+    if(!dragDirectory.createDirectory().wasOk()){
+        info(juce::String::fromUTF8("Не могу создать WAV для переноса. Используй EXPORT WAV."));
+        return;
+    }
+    for(size_t i=0;i<rendered.size();++i){
+        const auto &label=backups[i].label;
+        const auto safe=juce::File::createLegalFileName(label.isNotEmpty()?label:juce::String("BACK"));
+        const auto filename=juce::String(static_cast<int>(i+1)).paddedLeft('0',2)+"_"+safe+
+            (hasPitch?"_TUNED.wav":"_ALIGNED.wav");
+        const auto target=dragDirectory.getChildFile(filename);
+        dragFiles.push_back(writeResultWav(i,target)?target:juce::File());
+    }
+}
+
+void SyncEditor::mouseDown(const juce::MouseEvent &event){
+    pressedResult=resultAt(event.getPosition());
+    selectedResult=pressedResult;
+    externalDragStarted=false;
+    if(pressedResult>=0){
+        setMouseCursor(juce::MouseCursor::DraggingHandCursor);
+        repaint();
+    }
+}
+void SyncEditor::mouseDrag(const juce::MouseEvent &event){
+    if(pressedResult<0||externalDragStarted||event.getDistanceFromDragStart()<7)return;
+    const auto index=static_cast<size_t>(pressedResult);
+    if(index>=dragFiles.size()||!dragFiles[index].existsAsFile()){
+        info(juce::String::fromUTF8("Нет готового WAV. Нажми ALIGN TIMING."));
+        return;
+    }
+    externalDragStarted=true;
+    // JUCE invokes native Windows OLE CF_HDROP. Studio One may accept the WAV
+    // into the arranger if its drag target accepts external audio files.
+    juce::StringArray paths; paths.add(dragFiles[index].getFullPathName());
+    juce::Component::SafePointer<SyncEditor> safe(this);
+    const bool started=juce::DragAndDropContainer::performExternalDragDropOfFiles(
+        paths,false,this,[safe]{ if(safe) {safe->externalDragStarted=false;safe->pressedResult=-1;} });
+    if(started)
+        info(juce::String::fromUTF8("Перетащи WAV на новую дорожку Studio One к началу лида (без предварительного экспорта)."));
+    else{
+        externalDragStarted=false;
+        info(juce::String::fromUTF8("Studio One не принял системный перенос — используй EXPORT WAV."));
+    }
+}
+void SyncEditor::mouseUp(const juce::MouseEvent &){
+    pressedResult=-1;
+    setMouseCursor(juce::MouseCursor::NormalCursor);
+}
+
 void SyncEditor::alignAll(){
     if(!reference||backups.empty()){info(juce::String::fromUTF8("Нужны лид и хотя бы один бэк"));return;}
-    rendered.clear();hasPitch=hasTiming=false;
+    rendered.clear();dragFiles.clear();hasPitch=hasTiming=false;
     try {
         for(const auto &track:backups)rendered.push_back(synchro::alignTiming(reference->audio,track.audio));
-        hasTiming=true;info(juce::String::fromUTF8("Тайминг обработан для ")+juce::String(static_cast<int>(rendered.size()))+juce::String::fromUTF8(" дорожек. Тюнинг отключён."));
+        hasTiming=true;prepareDragWavs();info(juce::String::fromUTF8("Тайминг обработан для ")+juce::String(static_cast<int>(rendered.size()))+juce::String::fromUTF8(" дорожек. Тюнинг отключён."));
     }catch(const std::exception &e){rendered.clear();info("Timing error: "+juce::String(e.what()));}
     repaint();
 }
@@ -322,7 +397,7 @@ void SyncEditor::tuneAll(){
     if(!reference||!hasTiming||rendered.empty()){info(juce::String::fromUTF8("Сначала ALIGN TIMING"));return;}
     try {
         for(auto &audio:rendered)audio=synchro::tuneHarmony(reference->audio,audio);
-        hasPitch=true;info(juce::String::fromUTF8("Интонация подровнена, гармонические интервалы сохранены в пределах точности определения нот."));
+        hasPitch=true;prepareDragWavs();info(juce::String::fromUTF8("Интонация подровнена. Перетащи нужный RESULT в Studio One."));
     }catch(const std::exception &e){info("Tuning error: "+juce::String(e.what()));}
     repaint();
 }
@@ -331,7 +406,8 @@ void SyncEditor::exportWavs(const juce::File &folder){
     juce::WavAudioFormat wav;int done=0;
     for(size_t i=0;i<rendered.size();++i){
         auto &a=rendered[i];
-        auto name=backups[i].source.getFileNameWithoutExtension()+"_SYNCHRON_"+(hasPitch?"timed_tuned":"timed")+".wav";
+        auto label=backups[i].label.isNotEmpty()?backups[i].label:backups[i].source.getFileNameWithoutExtension();
+        auto name=juce::File::createLegalFileName(label)+"_SYNCHRON_"+(hasPitch?"timed_tuned":"timed")+".wav";
         auto file=folder.getChildFile(name).getNonexistentSibling(false);
         auto stream=std::unique_ptr<juce::FileOutputStream>(file.createOutputStream());
         if(!stream||stream->failedToOpen())continue;
