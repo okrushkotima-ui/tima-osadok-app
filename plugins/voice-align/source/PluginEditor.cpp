@@ -22,7 +22,8 @@ SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
     status.setFont(juce::Font(14.f));status.setJustificationType(juce::Justification::centredLeft);
     chooseLead.onClick=[this]{selectFiles(true);};
     addBack.onClick=[this]{selectFiles(false);};
-    hostLead.onClick=[this]{importHostEvents(true);};
+    hostLead.onClick=[this]{importHostEvents(true);if(reference)importHostEvents(false);};
+    hostLead.setButtonText("LOAD SESSION");
     hostBack.onClick=[this]{importHostEvents(false);};
     hostBack.setButtonText("GET ALL BACKS");
     timing.onClick=[this]{alignAll();};
@@ -36,11 +37,21 @@ SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
     };
     dragDirectory=juce::File::getSpecialLocation(juce::File::userDocumentsDirectory)
         .getChildFile("Synchron").getChildFile("Drag Outputs");
-    info(juce::String::fromUTF8("LEAD → BACKS → ALIGN TIMING → перетащи готовый RESULT на дорожку Studio One."));
+    info(juce::String::fromUTF8("ARA2: выдели лид и бэки, назначь Event FX один раз. Загружаю сессию..."));
+    startTimer(900);
 }
 
 
 
+void SyncEditor::timerCallback(){
+    stopTimer();
+    // Studio One finishes binding ARA roles after creating the editor.
+    // Leave manually loaded audio untouched.
+    if(!reference && processor.hostEditorRenderer()!=nullptr){
+        importHostEvents(true);
+        if(reference)importHostEvents(false);
+    }
+}
 void SyncEditor::resized(){
     chooseLead.setBounds(759,154,98,32);
     hostLead.setBounds(864,154,114,32);
