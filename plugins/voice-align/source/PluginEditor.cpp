@@ -8,7 +8,11 @@ juce::String display(const juce::File &f){return f.getFileNameWithoutExtension()
 
 SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
     formats.registerBasicFormats();
-    setSize(1030,730);setResizable(false,false);
+    setSize(1030,730);
+    // Studio One may embed the ARA editor in a narrow lower dock or detach it.
+    // Host still owns the dock size, but our UI reflows proportionally when resized.
+    setResizable(true,true);
+    setResizeLimits(740,520,1720,1180);
     auto style=[this](juce::TextButton &button,bool primary){
         button.setColour(juce::TextButton::buttonColourId,primary?juce::Colour(0xffba9160):juce::Colour(0xff303640));
         button.setColour(juce::TextButton::textColourOffId,primary?ink:juce::Colour(0xfff0eae2));
@@ -16,6 +20,9 @@ SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
         addAndMakeVisible(button);
     };
     style(chooseLead,false);style(addBack,false);style(hostLead,false);style(hostBack,false);style(timing,true);style(pitch,false);style(exportButton,false);
+    exportButton.setButtonText("DRAG TO STUDIO ONE  /  CLICK TO SAVE");
+    exportButton.addMouseListener(this,false);
+    exportButton.setTooltip(juce::String::fromUTF8("Зажми и потяни обработанные WAV на таймлайн Studio One. Обычный клик — экспорт."));
     addAndMakeVisible(status);status.setColour(juce::Label::textColourId,muted);
     status.setFont(juce::Font(14.f));status.setJustificationType(juce::Justification::centredLeft);
     chooseLead.onClick=[this]{selectFiles(true);};
@@ -36,14 +43,19 @@ SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
 
 
 void SyncEditor::resized(){
-    chooseLead.setBounds(547,153,82,32);
-    hostLead.setBounds(633,153,98,32);
-    addBack.setBounds(547,312,82,32);
-    hostBack.setBounds(633,312,98,32);
-    timing.setBounds(36,612,288,52);
-    pitch.setBounds(336,612,288,52);
-    exportButton.setBounds(636,612,358,52);
-    status.setBounds(42,673,938,37);
+    const auto sx=getWidth()/1030.f,sy=getHeight()/730.f;
+    auto fit=[sx,sy](juce::Component& target,int x,int y,int w,int h){
+        target.setBounds(juce::roundToInt(x*sx),juce::roundToInt(y*sy),
+                         juce::roundToInt(w*sx),juce::roundToInt(h*sy));
+    };
+    fit(chooseLead,547,153,82,32);
+    fit(hostLead,633,153,98,32);
+    fit(addBack,547,312,82,32);
+    fit(hostBack,633,312,98,32);
+    fit(timing,36,612,288,52);
+    fit(pitch,336,612,288,52);
+    fit(exportButton,636,612,358,52);
+    fit(status,42,673,938,37);
 }
 void SyncEditor::paintAudioWave(juce::Graphics &g,const synchro::Audio *audio,juce::Rectangle<float> box,juce::Colour colour) const {
     auto center=box.getCentreY();
@@ -65,6 +77,7 @@ void SyncEditor::paintAudioWave(juce::Graphics &g,const synchro::Audio *audio,ju
     }
 }
 void SyncEditor::paint(juce::Graphics &g) {
+    g.addTransform(juce::AffineTransform::scale(getWidth()/1030.f,getHeight()/730.f));
     const juce::Colour surface(0xff1e242a),surfaceDeep(0xff171c21),
                        border(0xff3b454e),paper(0xfff4ecdf);
     g.setGradientFill(juce::ColourGradient(juce::Colour(0xff292c31),0,0,juce::Colour(0xff12171c),1030,730,false));
@@ -148,7 +161,7 @@ void SyncEditor::paint(juce::Graphics &g) {
     stage(428,4,"TUNE NOTES",juce::String::fromUTF8("По желанию"),hasPitch);
     g.setColour(gold.withAlpha(.20f));g.fillRoundedRectangle(775.f,505.f,197.f,49.f,7.f);
     g.setColour(juce::Colour(0xffdcc7a6));g.setFont(juce::Font(10.2f));
-    g.drawFittedText(juce::String::fromUTF8("ARA2 beta: добавь Event FX к вокалу, затем FROM STUDIO ONE."),
+    g.drawFittedText(juce::String::fromUTF8("Бэки: назначь Синхрон Event FX на каждый дубль, затем FROM STUDIO ONE."),
                      785,510,180,38,juce::Justification::centredLeft,3);
     g.setColour(muted);g.setFont(juce::Font(10.8f));
     g.drawText(juce::String::fromUTF8("ТАЙМИНГ  /  СЛОГИ"),38,582,290,23,juce::Justification::centredLeft);
@@ -158,7 +171,7 @@ void SyncEditor::paint(juce::Graphics &g) {
 }
 
 void SyncEditor::fileDragEnter(const juce::StringArray &,int,int y){
-    dragActive=true;dragIntoLead=y<286;repaint();
+    dragActive=true;dragIntoLead=y<juce::roundToInt(getHeight()*286.f/730.f);repaint();
 }
 void SyncEditor::fileDragExit(const juce::StringArray &){
     dragActive=false;repaint();
@@ -169,7 +182,7 @@ bool SyncEditor::isInterestedInFileDrag(const juce::StringArray &files){
     return false;
 }
 void SyncEditor::filesDropped(const juce::StringArray &files,int,int y){
-    dragActive=false;loadFiles(files,y<287);
+    dragActive=false;loadFiles(files,y<juce::roundToInt(getHeight()*287.f/730.f));
 }
 void SyncEditor::selectFiles(bool lead){
     chooser=std::make_unique<juce::FileChooser>(lead?juce::String::fromUTF8("Выбери лид"):juce::String::fromUTF8("Выбери бэки"),juce::File(),"*.wav;*.aif;*.aiff");
@@ -245,6 +258,11 @@ void SyncEditor::importHostEvents(bool importLead){
         if(!importLead && reference &&
            (reference->hostRegionToken==reinterpret_cast<uintptr_t>(region)||
             std::abs(reference->audio.rate-rate)>1))continue;
+        // ARA reports the same source via playback role and document graph.
+        // Only import any given event once, even across repeated button presses.
+        const auto token=reinterpret_cast<uintptr_t>(region);
+        if(!importLead && std::any_of(backups.begin(),backups.end(),
+            [token](const Track &track){return track.hostRegionToken==token;}))continue;
         if(importLead && reference && added>0)break;
         juce::ARAAudioSourceReader reader(source);
         if(!reader.isValid())continue;
@@ -281,7 +299,8 @@ void SyncEditor::importHostEvents(bool importLead){
     info(importLead?
          (reference?juce::String::fromUTF8("Лид импортирован из Studio One через ARA2"):
                     juce::String::fromUTF8("ARA не предоставил доступный лид")):
-         juce::String::fromUTF8("Бэков импортировано через ARA2: ")+juce::String(added));
+         (added>0?juce::String::fromUTF8("Добавлено бэков через ARA2: ")+juce::String(added):
+         juce::String::fromUTF8("Других событий не видно. Назначь Синхрон Event FX на каждый бэк и нажми FROM STUDIO ONE.")));
     repaint();
 }
 void SyncEditor::loadFiles(const juce::StringArray &files,bool lead){
@@ -320,23 +339,69 @@ void SyncEditor::tuneAll(){
     }catch(const std::exception &e){info("Tuning error: "+juce::String(e.what()));}
     repaint();
 }
-void SyncEditor::exportWavs(const juce::File &folder){
-    if(!folder.isDirectory()||!hasTiming)return;
-    juce::WavAudioFormat wav;int done=0;
+juce::StringArray SyncEditor::writeResultFiles(const juce::File &folder){
+    juce::StringArray files;
+    if(!folder.isDirectory()||!hasTiming||rendered.size()!=backups.size())return files;
+    juce::WavAudioFormat wav;
     for(size_t i=0;i<rendered.size();++i){
         auto &a=rendered[i];
-        auto name=backups[i].source.getFileNameWithoutExtension()+"_SYNCHRON_"+(hasPitch?"timed_tuned":"timed")+".wav";
+        if(!a.valid()||a.samples()>std::numeric_limits<int>::max())continue;
+        auto stem=backups[i].source.getFileNameWithoutExtension();
+        if(stem.isEmpty())stem="BACK_"+juce::String(static_cast<int>(i+1)).paddedLeft('0',2);
+        stem=juce::File::createLegalFileName(stem);
+        auto name=stem+"_SYNCHRON_"+(hasPitch?"timed_tuned":"timed")+".wav";
         auto file=folder.getChildFile(name).getNonexistentSibling(false);
         auto stream=std::unique_ptr<juce::FileOutputStream>(file.createOutputStream());
         if(!stream||stream->failedToOpen())continue;
-        auto writer=std::unique_ptr<juce::AudioFormatWriter>(wav.createWriterFor(stream.get(),a.rate,static_cast<unsigned int>(a.channels.size()),24,{},0));
+        auto writer=std::unique_ptr<juce::AudioFormatWriter>(
+            wav.createWriterFor(stream.get(),a.rate,static_cast<unsigned int>(a.channels.size()),24,{},0));
         if(!writer)continue;
         stream.release();
         const auto count=static_cast<int>(a.samples());
         juce::AudioBuffer<float> buffer(static_cast<int>(a.channels.size()),count);
-        for(int c=0;c<buffer.getNumChannels();++c)buffer.copyFrom(c,0,a.channels[static_cast<size_t>(c)].data(),count);
-        if(writer->writeFromAudioSampleBuffer(buffer,0,count))++done;
+        for(int ch=0;ch<buffer.getNumChannels();++ch)
+            buffer.copyFrom(ch,0,a.channels[static_cast<size_t>(ch)].data(),count);
+        if(writer->writeFromAudioSampleBuffer(buffer,0,count))files.add(file.getFullPathName());
     }
-    info(juce::String::fromUTF8("Экспортировано WAV: ")+juce::String(done)+"/"+juce::String(static_cast<int>(rendered.size())));
+    return files;
+}
+void SyncEditor::exportWavs(const juce::File &folder){
+    const auto files=writeResultFiles(folder);
+    info(juce::String::fromUTF8("Экспортировано отдельных WAV: ")+juce::String(files.size()));
+}
+void SyncEditor::beginResultsDrag(){
+    if(!hasTiming || rendered.empty()){
+        info(juce::String::fromUTF8("Сначала нажми ALIGN TIMING"));
+        return;
+    }
+    const auto temp=juce::File::getSpecialLocation(juce::File::tempDirectory)
+        .getChildFile("tima-osadok-synchron")
+        .getChildFile("drag-"+juce::Uuid().toString());
+    if(!temp.createDirectory().wasOk()){
+        info(juce::String::fromUTF8("Не могу создать временные файлы для переноса"));
+        return;
+    }
+    const auto files=writeResultFiles(temp);
+    if(files.isEmpty()){
+        info(juce::String::fromUTF8("Не удалось подготовить WAV для перетаскивания"));
+        return;
+    }
+    // Real Windows OLE file drop: Studio One gets standard filesystem WAV paths.
+    // Host alone decides whether the arrangement accepts these dropped audio files.
+    if(juce::DragAndDropContainer::performExternalDragDropOfFiles(files,false,&exportButton)){
+        info(juce::String::fromUTF8("Перетащи WAV на нужную дорожку Studio One. Место на таймлайне выбираешь сам."));
+    }else{
+        info(juce::String::fromUTF8("Studio One отклонил внешний drag. Используй обычный экспорт."));
+    }
+}
+void SyncEditor::mouseDrag(const juce::MouseEvent &event){
+    if(event.eventComponent==&exportButton && !dragOutStarted &&
+       event.getDistanceFromDragStart()>=9){
+        dragOutStarted=true;
+        beginResultsDrag();
+    }
+}
+void SyncEditor::mouseUp(const juce::MouseEvent &event){
+    if(event.eventComponent==&exportButton)dragOutStarted=false;
 }
 void SyncEditor::info(juce::String message){status.setText(message,juce::dontSendNotification);}
