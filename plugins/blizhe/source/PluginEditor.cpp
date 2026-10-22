@@ -3,7 +3,18 @@
 namespace {juce::String u(const char* s){return juce::String::fromUTF8(s);}const juce::Colour cream{0xffe2b98c},muted{0xff8d969e};}
 void BlizheLook::drawRotarySlider(juce::Graphics& g,int x,int y,int w,int h,float pos,float start,float end,juce::Slider& slider){
     const bool big=slider.getName()=="amount";const float cx=x+w*.5f,cy=y+h*.5f,r=std::min(w,h)*.5f-8;
-    if(big){juce::Path track;track.addCentredArc(cx,cy,r-3,r-3,0,start,end,true);g.setColour(juce::Colour(0xff44494e));g.strokePath(track,juce::PathStrokeType(2));juce::Path arc;arc.addCentredArc(cx,cy,r-3,r-3,0,std::min((start+end)*.5f,start+pos*(end-start)),std::max((start+end)*.5f,start+pos*(end-start)),true);g.setColour(cream);g.strokePath(arc,juce::PathStrokeType(2.5f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));}
+    if(big){juce::Path track;track.addCentredArc(cx,cy,r-3,r-3,0,start,end,true);g.setColour(juce::Colour(0xff44494e));g.strokePath(track,juce::PathStrokeType(2));juce::Path arc;arc.addCentredArc(cx,cy,r-3,r-3,0,std::min((start+end)*.5f,start+pos*(end-start)),std::max((start+end)*.5f,start+pos*(end-start)),true);const float signedAmount=(pos-.5f)*2.0f;
+        const float intensity=std::abs(signedAmount);
+        const auto light=signedAmount<-.001f?juce::Colour(0xff9fbcc8):cream;
+        if(intensity>.005f){
+            for(int layer=5;layer>=1;--layer){
+                g.setColour(light.withAlpha(intensity*(signedAmount>0?.035f:.022f)));
+                g.strokePath(arc,juce::PathStrokeType(2.5f+layer*3.7f,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+            }
+        }
+        g.setColour(light.withAlpha(.52f+.48f*intensity));
+        g.strokePath(arc,juce::PathStrokeType(2.5f+1.5f*intensity,juce::PathStrokeType::curved,juce::PathStrokeType::rounded));
+    }
     const float knobR=big?r-24:r-3;const auto bounds=juce::Rectangle<float>(cx-knobR,cy-knobR,knobR*2,knobR*2);
     g.setColour(juce::Colours::black.withAlpha(.4f));g.fillEllipse(bounds.translated(0,7).expanded(3));
     g.setGradientFill(juce::ColourGradient(juce::Colour(0xff3d4145),cx-knobR,cy-knobR,juce::Colour(0xff15181c),cx+knobR,cy+knobR,false));g.fillEllipse(bounds);
