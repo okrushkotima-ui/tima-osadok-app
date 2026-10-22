@@ -1,5 +1,7 @@
 #include "PluginEditor.h"
 #include <cmath>
+// Cross-instance ARA registry: this editor can read clips attached to other Event FX.
+void synchronCollectActiveARARegions(std::vector<juce::ARAPlaybackRegion*>& regions);
 
 namespace {
 const juce::Colour gold(0xffdfb77e),green(0xff80bd9e),ink(0xff14181d),muted(0xff9ea6ad);
@@ -22,6 +24,7 @@ SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
     addBack.onClick=[this]{selectFiles(false);};
     hostLead.onClick=[this]{importHostEvents(true);};
     hostBack.onClick=[this]{importHostEvents(false);};
+    hostBack.setButtonText("GET ALL BACKS");
     timing.onClick=[this]{alignAll();};
     pitch.onClick=[this]{tuneAll();};
     exportButton.onClick=[this]{
@@ -89,7 +92,7 @@ void SyncEditor::paint(juce::Graphics &g){
     g.setColour(gold);g.setFont(juce::Font(14.f));
     g.drawText(juce::String::fromUTF8("by тима осадок"),769,36,220,28,juce::Justification::centredRight);
     g.setColour(muted);g.setFont(juce::Font(10.6f));
-    g.drawText("VOCAL STACK / ALIGN TIMING + OPTIONAL TUNE NOTES / DRAG RESULTS",39,81,820,18,juce::Justification::centredLeft);
+    g.drawText("VOCAL STACK  /  ALL BACKS IN ONE SESSION  /  F5: BROWSER  /  CTRL+F2: FLOAT EDITOR",39,81,900,18,juce::Justification::centredLeft);
     g.setColour(juce::Colour(0xff39424a));g.drawHorizontalLine(113,35,993);
     auto card=[&](juce::Rectangle<float> rect,juce::Colour stroke){
         g.setColour(juce::Colours::black.withAlpha(.28f));g.fillRoundedRectangle(rect.translated(0,6),14);
@@ -229,6 +232,12 @@ void SyncEditor::importHostEvents(bool importLead){
     }
     for(auto *seq:renderer->getRegionSequences())
         for(auto *region:seq->getPlaybackRegions())addRegion(region);
+    // Each back can have its own Event FX instance. Collect ALL live docs.
+    std::vector<juce::ARAPlaybackRegion*> external;
+    if(!importLead) {
+        synchronCollectActiveARARegions(external);
+        for(auto *region:external)addRegion(region);
+    }
     std::sort(regions.begin(),regions.end(),[](auto *a,auto *b){
         return a->getStartInPlaybackTime()<b->getStartInPlaybackTime();
     });
@@ -238,6 +247,7 @@ void SyncEditor::importHostEvents(bool importLead){
     }
     juce::String error;
     int added=0;
+    if(!importLead) backups.clear(); // repeated sync replaces, never duplicates
     for(auto *region:regions){
         if(!importLead && backups.size()>=8)break;
         auto *source=region->getAudioModification()->getAudioSource();
@@ -285,9 +295,10 @@ void SyncEditor::importHostEvents(bool importLead){
     }
     rendered.clear();dragFiles.clear();selectedResult=-1;hasTiming=hasPitch=false;
     info(importLead?
-         (reference?juce::String::fromUTF8("Лид импортирован из Studio One через ARA2"):
+         (reference?juce::String::fromUTF8("Лид из ARA загружен. Назначь Synchron Event FX бэкам и забери их здесь."):
                     juce::String::fromUTF8("ARA не предоставил доступный лид")):
-         juce::String::fromUTF8("Бэков импортировано через ARA2: ")+juce::String(added));
+         (added>0?juce::String::fromUTF8("ОБЩАЯ СЕССИЯ: бэков найдено ")+juce::String(added):
+                  juce::String::fromUTF8("Других событий Synchron не найдено. Назначь Event FX бэкам.")));
     repaint();
 }
 void SyncEditor::loadFiles(const juce::StringArray &files,bool lead){
