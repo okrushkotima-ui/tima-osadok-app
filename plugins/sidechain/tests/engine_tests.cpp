@@ -33,6 +33,47 @@ try{
             minKick=std::min(minKick,e.next(i==0?.8f:0.f,false));
         require(minKick<.1f,"kick trigger missing");
         require(e.lastGain()>.85f,"kick never recovers");
+        // Reproduction of reported bug: PHASE SHIFT must not wrap the
+        // kick-triggered envelope so the bass stays loud until the kick ends.
+        // Every AUDIO KICK onset should duck within 2 ms, irrespective of
+        // a previously saved phase-shift setting or the musical LENGTH.
+        e.reset(sr);e.setSettings(1,5,1,1,-40,.49f,120,80.f);
+        bool onset=false;
+        float firstMs=1.f;
+        for(int i=0;i<static_cast<int>(sr*.002);++i){
+            const float g=e.next(i==0?.7f:0.f,false);
+            if(i==0)onset=e.triggered();
+            firstMs=std::min(firstMs,g);
+        }
+        require(onset,"audio trigger must fire on first kick sample");
+        require(firstMs<.2f,"AUDIO KICK is delayed by PHASE SHIFT or has sluggish attack");
+        for(int i=0;i<static_cast<int>(sr*.100);++i)e.next(0,false);
+        require(e.lastGain()>.95f,"80ms kick recovery failed");
+        // Large negative shift must not wrap to the end of the envelope.
+        e.reset(sr);e.setSettings(1,5,1,1,-40,-.49f,120,80.f);
+        float early=1.f;
+        for(int i=0;i<static_cast<int>(sr*.002);++i)
+            early=std::min(early,e.next(i==0?.7f:0.f,false));
+        require(early<.2f,"negative phase shift suppressed kick trigger");
+        // Recovery must be independent from beat length and tempo in
+        // AUDIO KICK: an 80ms transient should not wait a full 1/4 note.
+        e.reset(sr);e.setSettings(1,2,1,1,-40,0,60,80.f);
+        for(int i=0;i<static_cast<int>(sr*.11);++i)e.next(i==0?.7f:0.f,false);
+        require(e.lastGain()>.95f,"kick recovery still waiting for beat length");
+        e.reset(sr);e.setSettings(1,2,1,1,-40,0,120,300.f);
+        for(int i=0;i<static_cast<int>(sr*.100);++i)e.next(i==0?.7f:0.f,false);
+        require(e.lastGain()<.90f,"kick recovery knob does not control duration");
+        // SYNC retains phase shift; shift has a different effect in that mode.
+        sidechain::Engine gridNormal,gridShift;
+        gridNormal.reset(sr);gridShift.reset(sr);
+        gridNormal.setSettings(0,2,1,1,-40,0,120,80.f);
+        gridShift.setSettings(0,2,1,1,-40,.25f,120,80.f);
+        float g1=1.f,g2=1.f;
+        for(int i=0;i<static_cast<int>(sr*.1);++i){
+            g1=gridNormal.next(0,false,i/sr*2.);
+            g2=gridShift.next(0,false,i/sr*2.);
+        }
+        require(std::abs(g1-g2)>.1f,"SYNC phase shift must still shift rhythmic pumping");
         e.reset(sr);e.setSettings(2,2,1,1,-22,0,120);
         float minMidi=1.f;
         for(int i=0;i<static_cast<int>(sr*.4);++i)
@@ -75,7 +116,7 @@ try{
     auto nextCycle=scope.read();
     require(nextCycle.generation!=firstCycle.generation,"tempo sync wrap not detected");
     require(!nextCycle.seen[190],"previous cycle leaked");
-    std::cout<<"PASS: curves, triggers, tempo, dry bypass, bass-only, live kick scope at 44.1/48/96/192 kHz\n";
+    std::cout<<"PASS: curves, triggers, tempo, dry bypass, bass-only, onset, phase shift, recovery, live kick scope at 44.1/48/96/192 kHz\n";
     return 0;
 }catch(const std::exception& e){std::cerr<<"FAIL: "<<e.what()<<"\n";return 1;}
 }
