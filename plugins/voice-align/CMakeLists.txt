@@ -13,6 +13,14 @@ FetchContent_MakeAvailable(signalsmith_stretch)
 
 # Host timeline access requires the Celemony ARA SDK (not bundled with JUCE).
 juce_set_ara_sdk_path("${CMAKE_CURRENT_SOURCE_DIR}/../../external/ARA_SDK")
+# JUCE 8.0.12 includes superseded ARAChannelArrangement.cpp; SDK 2.3 has ARAChannelFormat.cpp.
+set(_ara_wrapper "${juce_SOURCE_DIR}/modules/juce_audio_plugin_client/juce_audio_plugin_client_ARA.cpp")
+set(_ara_sdk_util "${CMAKE_CURRENT_SOURCE_DIR}/../../external/ARA_SDK/ARA_Library/Utilities")
+if(EXISTS "${_ara_sdk_util}/ARAChannelFormat.cpp" AND NOT EXISTS "${_ara_sdk_util}/ARAChannelArrangement.cpp")
+  file(READ "${_ara_wrapper}" _wrapper_source)
+  string(REPLACE "ARAChannelArrangement.cpp" "ARAChannelFormat.cpp" _wrapper_source "${_wrapper_source}")
+  file(WRITE "${_ara_wrapper}" "${_wrapper_source}")
+endif()
 
 juce_add_plugin(VoiceAlign
   COMPANY_NAME "тима осадок"
