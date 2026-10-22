@@ -40,7 +40,8 @@ SidechainEditor::SidechainEditor(SidechainProcessor& p):AudioProcessorEditor(&p)
     rotary(depth,"Amount of ducking");
     rotary(mix,"Dry / wet mix");
     rotary(threshold,"Audio kick trigger threshold");
-    rotary(shift,"Timing offset ±49% of duck cycle");
+    rotary(shift,"SYNC ONLY: slide rhythmic pumping earlier/later against song tempo. Does not change AUDIO KICK onset.");
+    rotary(recovery,"AUDIO KICK / MIDI: recover to full bass volume after this many milliseconds");
     rotary(cutoff,"Bass-only low band crossover frequency");
 
     auto box=[this](juce::ComboBox& c,juce::String tip){
@@ -59,6 +60,7 @@ SidechainEditor::SidechainEditor(SidechainProcessor& p):AudioProcessorEditor(&p)
     mixLink=std::make_unique<SliderLink>(processor.parameters,"mix",mix);
     thresholdLink=std::make_unique<SliderLink>(processor.parameters,"threshold",threshold);
     shiftLink=std::make_unique<SliderLink>(processor.parameters,"shift",shift);
+    recoveryLink=std::make_unique<SliderLink>(processor.parameters,"recovery",recovery);
     cutoffLink=std::make_unique<SliderLink>(processor.parameters,"cutoff",cutoff);
     modeLink=std::make_unique<ComboLink>(processor.parameters,"mode",mode);
     lengthLink=std::make_unique<ComboLink>(processor.parameters,"length",length);
@@ -91,6 +93,7 @@ void SidechainEditor::resized(){
     mix.setBounds(898,376,111,106);
     threshold.setBounds(38,522,93,91);
     shift.setBounds(261,522,93,91);
+    recovery.setBounds(261,522,93,91);
     cutoff.setBounds(493,522,93,91);
     lowOnly.setBounds(607,555,130,31);
     classic.setBounds(41,472,117,31);soft.setBounds(168,472,117,31);
@@ -102,6 +105,11 @@ void SidechainEditor::timerCallback(){
     displayGain=processor.displayGain.load(std::memory_order_relaxed);
     displayKick=processor.displayKick.load(std::memory_order_relaxed);
     displayConnected=processor.sidechainConnected.load(std::memory_order_relaxed);
+    const bool synced=mode.getSelectedId()==1;
+    shift.setVisible(synced);
+    recovery.setVisible(!synced);
+    length.setEnabled(synced);
+    threshold.setEnabled(mode.getSelectedId()==2);
     displayTempo=processor.displayTempo.load(std::memory_order_relaxed);
     kickWave=processor.kickScope.read();
     const auto hits=processor.triggerCount.load(std::memory_order_relaxed);
@@ -165,11 +173,11 @@ void SidechainEditor::paint(juce::Graphics&g){
     g.setColour(yellow);g.setFont(juce::Font(13.f));
     g.drawText(juce::String::fromUTF8("by тима осадок"),876,41,163,25,juce::Justification::centredRight);
     g.setColour(muted);g.setFont(juce::Font(12.f));
-    g.drawText("KICK WAVEFORM MONITOR  /  LIVE GAIN TRACE  /  v0.2.0",43,84,470,24,juce::Justification::centredLeft);
+    g.drawText("INSTANT KICK TRIGGER  /  RECOVERY IN MILLISECONDS  /  v0.2.1",43,84,530,24,juce::Justification::centredLeft);
     g.setColour(line);g.drawHorizontalLine(141,40,1039);
     g.setColour(muted);g.setFont(juce::Font(10.f,juce::Font::bold));
     g.drawText("TRIGGER",526,76,155,17,juce::Justification::centredLeft);
-    g.drawText("LENGTH",697,76,147,17,juce::Justification::centredLeft);
+    g.drawText("SYNC LENGTH",697,76,147,17,juce::Justification::centredLeft);
 
     g.setColour(juce::Colours::black.withAlpha(.26f));g.fillRoundedRectangle(graph.expanded(12.f).translated(0,4),14);
     g.setColour(panel);g.fillRoundedRectangle(graph.expanded(12.f),14);
@@ -185,7 +193,7 @@ void SidechainEditor::paint(juce::Graphics&g){
     // Live kick signal uses the same time axis as the actual gain envelope.
     // The raw sidechain peak is autoscaled for visibility, while the numeric
     // peak and threshold labels preserve the physical amplitude information.
-    const float phaseShift=static_cast<float>(shift.getValue());
+    const float phaseShift=mode.getSelectedId()==1?static_cast<float>(shift.getValue()):0.f;
     const auto wrapPhase=[](float x){return x-std::floor(x);};
     const float kickBaseY=graph.getY()+graph.getHeight()*.61f;
     const float maxAmp=std::max(.04f,*std::max_element(kickWave.kick.begin(),kickWave.kick.end()));
@@ -250,8 +258,8 @@ void SidechainEditor::paint(juce::Graphics&g){
     g.drawText(note,410,188,406,19,juce::Justification::centredRight);
     g.setColour(teal.withAlpha(.70f));
     g.setFont(juce::Font(10.f));
-    g.drawText("KICK ATTACK",58,graph.getBottom()-39,170,18,juce::Justification::centredLeft);
-    g.drawText("TAIL / RELEASE",600,graph.getBottom()-39,220,18,juce::Justification::centredRight);
+    g.drawText("TRIGGER → FAST DUCK",58,graph.getBottom()-39,218,18,juce::Justification::centredLeft);
+    g.drawText("RECOVERY →",600,graph.getBottom()-39,220,18,juce::Justification::centredRight);
 
     // The graph visualises the actual DSP curve, not a decorative approximation.
     juce::Path curve,under;
@@ -277,8 +285,9 @@ void SidechainEditor::paint(juce::Graphics&g){
     }
     g.setColour(muted);g.setFont(juce::Font(10.f));
     g.drawText("DUCK",51,165,110,18,juce::Justification::centredLeft);
-    const double cycleMs=60000.0/std::max(20.0,displayTempo)
-                            *sidechain::quarterNotes(length.getSelectedId()-1);
+    const double cycleMs=mode.getSelectedId()==1?
+        60000.0/std::max(20.0,displayTempo)*sidechain::quarterNotes(length.getSelectedId()-1):
+        recovery.getValue();
     g.drawText(juce::String("0 ms  →  ")+juce::String(static_cast<int>(std::round(cycleMs)))+" ms",646,434,184,18,juce::Justification::centredRight);
     g.drawText("100%",48,146,70,17,juce::Justification::centredLeft);
 
@@ -294,11 +303,14 @@ void SidechainEditor::paint(juce::Graphics&g){
 
     g.setColour(muted);g.setFont(juce::Font(10.5f,juce::Font::bold));
     g.drawText("KICK THRESHOLD",40,510,170,20,juce::Justification::centredLeft);
-    g.drawText("PHASE SHIFT",262,510,166,20,juce::Justification::centredLeft);
+    g.drawText(mode.getSelectedId()==1?"PHASE SHIFT (SYNC)":"RECOVERY (ms)",262,510,166,20,juce::Justification::centredLeft);
     g.drawText("BASS CUTOFF",496,510,166,20,juce::Justification::centredLeft);
     g.setColour(cream);g.setFont(juce::Font(12.f));
     g.drawText(juce::String(threshold.getValue(),1)+" dB",119,552,102,20,juce::Justification::centredLeft);
-    g.drawText(juce::String(shift.getValue()*100.,0)+"%",345,552,100,20,juce::Justification::centredLeft);
+    g.drawText(mode.getSelectedId()==1?
+               (juce::String(shift.getValue()*100.,0)+"%"):
+               (juce::String(recovery.getValue(),0)+" ms"),
+               345,552,100,20,juce::Justification::centredLeft);
     g.drawText(juce::String(cutoff.getValue(),0)+" Hz",576,552,100,20,juce::Justification::centredLeft);
     g.setColour(line);g.drawHorizontalLine(604,41,1040);
 
@@ -312,8 +324,8 @@ void SidechainEditor::paint(juce::Graphics&g){
     g.setColour(teal);g.fillRoundedRectangle(x+106,barY,68*std::clamp(displayKick*2.5f,0.f,1.f),13,5);
     const auto activeMode=mode.getSelectedId();
     const auto status=activeMode==2?
-       (displayConnected?"KICK WAVE: teal  |  GAIN: white  |  CURVE: gold":
-                         "AUDIO KICK: enable sidechain and send kick from Studio One."):
+       (displayConnected?"KICK: immediate duck  |  Set RECOVERY in ms":
+                         "AUDIO KICK: enable sidechain, send kick, lower threshold if late."):
        (activeMode==3?"MIDI: send note-on events to trigger ducking.":"SYNC: follows Studio One tempo. No routing required.");
     g.setColour(activeMode==2&&!displayConnected?yellow:teal);
     g.fillEllipse(864,572,8,8);

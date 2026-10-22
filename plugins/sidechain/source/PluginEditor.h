@@ -19,7 +19,7 @@ private:
     };
     SidechainProcessor&processor;
     Skin skin;
-    juce::Slider depth,mix,threshold,shift,cutoff;
+    juce::Slider depth,mix,threshold,shift,recovery,cutoff;
     juce::ComboBox mode,length;
     juce::TextButton lowOnly{"BASS ONLY"},classic{"PUNCH"},soft{"SMOOTH"},
                      groove{"GROOVE"},reverse{"REVERSE"},reset{"RESET CURVE"};
@@ -27,7 +27,7 @@ private:
     using SliderLink=juce::AudioProcessorValueTreeState::SliderAttachment;
     using ComboLink=juce::AudioProcessorValueTreeState::ComboBoxAttachment;
     using ButtonLink=juce::AudioProcessorValueTreeState::ButtonAttachment;
-    std::unique_ptr<SliderLink> depthLink,mixLink,thresholdLink,shiftLink,cutoffLink;
+    std::unique_ptr<SliderLink> depthLink,mixLink,thresholdLink,shiftLink,recoveryLink,cutoffLink;
     std::unique_ptr<ComboLink> modeLink,lengthLink;
     std::unique_ptr<ButtonLink> lowLink;
     const juce::Rectangle<float> graph{41.f,161.f,803.f,293.f};

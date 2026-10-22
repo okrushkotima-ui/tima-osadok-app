@@ -48,21 +48,26 @@ public:
         rate=std::max(8000.,newRate);
         kickDecayCoefficient=std::exp(-1.f/static_cast<float>(rate*.0015));
         smoothingCoefficient=1.f-std::exp(-1.f/static_cast<float>(rate*.00085));
+        attackCoefficient=1.f-std::exp(-1.f/static_cast<float>(rate*.00025));
         gain=1.f;previousKick=0.f;armed=true;
         envelopeSample=0;active=false;freeCounter=0;lastTriggered=false;displayPhase=0.f;
         cooldown=0;
     }
     void setCurve(const Curve& curve){points=curve;}
     void setSettings(int newMode,int newLength,float newDepth,float newMix,float newThresholdDb,float newShift,
-                     double newBpm){
+                     double newBpm,float newRecoveryMs=120.f){
         mode=std::clamp(newMode,0,2);
         length=std::clamp(newLength,0,5);
         depth=std::clamp(newDepth,0.f,1.f);
         mix=std::clamp(newMix,0.f,1.f);
         threshold=std::pow(10.f,std::clamp(newThresholdDb,-60.f,0.f)/20.f);
-        shift=std::clamp(newShift,-.49f,.49f);
+        // PHASE SHIFT is meaningful only when locked to a repeating grid.
+        // A real kick/MIDI note must always trigger the beginning of its shape.
+        shift=mode==Sync?std::clamp(newShift,-.49f,.49f):0.f;
         bpm=std::clamp(newBpm,20.,400.);
-        periodSamples=rate*60./bpm*quarterNotes(length);
+        recoveryMs=std::clamp(newRecoveryMs,20.f,600.f);
+        periodSamples=mode==Sync?rate*60./bpm*quarterNotes(length):
+                           rate*static_cast<double>(recoveryMs)/1000.;
     }
     // ppq is the host's absolute quarter-note position at THIS audio sample.
     // When unavailable, pass a negative value and use an internal oscillator.
@@ -94,14 +99,14 @@ public:
             }else phase=1.f; // No kick or MIDI? no artificial pumping.
         }
         displayPhase=phase;
-        if(mode==Sync||active){
+        if(mode==Sync) {
             phase+=shift;
             phase-=std::floor(phase);
         }
         const float raw=shape(points,phase);
         const float destination=1.f-depth*mix*(1.f-raw);
         // Sub-millisecond smoothing prevents discontinuities even at hard user curves.
-        gain+=smoothingCoefficient*(destination-gain);
+        gain+=(destination<gain?attackCoefficient:smoothingCoefficient)*(destination-gain);
         ++freeCounter;
         return std::clamp(gain,0.f,1.f);
     }
@@ -113,7 +118,8 @@ private:
     Curve points=punch;
     double rate=48000,bpm=120,freeCounter=0,envelopeSample=0,periodSamples=24000;
     float gain=1,depth=1,mix=1,threshold=.1f,shift=0,previousKick=0;
-    float kickDecayCoefficient=.98f,smoothingCoefficient=.02f,displayPhase=0.f;
+    float kickDecayCoefficient=.98f,smoothingCoefficient=.02f,attackCoefficient=.08f,displayPhase=0.f;
+    float recoveryMs=120.f;
     int mode=Sync,length=2,cooldown=0;
     bool active=false,armed=true,lastTriggered=false;
 };
