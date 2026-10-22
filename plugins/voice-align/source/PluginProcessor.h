@@ -12,7 +12,6 @@ public:
     void processBlock(juce::AudioBuffer<float>& buffer,juce::MidiBuffer&) override {
         processBlockForARA(buffer,isRealtime(),getPlayHead());
     }
-    juce::AudioProcessorARAExtension* getARAClientExtensions() override {return this;}
     juce::ARAEditorRenderer* hostEditorRenderer() const noexcept {return getEditorRenderer();}
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override {return true;}
