@@ -24,8 +24,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout SidechainProcessor::makeLayo
         juce::StringArray{"1/16","1/8","1/4","1/2","1 BAR","2 BARS"},2));
     fl("depth","DEPTH",0.f,1.f,1.f);
     fl("mix","MIX",0.f,1.f,1.f);
-    fl("threshold","KICK SENSITIVITY (dB)",-60.f,-3.f,-22.f,.1f);
-    fl("shift","PHASE SHIFT",-.49f,.49f,0.f);
+    fl("threshold","KICK SENSITIVITY (dB)",-60.f,-3.f,-40.f,.1f);
+    fl("shift","PHASE SHIFT (SYNC ONLY)",-.49f,.49f,0.f);
+    fl("recovery","KICK RECOVERY (ms)",20.f,600.f,120.f,1.f);
     layout.add(std::make_unique<juce::AudioParameterBool>(
         juce::ParameterID{"lowOnly",1},"BASS ONLY",false));
     fl("cutoff","LOW BAND CUTOFF",40.f,800.f,180.f,1.f);
@@ -84,7 +85,7 @@ void SidechainProcessor::processBlock(juce::AudioBuffer<float>&buffer,juce::Midi
     displayTempo.store(bpm,std::memory_order_relaxed);
     const int triggerMode=static_cast<int>(get("mode"));
     engine.setSettings(triggerMode,static_cast<int>(get("length")),
-                       get("depth"),get("mix"),get("threshold"),get("shift"),bpm);
+                       get("depth"),get("mix"),get("threshold"),get("shift"),bpm,get("recovery"));
     const bool bassOnly=get("lowOnly")>.5f;
     const float cutoff=get("cutoff");
     for(auto &filter:filters)filter.setCutoff(sampleRate,cutoff);
