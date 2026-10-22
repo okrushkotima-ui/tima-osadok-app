@@ -28,11 +28,26 @@ BlizheEditor::BlizheEditor(BlizheProcessor& p):AudioProcessorEditor(&p),processo
     amount.setName("amount");amount.setTitle(u("Ближе"));amount.setDescription(u("Влево — дальше, вправо — ближе. Ноль — исходный голос."));amount.setDoubleClickReturnValue(true,0);
     mix.setName("mix");mix.setTitle("Mix");mix.setDoubleClickReturnValue(true,1);
     amountAttachment=std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(p.state,"amount",amount);mixAttachment=std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(p.state,"mix",mix);
+    for(auto* s:{&inputGain,&outputGain}){
+        s->setSliderStyle(juce::Slider::LinearHorizontal);
+        s->setTextBoxStyle(juce::Slider::TextBoxBelow,false,80,18);
+        s->setColour(juce::Slider::thumbColourId,cream);
+        s->setColour(juce::Slider::trackColourId,juce::Colour(0xffb99a78));
+        s->setColour(juce::Slider::backgroundColourId,juce::Colour(0xff34383c));
+        s->setColour(juce::Slider::textBoxTextColourId,juce::Colour(0xffd9d3cb));
+        s->setTextValueSuffix(" dB");
+        s->setDoubleClickReturnValue(true,0);
+        addAndMakeVisible(*s);
+    }
+    inputGain.setName("inGain");inputGain.setTitle("Input gain");inputGain.setTooltip(u("Громкость вокала перед обработкой, −18…+18 дБ."));
+    outputGain.setName("outGain");outputGain.setTitle("Output gain");outputGain.setTooltip(u("Громкость вокала после обработки, −18…+18 дБ."));
+    inputGainAttachment=std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(p.state,"inGain",inputGain);
+    outputGainAttachment=std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment>(p.state,"outGain",outputGain);
     power.setClickingTogglesState(true);power.setColour(juce::TextButton::buttonColourId,juce::Colour(0xff25292e));power.setColour(juce::TextButton::buttonOnColourId,juce::Colour(0xff504435));power.setColour(juce::TextButton::textColourOnId,cream);power.setTooltip(u("Включить / обойти обработку"));addAndMakeVisible(power);powerAttachment=std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(p.state,"enabled",power);
     startTimerHz(24);
 }
 BlizheEditor::~BlizheEditor(){stopTimer();setLookAndFeel(nullptr);}
-void BlizheEditor::resized(){amount.setBounds(245,106,270,270);mix.setBounds(584,369,68,68);power.setBounds(691,27,36,34);}
+void BlizheEditor::resized(){amount.setBounds(245,106,270,270);mix.setBounds(584,369,68,68);inputGain.setBounds(65,329,125,52);outputGain.setBounds(576,329,125,52);power.setBounds(691,27,36,34);}
 void BlizheEditor::timerCallback(){inLevel=std::max(processor.inputMeter.load(),inLevel*.88f);outLevel=std::max(processor.outputMeter.load(),outLevel*.88f);reduction=processor.reductionMeter.load();side=processor.sideMeter.load();repaint();}
 void BlizheEditor::meter(juce::Graphics& g,float x,float y,float level,const juce::String& label){
     g.setFont(juce::Font(10.0f));g.setColour(muted);g.drawText(label,static_cast<int>(x)-17,static_cast<int>(y)-28,54,18,juce::Justification::centred);
