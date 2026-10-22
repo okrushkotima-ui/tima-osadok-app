@@ -25,6 +25,7 @@ public:
                        AlwaysNonRealtime nonRealtime) override {
         sampleRate=rate;numChannels=channels;
         readers.clear();
+        scratch=std::make_unique<juce::AudioBuffer<float>>(channels,std::max(1,maxBlock));
         const int bufferAhead=std::max(4*maxBlock,static_cast<int>(rate*2));
         for(auto *region:getPlaybackRegions()){
             auto *source=region->getAudioModification()->getAudioSource();
@@ -36,15 +37,15 @@ public:
                 readers[source]=std::unique_ptr<juce::AudioFormatReader>(raw);
         }
     }
-    void releaseResources() override {readers.clear();}
+    void releaseResources() override {readers.clear();scratch.reset();}
     bool processBlock(juce::AudioBuffer<float> &buffer,
                       juce::AudioProcessor::Realtime realtime,
                       const juce::AudioPlayHead::PositionInfo &position) noexcept override {
-        // ARA replaces the Event FX signal: render the unmodified source until
-        // processing is explicitly integrated with the ARA playback renderer.
-        buffer.clear();
-        if(!position.getIsPlaying())return true;
-        const auto start=position.getTimeInSamples().orFallback(static_cast<juce::int64>(0));
+        // Preserve the host signal if ARA has no valid reader or timestamp.
+        // Offline playback/export may legitimately have getIsPlaying() == false.
+        if(!position.getTimeInSamples() || !scratch)return true;
+        const auto start=*position.getTimeInSamples();
+        bool replaced=false;
         const auto end=start+buffer.getNumSamples();
         for(auto *region:getPlaybackRegions()){
             auto *source=region->getAudioModification()->getAudioSource();
@@ -58,16 +59,20 @@ public:
             const auto destination=static_cast<int>(from-start);
             const auto sourceStart=region->getStartInAudioModificationSamples()+(from-range.getStart());
             if(sourceStart<0 || sourceStart+amount>source->getSampleCount())continue;
-            juce::AudioBuffer<float> segment(numChannels,amount);
+            // No allocations on the audio callback. Host's original audio
+            // survives if the ARA reader is unavailable or fails to keep up.
+            if(amount>scratch->getNumSamples())continue;
             if(auto *buffered=dynamic_cast<juce::BufferingAudioReader*>(iterator->second.get()))
                 buffered->setReadTimeout(realtime==juce::AudioProcessor::Realtime::no?300:0);
-            if(!iterator->second->read(&segment,0,amount,sourceStart,true,true))continue;
-            for(int ch=0;ch<numChannels;++ch)buffer.addFrom(ch,destination,segment,ch,0,amount);
+            if(!iterator->second->read(scratch.get(),0,amount,sourceStart,true,true))continue;
+            if(!replaced){buffer.clear();replaced=true;}
+            for(int ch=0;ch<numChannels;++ch)buffer.addFrom(ch,destination,*scratch,ch,0,amount);
         }
         return true;
     }
 private:
     juce::TimeSliceThread readThread;
+    std::unique_ptr<juce::AudioBuffer<float>> scratch;
     std::map<juce::ARAAudioSource*,std::unique_ptr<juce::AudioFormatReader>> readers;
     double sampleRate=48000;int numChannels=2;
 };
