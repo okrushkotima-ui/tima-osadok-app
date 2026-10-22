@@ -2,6 +2,7 @@
 #include <juce_audio_processors/juce_audio_processors.h>
 #include <atomic>
 #include "SidechainEngine.h"
+#include "KickScope.h"
 
 class SidechainProcessor final : public juce::AudioProcessor {
 public:
@@ -26,6 +27,9 @@ public:
     void setStateInformation(const void*,int) override;
     juce::AudioProcessorValueTreeState parameters;
     std::atomic<float> displayGain{1.f},displayKick{0.f};
+    std::atomic<double> displayTempo{120.0};
+    std::atomic<unsigned int> triggerCount{0};
+    sidechain::KickScope kickScope;
     std::atomic<bool> sidechainConnected{false};
     static juce::AudioProcessorValueTreeState::ParameterLayout makeLayout();
     static constexpr std::array<const char*,9> pointIds{{"p0","p1","p2","p3","p4","p5","p6","p7","p8"}};
