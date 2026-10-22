@@ -1,0 +1,30 @@
+name: Build blizhe VST3
+on:
+  push:
+    paths: ['plugins/blizhe/**', '.github/workflows/vocal-plugin.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure
+        run: cmake -S plugins/blizhe -B build/blizhe -A x64
+      - name: Build
+        run: cmake --build build/blizhe --config Release --parallel 3
+      - name: DSP tests
+        run: ctest --test-dir build/blizhe -C Release --output-on-failure
+      - name: Installer
+        shell: pwsh
+        run: |
+          & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' plugins/blizhe/installer/blizhe.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: blizhe-windows-x64
+          path: |
+            plugins/blizhe/installer/Output/*.exe
+            build/blizhe/Blizhe_artefacts/Release/VST3/*
