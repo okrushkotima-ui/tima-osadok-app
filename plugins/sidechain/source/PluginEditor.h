@@ -34,6 +34,10 @@ private:
     int draggedPoint=-1;
     float displayGain=1.f,displayKick=0.f;
     bool displayConnected=false;
+    sidechain::KickScope::Snapshot kickWave;
+    double displayTempo=120.0;
+    unsigned int lastTriggerCount=0;
+    int triggerGlowFrames=0;
     sidechain::Curve readCurve() const;
     void setPreset(const sidechain::Curve&);
     void changePoint(int index,float y);
