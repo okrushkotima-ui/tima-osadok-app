@@ -13,6 +13,8 @@ public:
     void filesDropped(const juce::StringArray&,int,int) override;
     void fileDragEnter(const juce::StringArray&,int,int) override;
     void fileDragExit(const juce::StringArray&) override;
+    void mouseDrag(const juce::MouseEvent&) override;
+    void mouseUp(const juce::MouseEvent&) override;
 private:
     struct Track{juce::File source;synchro::Audio audio;juce::String label;double timelineStart=0;uintptr_t hostRegionToken=0;};
     SyncProcessor &processor;
@@ -26,7 +28,7 @@ private:
     std::vector<Track> backups;
     std::vector<synchro::Audio> rendered;
     bool hasTiming=false,hasPitch=false,dragActive=false;
-    bool dragIntoLead=false;
+    bool dragIntoLead=false,dragOutStarted=false;
     void paintAudioWave(juce::Graphics&,const synchro::Audio*,juce::Rectangle<float>,juce::Colour) const;
     void selectFiles(bool lead);
     void importHostEvents(bool lead);
@@ -35,6 +37,8 @@ private:
     void alignAll();
     void tuneAll();
     void exportWavs(const juce::File& folder);
+    juce::StringArray writeResultFiles(const juce::File& folder);
+    void beginResultsDrag();
     void info(juce::String message);
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(SyncEditor)
 };
