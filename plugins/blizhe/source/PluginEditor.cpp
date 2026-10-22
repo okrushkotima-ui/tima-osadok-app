@@ -57,7 +57,7 @@ void BlizheEditor::meter(juce::Graphics& g,float x,float y,float level,const juc
 }
 void BlizheEditor::paint(juce::Graphics& g){
     g.fillAll(juce::Colour(0xff1b1e22));g.setGradientFill(juce::ColourGradient(juce::Colour(0xff292c30),0,0,juce::Colour(0xff191c20),760,480,false));g.fillAll();
-    g.setColour(juce::Colour(0xffeeece8));g.setFont(juce::Font(34.0f,juce::Font::bold));g.drawText(u("ближе"),30,20,190,42,juce::Justification::centredLeft);
+    g.setColour(juce::Colour(0xffeeece8));g.setFont(juce::Font(34.0f,juce::Font::bold));g.drawText(u("Ближе"),30,20,190,42,juce::Justification::centredLeft);
     g.setFont(juce::Font(10.0f));g.setColour(muted);g.drawText("vocal presence",32,60,180,16,juce::Justification::centredLeft);
     g.setFont(juce::Font(15.0f));g.setColour(juce::Colour(0xffc4c6c8));g.drawText(u("by тима осадок"),467,35,195,24,juce::Justification::centredRight);
     g.setColour(juce::Colours::white.withAlpha(.05f));g.drawHorizontalLine(91,25,735);
@@ -66,5 +66,5 @@ void BlizheEditor::paint(juce::Graphics& g){
     g.setColour(side>.003f?juce::Colour(0xffa6bda3):juce::Colour(0xff5f6871));g.fillEllipse(33,402,5,5);g.setFont(juce::Font(12.0f));g.setColour(muted);g.drawText("beat sidechain",45,391,165,22,juce::Justification::centredLeft);
     g.setFont(juce::Font(10.0f));g.drawText(side>.003f?u("бит подключён · адаптация"):u("работает и без бита"),45,413,210,17,juce::Justification::centredLeft);
     g.setColour(juce::Colour(0xffd6c2aa));g.setFont(juce::Font(12.0f));g.drawText("mix",662,381,70,25,juce::Justification::centredLeft);g.setFont(juce::Font(11.0f));g.drawText(juce::String(juce::roundToInt(mix.getValue()*100))+" %",662,406,75,18,juce::Justification::centredLeft);
-    g.setColour(juce::Colour(0xff14171a));g.fillRect(0,450,760,30);g.setColour(muted);g.setFont(juce::Font(10.0f));g.drawText("vst3 / 2x",25,452,150,25,juce::Justification::centredLeft);g.drawText("gr  "+juce::String(reduction,1)+" dB",300,452,160,25,juce::Justification::centred);g.drawText("v0.1.0",635,452,100,25,juce::Justification::centredRight);
+    g.setColour(juce::Colour(0xff14171a));g.fillRect(0,450,760,30);g.setColour(muted);g.setFont(juce::Font(10.0f));g.drawText("vst3 / 2x",25,452,150,25,juce::Justification::centredLeft);g.drawText("gr  "+juce::String(reduction,1)+" dB",300,452,160,25,juce::Justification::centred);g.drawText("v0.1.1",635,452,100,25,juce::Justification::centredRight);
 }
