@@ -139,7 +139,7 @@ inline Audio alignTiming(const Audio &lead,const Audio &back) {
         for(int i=0;i<inLatency;++i)pre[c][static_cast<size_t>(i)]=at(start+i,c);
         prePtrs[c]=pre[c].data();
     }
-    if(inLatency>0)stretch.seek(prePtrs.data(),inLatency);
+    if(inLatency>0)stretch.seek(prePtrs.data(),inLatency,1.0);
     int64_t cursor=start+inLatency;
     const int64_t total=out.samples()+outLatency;
     for(int64_t position=0;position<total;position+=512){
@@ -224,7 +224,7 @@ inline Audio tuneHarmony(const Audio &lead,const Audio &aligned) {
         for(int i=0;i<inLatency;++i)pre[c][static_cast<size_t>(i)]=at(i,c);
         prePtrs[c]=pre[c].data();
     }
-    if(inLatency>0)stretch.seek(prePtrs.data(),inLatency);
+    if(inLatency>0)stretch.seek(prePtrs.data(),inLatency,1.0);
     int64_t cursor=inLatency;
     double previous=0;
     for(int64_t position=0;position<total;position+=512){
