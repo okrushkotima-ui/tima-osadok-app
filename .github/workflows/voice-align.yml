@@ -1,4 +1,4 @@
-name: Build Synchron vocal alignment VST3
+name: Build Synchron ARA2 Event FX VST3
 on:
   push:
     paths: ['plugins/voice-align/**', '.github/workflows/voice-align.yml']
@@ -13,6 +13,11 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+      - name: Fetch ARA 2.3 SDK
+        shell: pwsh
+        run: |
+          git clone --recursive --depth 1 --branch releases/2.3.0 https://github.com/Celemony/ARA_SDK.git external/ARA_SDK
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Configure
         run: cmake -S plugins/voice-align -B build/voice-align -A x64
       - name: Compile VST3 and tests
