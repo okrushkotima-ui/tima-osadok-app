@@ -4,7 +4,7 @@ on:
     paths: ['plugins/blizhe/**', '.github/workflows/vocal-plugin.yml']
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   windows:
     runs-on: windows-latest
@@ -20,11 +20,28 @@ jobs:
       - name: Installer
         shell: pwsh
         run: |
-          & 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe' plugins/blizhe/installer/blizhe.iss
+          $compiler = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path $compiler)) { choco install innosetup --no-progress -y }
+          if (-not (Test-Path $compiler)) { throw 'Inno Setup compiler is missing' }
+          & $compiler plugins/blizhe/installer/blizhe.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          if (-not (Test-Path 'plugins/blizhe/installer/Output/blizhe-Setup-0.1.0-win64.exe')) { throw 'Installer was not created' }
       - uses: actions/upload-artifact@v4
         with:
           name: blizhe-windows-x64
           path: |
             plugins/blizhe/installer/Output/*.exe
             build/blizhe/Blizhe_artefacts/Release/VST3/*
+      - name: Publish installer prerelease
+        if: github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: blizhe-v0.1.0-beta
+          name: ближе — Windows VST3 beta 0.1.0
+          prerelease: true
+          make_latest: false
+          body: |
+            Experimental Windows x64 VST3 — by тима осадок.
+            Install the EXE, then rescan VST3 in Studio One.
+            Automated DSP tests passed; real DAW/audio validation is still required.
+          files: plugins/blizhe/installer/Output/blizhe-Setup-0.1.0-win64.exe
