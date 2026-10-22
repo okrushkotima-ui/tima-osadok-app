@@ -42,7 +42,7 @@ jobs:
           if (-not (Test-Path $compiler)) { choco install innosetup --no-progress -y }
           & $compiler plugins/sidechain/installer/sidechain.iss
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          $exe = 'plugins/sidechain/installer/Output/Sidechain-by-tima-osadok-Setup-0.2.0-win64.exe'
+          $exe = 'plugins/sidechain/installer/Output/Sidechain-by-tima-osadok-Setup-0.2.1-win64.exe'
           if (-not (Test-Path -LiteralPath $exe)) { throw 'Missing setup EXE' }
       - uses: actions/upload-artifact@v4
         with:
