@@ -13,6 +13,9 @@ public:
     void filesDropped(const juce::StringArray&,int,int) override;
     void fileDragEnter(const juce::StringArray&,int,int) override;
     void fileDragExit(const juce::StringArray&) override;
+    void mouseDown(const juce::MouseEvent&) override;
+    void mouseDrag(const juce::MouseEvent&) override;
+    void mouseUp(const juce::MouseEvent&) override;
 private:
     struct Track{juce::File source;synchro::Audio audio;juce::String label;double timelineStart=0;uintptr_t hostRegionToken=0;};
     SyncProcessor &processor;
@@ -27,6 +30,15 @@ private:
     std::vector<synchro::Audio> rendered;
     bool hasTiming=false,hasPitch=false,dragActive=false;
     bool dragIntoLead=false;
+    int selectedResult=-1,pressedResult=-1;
+    bool externalDragStarted=false;
+    juce::Point<int> pressPoint;
+    std::vector<juce::File> dragFiles;
+    juce::File dragDirectory;
+    bool writeResultWav(size_t index,const juce::File& target);
+    void prepareDragWavs();
+    juce::Rectangle<int> resultRowRect(size_t index) const;
+    int resultAt(juce::Point<int> point) const;
     void paintAudioWave(juce::Graphics&,const synchro::Audio*,juce::Rectangle<float>,juce::Colour) const;
     void selectFiles(bool lead);
     void importHostEvents(bool lead);
