@@ -51,6 +51,7 @@ bool SidechainProcessor::isBusesLayoutSupported(const BusesLayout& layout) const
 void SidechainProcessor::prepareToPlay(double rate,int){
     sampleRate=std::max(8000.0,rate);
     engine.reset(sampleRate);
+    kickScope.reset();
     for(auto& f:filters){f.reset();f.setCutoff(sampleRate,180.f);}
 }
 
@@ -80,7 +81,9 @@ void SidechainProcessor::processBlock(juce::AudioBuffer<float>&buffer,juce::Midi
         }
     }
     if(!std::isfinite(bpm)||bpm<20||bpm>400)bpm=120;
-    engine.setSettings(static_cast<int>(get("mode")),static_cast<int>(get("length")),
+    displayTempo.store(bpm,std::memory_order_relaxed);
+    const int triggerMode=static_cast<int>(get("mode"));
+    engine.setSettings(triggerMode,static_cast<int>(get("length")),
                        get("depth"),get("mix"),get("threshold"),get("shift"),bpm);
     const bool bassOnly=get("lowOnly")>.5f;
     const float cutoff=get("cutoff");
@@ -104,6 +107,11 @@ void SidechainProcessor::processBlock(juce::AudioBuffer<float>&buffer,juce::Midi
         lastKick=std::max(lastKick*.988f,peak);
         const double quarter=ppq>=0?ppq+sample*beatStep:-1.;
         const float g=engine.next(peak,note,quarter);
+        const bool hit=engine.triggered();
+        if(hit)triggerCount.fetch_add(1u,std::memory_order_relaxed);
+        // Capture the *real kick sidechain signal*, positioned against the exact
+        // active gain-envelope phase. No mutexes or allocations in audio callback.
+        kickScope.next(engine.currentCyclePhase(),peak,g,hit,engine.cycleActive());
         for(int ch=0;ch<channels;++ch){
             const float input=main.getSample(ch,sample);
             float result;
