@@ -1,5 +1,7 @@
 #include "PluginEditor.h"
 #include <cmath>
+// Cross-instance ARA registry: this editor can read clips attached to other Event FX.
+void synchronCollectActiveARARegions(std::vector<juce::ARAPlaybackRegion*>& regions);
 
 namespace {
 const juce::Colour gold(0xffdfb77e),green(0xff80bd9e),ink(0xff14181d),muted(0xff9ea6ad);
@@ -22,6 +24,7 @@ SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
     addBack.onClick=[this]{selectFiles(false);};
     hostLead.onClick=[this]{importHostEvents(true);};
     hostBack.onClick=[this]{importHostEvents(false);};
+    hostBack.setButtonText("GET ALL BACKS");
     timing.onClick=[this]{alignAll();};
     pitch.onClick=[this]{tuneAll();};
     exportButton.onClick=[this]{
@@ -229,6 +232,10 @@ void SyncEditor::importHostEvents(bool importLead){
     }
     for(auto *seq:renderer->getRegionSequences())
         for(auto *region:seq->getPlaybackRegions())addRegion(region);
+    // Each back can have its own Event FX instance. Collect ALL live docs.
+    std::vector<juce::ARAPlaybackRegion*> external;
+    synchronCollectActiveARARegions(external);
+    for(auto *region:external)addRegion(region);
     std::sort(regions.begin(),regions.end(),[](auto *a,auto *b){
         return a->getStartInPlaybackTime()<b->getStartInPlaybackTime();
     });
@@ -238,6 +245,7 @@ void SyncEditor::importHostEvents(bool importLead){
     }
     juce::String error;
     int added=0;
+    if(!importLead) backups.clear(); // repeated sync replaces, never duplicates
     for(auto *region:regions){
         if(!importLead && backups.size()>=8)break;
         auto *source=region->getAudioModification()->getAudioSource();
@@ -285,9 +293,10 @@ void SyncEditor::importHostEvents(bool importLead){
     }
     rendered.clear();dragFiles.clear();selectedResult=-1;hasTiming=hasPitch=false;
     info(importLead?
-         (reference?juce::String::fromUTF8("Лид импортирован из Studio One через ARA2"):
+         (reference?juce::String::fromUTF8("Лид из ARA загружен. Назначь Synchron Event FX бэкам и забери их здесь."):
                     juce::String::fromUTF8("ARA не предоставил доступный лид")):
-         juce::String::fromUTF8("Бэков импортировано через ARA2: ")+juce::String(added));
+         (added>0?juce::String::fromUTF8("ОБЩАЯ СЕССИЯ: бэков найдено ")+juce::String(added):
+                  juce::String::fromUTF8("Других событий Synchron не найдено. Назначь Event FX бэкам.")));
     repaint();
 }
 void SyncEditor::loadFiles(const juce::StringArray &files,bool lead){
