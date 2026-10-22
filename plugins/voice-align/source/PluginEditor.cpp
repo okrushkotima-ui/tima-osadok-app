@@ -15,11 +15,13 @@ SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
         button.setMouseCursor(juce::MouseCursor::PointingHandCursor);
         addAndMakeVisible(button);
     };
-    style(chooseLead,false);style(addBack,false);style(timing,true);style(pitch,false);style(exportButton,false);
+    style(chooseLead,false);style(addBack,false);style(hostLead,false);style(hostBack,false);style(timing,true);style(pitch,false);style(exportButton,false);
     addAndMakeVisible(status);status.setColour(juce::Label::textColourId,muted);
     status.setFont(juce::Font(14.f));status.setJustificationType(juce::Justification::centredLeft);
     chooseLead.onClick=[this]{selectFiles(true);};
     addBack.onClick=[this]{selectFiles(false);};
+    hostLead.onClick=[this]{importHostEvents(true);};
+    hostBack.onClick=[this]{importHostEvents(false);};
     timing.onClick=[this]{alignAll();};
     pitch.onClick=[this]{tuneAll();};
     exportButton.onClick=[this]{
@@ -34,8 +36,10 @@ SyncEditor::SyncEditor(SyncProcessor &p):AudioProcessorEditor(&p),processor(p){
 
 
 void SyncEditor::resized(){
-    chooseLead.setBounds(546,153,171,32);
-    addBack.setBounds(546,312,171,32);
+    chooseLead.setBounds(547,153,82,32);
+    hostLead.setBounds(633,153,98,32);
+    addBack.setBounds(547,312,82,32);
+    hostBack.setBounds(633,312,98,32);
     timing.setBounds(36,612,288,52);
     pitch.setBounds(336,612,288,52);
     exportButton.setBounds(636,612,358,52);
@@ -91,7 +95,7 @@ void SyncEditor::paint(juce::Graphics &g) {
     g.setColour(gold);g.setFont(juce::Font(11.f,juce::Font::bold));
     g.drawText("01    LEAD  /  REFERENCE",55,149,440,26,juce::Justification::centredLeft);
     g.setColour(paper);g.setFont(juce::Font(17.f,juce::Font::bold));
-    g.drawFittedText(reference?display(reference->source):juce::String::fromUTF8("Перетащи лид сюда"),56,184,470,29,juce::Justification::centredLeft,1);
+    g.drawFittedText(reference?(reference->label.isNotEmpty()?reference->label:display(reference->source)):juce::String::fromUTF8("Перетащи лид сюда"),56,184,470,29,juce::Justification::centredLeft,1);
     g.setColour(muted);g.setFont(juce::Font(11.f));
     g.drawText(reference?juce::String::fromUTF8("Эталон синхронизации"):juce::String::fromUTF8("WAV / AIFF   •   дорожка-ориентир"),56,212,455,16,juce::Justification::centredLeft);
     paintAudioWave(g,reference?&reference->audio:nullptr,{55,233,657,30},gold);
@@ -113,7 +117,7 @@ void SyncEditor::paint(juce::Graphics &g) {
             g.fillRoundedRectangle(52,y,673,23,5);
             g.setColour(green.withAlpha(.9f));g.fillRoundedRectangle(56,y+5,3,13,1.5f);
             g.setColour(paper.withAlpha(.9f));g.setFont(juce::Font(11.2f));
-            g.drawFittedText(juce::String(static_cast<int>(i+1)).paddedLeft('0',2)+"   "+display(backups[i].source),
+            g.drawFittedText(juce::String(static_cast<int>(i+1)).paddedLeft('0',2)+"   "+(backups[i].label.isNotEmpty()?backups[i].label:display(backups[i].source)),
                              67,static_cast<int>(y)+2,250,19,juce::Justification::centredLeft,1);
             paintAudioWave(g,&backups[i].audio,{323,y+4,255,15},green);
             g.setColour(i<rendered.size()?green:muted);
@@ -144,7 +148,7 @@ void SyncEditor::paint(juce::Graphics &g) {
     stage(428,4,"TUNE NOTES",juce::String::fromUTF8("По желанию"),hasPitch);
     g.setColour(gold.withAlpha(.20f));g.fillRoundedRectangle(775.f,505.f,197.f,49.f,7.f);
     g.setColour(juce::Colour(0xffdcc7a6));g.setFont(juce::Font(10.2f));
-    g.drawFittedText(juce::String::fromUTF8("Studio One: Аудио из Files или Проводника. ARA — в разработке."),
+    g.drawFittedText(juce::String::fromUTF8("ARA2 beta: добавь Event FX к вокалу, затем FROM STUDIO ONE."),
                      785,510,180,38,juce::Justification::centredLeft,3);
     g.setColour(muted);g.setFont(juce::Font(10.8f));
     g.drawText(juce::String::fromUTF8("ТАЙМИНГ  /  СЛОГИ"),38,582,290,23,juce::Justification::centredLeft);
@@ -191,10 +195,94 @@ bool SyncEditor::readTrack(const juce::File &file,Track &track,juce::String &err
     if(reader->lengthInSamples>std::numeric_limits<int>::max()){error="File too large";return false;}
     juce::AudioBuffer<float> audio(static_cast<int>(reader->numChannels),static_cast<int>(reader->lengthInSamples));
     if(!reader->read(&audio,0,audio.getNumSamples(),0,true,true)){error="Cannot read audio";return false;}
-    track.source=file;track.audio.rate=reader->sampleRate;track.audio.channels.resize(static_cast<size_t>(audio.getNumChannels()));
+    track.source=file;track.label=file.getFileNameWithoutExtension();track.audio.rate=reader->sampleRate;track.audio.channels.resize(static_cast<size_t>(audio.getNumChannels()));
     for(int ch=0;ch<audio.getNumChannels();++ch)
         track.audio.channels[static_cast<size_t>(ch)].assign(audio.getReadPointer(ch),audio.getReadPointer(ch)+audio.getNumSamples());
     return true;
+}
+
+void SyncEditor::importHostEvents(bool importLead){
+    auto *renderer=processor.hostEditorRenderer();
+    if(renderer==nullptr){
+        info(juce::String::fromUTF8("ARA2 не активирован: добавь «Синхрон» как Event FX к вокальному событию Studio One."));
+        return;
+    }
+    std::vector<juce::ARAPlaybackRegion*> regions;
+    auto addRegion=[&](juce::ARAPlaybackRegion *region){
+        if(region && std::find(regions.begin(),regions.end(),region)==regions.end())
+            regions.push_back(region);
+    };
+    for(auto *region:renderer->getPlaybackRegions())addRegion(region);
+    // ARA sessions may expose a document containing every clip linked through
+    // Event FX, not just the one whose editor is open.
+    if(!regions.empty()) {
+        auto *source=regions.front()->getAudioModification()->getAudioSource();
+        if(auto *document=source->getDocument())
+            for(auto *sequence:document->getRegionSequences())
+                for(auto *region:sequence->getPlaybackRegions())addRegion(region);
+    }
+    for(auto *seq:renderer->getRegionSequences())
+        for(auto *region:seq->getPlaybackRegions())addRegion(region);
+    std::sort(regions.begin(),regions.end(),[](auto *a,auto *b){
+        return a->getStartInPlaybackTime()<b->getStartInPlaybackTime();
+    });
+    if(regions.empty()){
+        info(juce::String::fromUTF8("Studio One ещё не передал события через ARA. Назначь плагин как Event FX."));
+        return;
+    }
+    juce::String error;
+    int added=0;
+    for(auto *region:regions){
+        if(!importLead && backups.size()>=8)break;
+        auto *source=region->getAudioModification()->getAudioSource();
+        const auto rate=source->getSampleRate();
+        const auto channels=source->getChannelCount();
+        if(rate<8000||channels<1||channels>2)continue;
+        const auto start=std::max<juce::int64>(0,region->getStartInAudioModificationSamples());
+        const auto until=std::min<juce::int64>(source->getSampleCount(),region->getEndInAudioModificationSamples());
+        const auto length=until-start;
+        if(length<=0||length>rate*120)continue;
+        if(!importLead && reference &&
+           (reference->hostRegionToken==reinterpret_cast<uintptr_t>(region)||
+            std::abs(reference->audio.rate-rate)>1))continue;
+        if(importLead && reference && added>0)break;
+        juce::ARAAudioSourceReader reader(source);
+        if(!reader.isValid())continue;
+        juce::AudioBuffer<float> samples(static_cast<int>(channels),static_cast<int>(length));
+        if(!reader.read(&samples,0,static_cast<int>(length),start,true,true))continue;
+        Track t;
+        t.timelineStart=region->getStartInPlaybackTime();
+        t.hostRegionToken=reinterpret_cast<uintptr_t>(region);
+        t.label="STUDIO ONE  /  EVENT "+juce::String(added+1);
+        t.audio.rate=rate;
+        t.audio.channels.resize(static_cast<size_t>(channels));
+        const auto beginTime=(!importLead && reference)?reference->timelineStart:t.timelineStart;
+        // Relative timeline placement is preserved where the backing event
+        // begins after the reference event; negative offsets need a host edit.
+        const auto padding=std::clamp<juce::int64>(
+            static_cast<juce::int64>(std::llround((t.timelineStart-beginTime)*rate)),
+            0,static_cast<juce::int64>(rate*10));
+        for(int ch=0;ch<channels;++ch){
+            auto &dst=t.audio.channels[static_cast<size_t>(ch)];
+            dst.assign(static_cast<size_t>(padding),0.f);
+            const float *src=samples.getReadPointer(static_cast<int>(ch));
+            dst.insert(dst.end(),src,src+length);
+        }
+        if(importLead){
+            reference=std::make_unique<Track>(std::move(t));
+            backups.clear();
+            break;
+        }else{
+            backups.push_back(std::move(t));
+        }
+        ++added;
+    }
+    rendered.clear();hasTiming=hasPitch=false;
+    info(importLead?
+         (reference?juce::String::fromUTF8("Лид импортирован из Studio One через ARA2"):
+                    juce::String::fromUTF8("ARA не предоставил доступный лид")):
+         juce::String::fromUTF8("Бэков импортировано через ARA2: ")+juce::String(added));
+    repaint();
 }
 void SyncEditor::loadFiles(const juce::StringArray &files,bool lead){
     int loaded=0;juce::String error;

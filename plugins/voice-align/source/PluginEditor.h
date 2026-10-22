@@ -14,9 +14,10 @@ public:
     void fileDragEnter(const juce::StringArray&,int,int) override;
     void fileDragExit(const juce::StringArray&) override;
 private:
-    struct Track{juce::File source;synchro::Audio audio;};
+    struct Track{juce::File source;synchro::Audio audio;juce::String label;double timelineStart=0;uintptr_t hostRegionToken=0;};
     SyncProcessor &processor;
-    juce::TextButton chooseLead{"CHOOSE LEAD WAV"},addBack{"ADD BACK WAV"},
+    juce::TextButton chooseLead{"WAV / FILE"},addBack{"WAV / FILE"},
+                     hostLead{"FROM STUDIO ONE"},hostBack{"FROM STUDIO ONE"},
                      timing{"1  ALIGN TIMING"},pitch{"2  TUNE NOTES"},exportButton{"EXPORT WAV"};
     juce::Label status;
     juce::AudioFormatManager formats;
@@ -28,6 +29,7 @@ private:
     bool dragIntoLead=false;
     void paintAudioWave(juce::Graphics&,const synchro::Audio*,juce::Rectangle<float>,juce::Colour) const;
     void selectFiles(bool lead);
+    void importHostEvents(bool lead);
     void loadFiles(const juce::StringArray&,bool lead);
     bool readTrack(const juce::File&,Track&,juce::String&);
     void alignAll();
