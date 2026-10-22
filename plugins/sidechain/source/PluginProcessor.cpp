@@ -62,8 +62,9 @@ void SidechainProcessor::processBlock(juce::AudioBuffer<float>&buffer,juce::Midi
     const auto* bus=getBus(true,1);
     const bool kickEnabled=bus!=nullptr&&bus->isEnabled();
     sidechainConnected.store(kickEnabled,std::memory_order_relaxed);
-    juce::AudioBuffer<float> kick;
-    if(kickEnabled)kick=getBusBuffer(buffer,true,1);
+    // This is a non-owning view of the optional auxiliary bus, with no
+    // copying or allocation on the real-time audio callback.
+    auto kick=getBusBuffer(buffer,true,1);
     const int channels=main.getNumChannels(),count=main.getNumSamples();
     auto get=[this](const char* key){return parameters.getRawParameterValue(key)->load(std::memory_order_relaxed);};
     sidechain::Curve curve{};
