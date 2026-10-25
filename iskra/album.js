@@ -154,7 +154,8 @@ function updateProgress(){
  $('#album-progress-text').textContent=count+' / 30';
  $('#album-progress-fill').style.width=(count/30*100)+'%';
  $('.album-meter').setAttribute('aria-valuenow',String(count));
- const select=$('#album-jump');select.replaceChildren(...missions.map((mission,i)=>{const option=el('option','',(i+1)+'. '+mission.title+(state.done[i]?' ✓':''));option.value=String(i);return option;}));select.value=String(state.day);
+ const answer=state.answers[state.day],started=answer.picks.some(p=>p.length)||answer.result||answer.note;
+ const badge=$('#album-day-state');badge.textContent=state.done[state.day]?'Выполнен ✓':started?'В процессе':'Не выполнен';badge.dataset.state=state.done[state.day]?'done':started?'started':'new';
  const button=$('#album-done');button.textContent=state.done[state.day]?'отменить отметку':'завершить миссию ✓';
  // Кнопка доступна: при неполных ответах объясняет, что осталось сделать.
  button.setAttribute('aria-describedby','album-status');
@@ -166,22 +167,29 @@ function receipt(){
  const node=$('#mission-receipt');node.replaceChildren(el('strong','',state.done[state.day]?'Миссия завершена. ':'Твой маршрут: '),document.createTextNode(selected.length?selected.join(' · '):'выбери варианты выше — здесь появится твой план.'));
  if(state.done[state.day]&&!ready(state.day))node.append(document.createTextNode(' Прежняя отметка сохранена; новые вопросы можно заполнить в любой момент.'));
 }
-function changed(){
- if(state.done[state.day]&&state.answers[state.day].result==='later')state.done[state.day]=false;
+function changed(cleared=false){
+ if(state.done[state.day]&&(state.answers[state.day].result==='later'||(cleared&&!ready(state.day))))state.done[state.day]=false;
  const saved=save();updateProgress();receipt();window.dispatchEvent(new Event('iskra:album-change'));
  announce(saved?(ready(state.day)?'Всё готово — можешь завершить миссию.':'Выбор сохранён. Продолжай в своём темпе.'):'Изменения пока только на экране. Сохрани резервную копию через экспорт.',!saved);
 }
 function optionGroup(legend,options,selected,multiple,onChange,name){
  const field=el('fieldset','mission-step'),title=el('legend','',legend);field.append(title);
- if(multiple>1)field.append(el('p','mission-step-hint','Выбери от 1 до '+multiple+' вариантов.'));
+ let current=selected.filter(value=>options.some(([v])=>v===value));
+ const hint=multiple>1?el('p','mission-step-hint'):null;
+ if(hint)field.append(hint);
  const choices=el('div','mission-options');
+ const reset=el('button','mission-reset','Сбросить выбор');reset.type='button';reset.setAttribute('aria-label','Сбросить выбор: '+legend);
+ function sync(){reset.disabled=current.length===0;if(hint)hint.textContent='До '+multiple+' вариантов · выбрано '+current.length;}
  options.forEach(([value,label])=>{
-  const wrap=el('label','mission-option'),input=el('input');input.type=multiple>1?'checkbox':'radio';input.name=name;input.value=String(value);input.checked=selected.includes(value);
+  const wrap=el('label','mission-option'),input=el('input');input.type=multiple>1?'checkbox':'radio';input.name=name;input.value=String(value);input.checked=current.includes(value);
   input.addEventListener('change',()=>{
-   if(multiple>1&&input.checked&&selected.length>=multiple){input.checked=false;announce('Можно выбрать не больше '+multiple+' вариантов. Сначала сними один из выбранных.',true);return;}
-   onChange(value,input.checked);
+   if(multiple>1&&input.checked&&current.length>=multiple){input.checked=false;announce('Можно выбрать не больше '+multiple+' вариантов. Сначала сними один из выбранных.',true);return;}
+   current=multiple>1?(input.checked?[...current,value]:current.filter(v=>v!==value)):[value];
+   onChange(value,input.checked,false);sync();
   });wrap.append(input,el('span','',label));choices.append(wrap);
- });field.append(choices);return field;
+ });
+ reset.addEventListener('click',()=>{current=[];choices.querySelectorAll('input').forEach(input=>{input.checked=false;});onChange(null,false,true);sync();choices.querySelector('input').focus({preventScroll:true});});
+ field.append(choices,reset);sync();return field;
 }
 function render(){
  const i=state.day,mission=missions[i],answer=state.answers[i];
@@ -190,10 +198,11 @@ function render(){
  const form=$('#album-mission');form.replaceChildren();
  mission.questions.forEach((question,k)=>{
   const selected=answer.picks[k];
-  form.append(optionGroup((k+1)+'. '+question.label,question.options.map((label,n)=>[n,label]),selected,question.max,(value,checked)=>{
-   if(question.max===1)selected.splice(0,selected.length,value);
+  form.append(optionGroup((k+1)+'. '+question.label,question.options.map((label,n)=>[n,label]),selected,question.max,(value,checked,reset)=>{
+   if(reset)selected.splice(0);
+   else if(question.max===1)selected.splice(0,selected.length,value);
    else if(checked)selected.push(value);else selected.splice(selected.indexOf(value),1);
-   changed();
+   changed(reset||!checked);
   },'mission-'+i+'-'+k));
  });
  const guide=IskraPractice.days[i],action=el('div','mission-action');action.append(el('h3','','✳ '+guide.focus));
@@ -202,7 +211,7 @@ function render(){
  const output=el('p','practice-output');output.append(el('strong','','На выходе: '),document.createTextNode(guide.output));action.append(output);
  const review=el('p','practice-review');review.append(el('strong','','Как проверить: '),document.createTextNode(guide.review));action.append(review);
  const min=el('p','album-min');min.append(el('strong','','Если мало сил: '),document.createTextNode(mission.minimum));action.append(min);form.append(action);
- const result=optionGroup('3. Как прошла миссия?',resultOptions,[answer.result],1,value=>{answer.result=value;changed()},'mission-result');result.classList.add('mission-result');form.append(result);
+ const result=optionGroup('3. Как прошла миссия?',resultOptions,[answer.result],1,(value,checked)=>{answer.result=checked?value:'';changed(!checked)},'mission-result');result.classList.add('mission-result');form.append(result);
  if(mission.note){
   const details=el('details','mission-note');details.open=Boolean(answer.note);details.append(el('summary','','+ Своя заметка · необязательно'));
   const id='mission-note-'+i,label=el('label','',mission.note),input=el('textarea','studio-textarea');label.htmlFor=id;input.id=id;input.maxLength=500;input.placeholder='Пара слов, если хочется…';input.value=answer.note;
@@ -226,8 +235,6 @@ function switchMode(mode){
 }
 ['album','studio','inspire'].forEach(mode=>$('#mode-'+mode).addEventListener('click',()=>switchMode(mode)));
 $('#album-prev').addEventListener('click',()=>go(state.day-1));$('#album-next').addEventListener('click',()=>go(state.day+1));
-$('#album-jump').addEventListener('change',event=>go(Number(event.target.value)));
-$('#album-resume').addEventListener('click',()=>{const next=state.done.findIndex(v=>!v);go(next<0?29:next);});
 $('#album-done').addEventListener('click',()=>{
  if(state.done[state.day]){state.done[state.day]=false;const saved=save();updateProgress();receipt();announce(saved?'Отметка снята. Все ответы сохранены.':'Изменение отметки не сохранено. Экспортируй миссии.',!saved);return;}
  if(!ready(state.day)){
@@ -235,8 +242,13 @@ $('#album-done').addEventListener('click',()=>{
   announce(missing>=0?'Сначала ответь на вопрос '+(missing+1)+'.':'Выполни действие или его облегчённый вариант, затем выбери результат «Сделано» или «Сделал минимум».',true);
   const target=missing>=0?$('#album-mission').querySelectorAll('fieldset')[missing]:$('.mission-result');target.querySelector('input').focus();return;
  }
- state.done[state.day]=true;const saved=save();updateProgress();receipt();window.dispatchEvent(new Event('iskra:album-change'));
- announce(saved?(state.done.every(Boolean)?'30 из 30! Альбом прошёл путь от искры до финала. Сохрани резервную копию миссий.':'Миссия завершена ✓ '+(state.day<29?'Следующий день — по стрелке справа, когда будешь готов.':'Вернись к любому дню через выбор дня вверху.')):'Отметка пока не сохранена. Экспортируй миссии, чтобы сохранить прогресс.',!saved);
+ const completedDay=state.day;state.done[completedDay]=true;
+ if(completedDay<29)state.day=completedDay+1;
+ const saved=save();if(!saved)state.day=completedDay;
+ render();window.dispatchEvent(new Event('iskra:album-change'));
+ announce(saved?(state.done.every(Boolean)?'30 из 30! Сохрани резервную копию — твой путь стоит беречь.':'День '+(completedDay+1)+' выполнен ✓ '+(state.day>completedDay?'Следующий день уже открыт.':'К другим дням можно вернуться стрелками.')):'Отметка пока не сохранена. Экспортируй миссии, чтобы сохранить прогресс.',!saved);
+ if(saved&&state.day!==completedDay){$('#album-title').focus({preventScroll:true});$('#album-card').scrollIntoView({block:'start',behavior:'instant'});}
+
 });
 $('#album-export').addEventListener('click',()=>{
  const blob=new Blob([JSON.stringify({app:'iskra-missions',version:1,exportedAt:new Date().toISOString(),album:state},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=el('a');a.href=url;a.download='iskra-missions-'+(giftMode?'gift-':'')+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);

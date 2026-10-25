@@ -14,7 +14,7 @@ const errors=[];
  async function test(name,fn){await fn();checks++;console.log('PASS',name);}
  async function context(seed={}){const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,acceptDownloads:true});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await p.evaluate(data=>{localStorage.clear();for(const [k,v] of Object.entries(data))localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));},seed);await p.goto(base+'?mode=album');return {c,p};}
  async function saved(p,key=storageKey){return p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);}
- async function day(p,n){await p.locator('#album-jump').selectOption(String(n));assert.equal(await p.locator('#album-day').textContent(),String(n+1).padStart(2,'0'));}
+ async function day(p,n){let current=Number(await p.locator('#album-day').textContent())-1;while(current!==n){await p.locator(current<n?'#album-next':'#album-prev').click();current=Number(await p.locator('#album-day').textContent())-1;}assert.equal(await p.locator('#album-day').textContent(),String(n+1).padStart(2,'0'));}
  async function fill(p,result='full'){
   const fields=p.locator('#album-mission fieldset');
   await fields.nth(0).locator('input').first().check();await fields.nth(1).locator('input').first().check();
@@ -38,7 +38,8 @@ const errors=[];
    await fill(p,i%2?'minimum':'full');
    const note=p.locator('.mission-note textarea');if(await note.count()){notes++;await p.locator('.mission-note summary').click();await note.fill('Моя заметка '+i+' <текст>');}
    await p.locator('#album-done').click();assert.equal((await saved(p)).done[i],true);
-   if(i===0){await p.reload();assert.equal(await p.locator('.mission-note textarea').inputValue(),'Моя заметка 0 <текст>');assert.equal(await p.locator('input[name="mission-0-0"]').first().isChecked(),true);}
+   assert.equal((await saved(p)).day,Math.min(i+1,29),'completion opens the next day');
+   if(i===0){await p.reload();await day(p,0);assert.equal(await p.locator('.mission-note textarea').inputValue(),'Моя заметка 0 <текст>');assert.equal(await p.locator('input[name="mission-0-0"]').first().isChecked(),true);}
    assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'no mobile overflow on day '+(i+1));
   }
   assert.equal(titles.size,30);assert.equal(notes,12);assert.ok(choices/(choices+notes)>=.8&&choices/(choices+notes)<=.9);assert.equal(await p.locator('#album-progress-text').textContent(),'30 / 30');
@@ -54,7 +55,20 @@ const errors=[];
   await p.locator('input[name="mission-result"][value="later"]').check();await p.locator('#album-done').click();assert.equal((await saved(p)).done[0],false);
   await p.reload();assert.equal(await fields.nth(1).locator('input:checked').count(),2);assert.equal(await p.locator('input[value="later"]').isChecked(),true);
   await p.locator('input[value="minimum"]').check();await p.locator('#album-done').click();assert.equal((await saved(p)).done[0],true);
-  await p.locator('input[value="later"]').check();assert.equal((await saved(p)).done[0],false);await c.close();
+  await day(p,0);await p.locator('input[value="later"]').check();assert.equal((await saved(p)).done[0],false);await c.close();
+ });
+ await test('every question can be reset independently; cleared answers and day status persist',async()=>{
+  const {c,p}=await context();assert.equal(await p.locator('#album-day-state').textContent(),'Не выполнен');
+  const fields=p.locator('#album-mission fieldset');assert.equal(await fields.nth(0).locator('.mission-reset').isDisabled(),true);
+  await fill(p);assert.equal(await p.locator('#album-day-state').textContent(),'В процессе');
+  await fields.nth(0).locator('.mission-reset').click();assert.deepEqual((await saved(p)).answers[0].picks,[[],[0]]);assert.equal((await saved(p)).answers[0].result,'full');assert.equal(await fields.nth(0).locator('input:checked').count(),0);
+  await p.reload();assert.equal(await fields.nth(0).locator('input:checked').count(),0);assert.equal(await fields.nth(1).locator('input:checked').count(),1);
+  await fields.nth(0).locator('input').first().check();await fields.nth(1).locator('input').nth(1).check();assert.match(await fields.nth(1).locator('.mission-step-hint').textContent(),/выбрано 2/);
+  await fields.nth(1).locator('.mission-reset').click();assert.deepEqual((await saved(p)).answers[0].picks[1],[]);assert.equal(await fields.nth(1).locator('input:checked').count(),0);
+  await fields.nth(2).locator('.mission-reset').click();assert.equal((await saved(p)).answers[0].result,'');assert.equal(await fields.nth(2).locator('input:checked').count(),0);
+  await fill(p);await p.locator('#album-done').click();assert.equal(await p.locator('#album-day').textContent(),'02');await day(p,0);assert.equal(await p.locator('#album-day-state').textContent(),'Выполнен ✓');
+  await fields.nth(0).locator('.mission-reset').click();assert.equal((await saved(p)).done[0],false);assert.equal(await p.locator('#album-progress-text').textContent(),'0 / 30');assert.equal(await p.locator('#album-day-state').textContent(),'В процессе');
+  await p.reload();assert.equal((await saved(p)).done[0],false);assert.deepEqual((await saved(p)).answers[0].picks[0],[]);await c.close();
  });
  await test('gift mode keeps personal answers, progress and tracks isolated',async()=>{
   const {c,p}=await context({[storageKey]:legacy,'iskra-studio-v1':studio});const personal=await saved(p);
@@ -65,7 +79,7 @@ const errors=[];
  await test('export/import round-trip includes answers, notes, day and marks without touching tracks',async()=>{
   const {c,p}=await context({'iskra-studio-v1':studio});await fill(p);await p.locator('.mission-note summary').click();await p.locator('.mission-note textarea').fill('Резервная копия');await p.locator('#album-done').click();
   const pending=p.waitForEvent('download');await p.locator('#album-export').click();const download=await pending;const bytes=await fs.readFile(await download.path());const backup=JSON.parse(bytes);assert.equal(backup.album.answers[0].note,'Резервная копия');assert.equal(backup.album.done[0],true);
-  await p.locator('#album-done').click();assert.equal((await saved(p)).done[0],false);
+  await day(p,0);await p.locator('#album-done').click();assert.equal((await saved(p)).done[0],false);
   p.once('dialog',d=>d.accept());await p.locator('#album-file').setInputFiles({name:'backup.json',mimeType:'application/json',buffer:bytes});await p.waitForFunction(()=>JSON.parse(localStorage.getItem('iskra-album30-v1')).done[0]);
   assert.equal((await saved(p)).answers[0].note,'Резервная копия');assert.deepEqual(await saved(p,'iskra-studio-v1'),studio);
   const before=await saved(p);await p.locator('#album-file').setInputFiles({name:'invalid.json',mimeType:'application/json',buffer:Buffer.from('{"app":"iskra-missions","version":1,"album":{}}')});await p.waitForFunction(()=>document.querySelector('#album-status').textContent.includes('Неверный формат'));
@@ -79,7 +93,7 @@ const errors=[];
   const pending=p.waitForEvent('download');await p.locator('#album-export').click();const d=await pending;assert.equal(JSON.parse(await fs.readFile(await d.path(),'utf8')).album.done[0],true);await c.close();
  });
  await test('320px, 390px, 430px and desktop layouts fit; controls remain touch-friendly',async()=>{
-  const {c,p}=await context();for(const width of [320,390,430,1280]){await p.setViewportSize({width,height:844});await day(p,29);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.equal(await p.locator('#album-jump option').count(),30);for(const label of await p.locator('.mission-option').all()){const box=await label.boundingBox();assert.ok(box.height>=44);}}
+  const {c,p}=await context();for(const width of [320,390,430,1280]){await p.setViewportSize({width,height:844});await day(p,29);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.equal(await p.locator('#album-jump, .mission-map').count(),0);for(const label of await p.locator('.mission-option').all()){const box=await label.boundingBox();assert.ok(box.height>=44);}}
   await p.setViewportSize({width:390,height:844});await day(p,0);await p.screenshot({path:'/tmp/iskra-mobile-tested.png',fullPage:true});await c.close();
  });
  await test('native keyboard navigation selects options and completes a day',async()=>{
