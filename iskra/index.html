@@ -99,5 +99,7 @@ document.querySelector('#album-done').addEventListener('click',()=>{
  else {albumDone[albumDay]=true;if(albumDay<29)albumDay++;}
  renderAlbum();saveAlbum();
 });
+// Прямая ссылка открывает режим альбома, не стирая сохранённые отметки.
+if(new URLSearchParams(window.location.search).get('mode')==='album')activeMode='album';
 renderAlbum();switchMode(activeMode);
 </script></body></html>
