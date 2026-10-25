@@ -1,7 +1,7 @@
 // Run against python -m http.server 8000 in the repository root.
 // Requires Playwright 1.62.1 and Chromium; no app dependencies are needed.
 const assert=require('node:assert/strict');
-const {chromium,webkit}=require('playwright');
+const {chromium}=require('playwright');
 const fs=require('node:fs/promises');
 const base=(process.env.ISKRA_TEST_URL||'http://127.0.0.1:8000/iskra/').replace(/\/?$/,'/');
 const storageKey='iskra-album30-v1';
@@ -14,7 +14,7 @@ const errors=[];
  async function test(name,fn){await fn();checks++;console.log('PASS',name);}
  async function context(seed={}){const c=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,acceptDownloads:true});const p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await p.evaluate(data=>{localStorage.clear();for(const [k,v] of Object.entries(data))localStorage.setItem(k,typeof v==='string'?v:JSON.stringify(v));},seed);await p.goto(base+'?mode=album');return {c,p};}
  async function saved(p,key=storageKey){return p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);}
- async function day(p,n){await p.locator('.mission-map').evaluate(e=>e.open=true);await p.locator('.mission-day-button').nth(n).click();assert.equal(await p.locator('#album-day').textContent(),String(n+1).padStart(2,'0'));}
+ async function day(p,n){await p.locator('#album-jump').selectOption(String(n));assert.equal(await p.locator('#album-day').textContent(),String(n+1).padStart(2,'0'));}
  async function fill(p,result='full'){
   const fields=p.locator('#album-mission fieldset');
   await fields.nth(0).locator('input').first().check();await fields.nth(1).locator('input').first().check();
@@ -79,7 +79,7 @@ const errors=[];
   const pending=p.waitForEvent('download');await p.locator('#album-export').click();const d=await pending;assert.equal(JSON.parse(await fs.readFile(await d.path(),'utf8')).album.done[0],true);await c.close();
  });
  await test('320px, 390px, 430px and desktop layouts fit; controls remain touch-friendly',async()=>{
-  const {c,p}=await context();for(const width of [320,390,430,1280]){await p.setViewportSize({width,height:844});await day(p,29);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.equal(await p.locator('#album-days button').count(),30);for(const label of await p.locator('.mission-option').all()){const box=await label.boundingBox();assert.ok(box.height>=44);}}
+  const {c,p}=await context();for(const width of [320,390,430,1280]){await p.setViewportSize({width,height:844});await day(p,29);assert.equal(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);assert.equal(await p.locator('#album-jump option').count(),30);for(const label of await p.locator('.mission-option').all()){const box=await label.boundingBox();assert.ok(box.height>=44);}}
   await p.setViewportSize({width:390,height:844});await day(p,0);await p.screenshot({path:'/tmp/iskra-mobile-tested.png',fullPage:true});await c.close();
  });
  await test('native keyboard navigation selects options and completes a day',async()=>{
