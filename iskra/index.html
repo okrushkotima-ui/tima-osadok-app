@@ -118,7 +118,7 @@ function switchMode(mode){
  activeMode=['album','studio'].includes(mode)?mode:'inspire';
  const isAlbum=activeMode==='album';const isStudio=activeMode==='studio';
  document.querySelector('#album-view').hidden=!isAlbum;document.querySelector('#studio-view').hidden=!isStudio;
- document.querySelector('#inspire-view').hidden=isAlbum;
+ document.querySelector('#inspire-view').hidden=isAlbum||isStudio;
  document.querySelector('#mode-inspire').setAttribute('aria-selected',String(!isAlbum));
  document.querySelector('#mode-album').setAttribute('aria-selected',String(isAlbum));document.querySelector('#mode-studio').setAttribute('aria-selected',String(isStudio));
  if(isAlbum)renderAlbum();
