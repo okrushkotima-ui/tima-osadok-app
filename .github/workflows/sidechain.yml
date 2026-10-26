@@ -1,0 +1,52 @@
+name: Build Sidechain by тима осадок Windows VST3
+on:
+  push:
+    branches: [main]
+    paths: ['plugins/sidechain/**', '.github/workflows/sidechain.yml']
+  pull_request:
+    paths: ['plugins/sidechain/**', '.github/workflows/sidechain.yml']
+  workflow_dispatch:
+concurrency:
+  group: sidechain-\${{ github.workflow }}-\${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure JUCE
+        run: cmake -S plugins/sidechain -B build/sidechain -A x64
+      - name: Build VST3 and tests
+        run: cmake --build build/sidechain --config Release --parallel 3
+      - name: Verify sidechain audio engine
+        run: ctest --test-dir build/sidechain -C Release --output-on-failure
+      - name: Verify VST3 binary and Unicode
+        shell: pwsh
+        run: |
+          $bundle = 'build/sidechain/Sidechain_artefacts/Release/VST3/Sidechain by тима осадок.vst3'
+          if (-not (Test-Path -LiteralPath $bundle)) { throw 'Missing sidechain VST3 bundle' }
+          $metadata = Join-Path $bundle 'Contents/Resources/moduleinfo.json'
+          if (-not (Test-Path -LiteralPath $metadata)) { throw 'Missing moduleinfo.json' }
+          $text = Get-Content -LiteralPath $metadata -Raw -Encoding utf8
+          if (-not $text.Contains('Sidechain by тима осадок')) { throw 'Unreadable VST3 name' }
+          if (-not $text.Contains('тима осадок')) { throw 'Unreadable vendor' }
+          $dll = Join-Path $bundle 'Contents/x86_64-win/Sidechain by тима осадок.vst3'
+          if (-not (Test-Path -LiteralPath $dll)) { throw 'Missing 64bit binary' }
+      - name: Create installer
+        shell: pwsh
+        run: |
+          $compiler = 'C:\Program Files (x86)\Inno Setup 6\ISCC.exe'
+          if (-not (Test-Path $compiler)) { choco install innosetup --no-progress -y }
+          & $compiler plugins/sidechain/installer/sidechain.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $exe = 'plugins/sidechain/installer/Output/Sidechain-by-tima-osadok-Setup-0.1.0-win64.exe'
+          if (-not (Test-Path -LiteralPath $exe)) { throw 'Missing setup EXE' }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sidechain-by-tima-osadok-Windows-VST3
+          path: |
+            plugins/sidechain/installer/Output/*.exe
+            build/sidechain/Sidechain_artefacts/Release/VST3/*
