@@ -1,5 +1,5 @@
-const CACHE='ritm-shell-v24';
-const ASSETS=['./','./index.html','./styles.css?v=17','./fusion.css?v=3','./app.js?v=19','./fusion.js?v=5','./backup-unified.js?v=1','./manifest.webmanifest','./sounds/success.wav','./sounds/impact.wav','./sounds/soft-no.wav','./sounds/tap.wav','./sounds/warm.wav','./assets/midnight-clouds.svg','./assets/ritm-cloud-lettering.webp','./icons/ritm-192.png','./icons/ritm-512.png','./svoboda/','./svoboda/index.html','./svoboda/styles.css?v=4','./svoboda/coach.js?v=4','./svoboda/app.js?v=5','./svoboda/recipes-extra.js?v=1','./svoboda/recipes-extra.css?v=1','./svoboda/embed.css?v=2','./svoboda/embed.js?v=2'];
+const CACHE='ritm-shell-v25';
+const ASSETS=['./','./index.html','./styles.css?v=17','./fusion.css?v=4','./app.js?v=19','./fusion.js?v=6','./ritm-smart.js?v=1','./backup-unified.js?v=1','./manifest.webmanifest','./sounds/success.wav','./sounds/impact.wav','./sounds/soft-no.wav','./sounds/tap.wav','./sounds/warm.wav','./assets/midnight-clouds.svg','./assets/ritm-cloud-lettering.webp','./icons/ritm-192.png','./icons/ritm-512.png','./svoboda/','./svoboda/index.html','./svoboda/styles.css?v=4','./svoboda/coach.js?v=4','./svoboda/app.js?v=5','./svoboda/recipes-extra.js?v=1','./svoboda/recipes-extra.css?v=1','./svoboda/embed.css?v=2','./svoboda/embed.js?v=2'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(ASSETS.map(path=>cache.add(path)))).then(()=>self.skipWaiting()));
 });
