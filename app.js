@@ -77,6 +77,12 @@ function playSkip(){
 
 function setHabit(h,state){data.checks[selected]??={};if(state===null)delete data.checks[selected][h];else data.checks[selected][h]=state;if(Object.keys(data.checks[selected]).length===0)delete data.checks[selected];save();render();if(state==='done'){playWin();fireworks();const [msg,i]=pickText(wins,lastWin);lastWin=i;notice(msg,h+' — выполнено. Едем дальше!','🎉')}else if(state==='skip'){playSkip();const [msg,i]=pickText(encouragement,lastSkip);lastSkip=i;notice('Пауза тоже часть ритма.',msg,'🌙')}}
 
+/* Read-only bridge to unified tracker, keeping historical habits and dates unchanged. */
+window.RitmMain={
+ getTrackerState:()=>({date:selected,habits:HABITS.map(h=>({id:h.id,title:h.id,icon:h.icon,sub:h.sub,group:h.group,status:statusFor(selected,h.id)}))}),
+ markHabit:(id,status)=>{if(!HABITS.some(h=>h.id===id)||![null,'done','skip'].includes(status))return;setHabit(id,status)},
+ getToday:TODAY
+};
 const shortDays=['Вс','Пн','Вт','Ср','Чт','Пт','Сб'];
 let calendarMonth=null;
 function renderDays(){
@@ -385,12 +391,12 @@ function setupIosInstallTip(){
 }
 setupIosInstallTip();
 
-function render(){renderOverview();renderDays();renderHabits();renderHabitPreview();renderSleep();renderWeek();chart();renderWeightMini();renderAnalytics();renderTodaySummary();renderNotes();renderCalendar()}
+function render(){renderOverview();renderDays();renderHabits();renderHabitPreview();renderSleep();renderWeek();chart();renderWeightMini();renderAnalytics();renderTodaySummary();renderNotes();renderCalendar();window.RitmFusion?.syncDate(selected)}
 $('prev-day').onclick=()=>{selected=shift(selected,-1);calendarMonth=selected.slice(0,7);render()};$('next-day').onclick=()=>{if(selected<TODAY()){selected=shift(selected,1);calendarMonth=selected.slice(0,7);render()}};
 $('weight-form').onsubmit=e=>{e.preventDefault();const n=Number($('weight-input').value);if(!validNum(n,25,350))return notice('Проверь вес','Можно указать значение от 25 до 350 кг.','⚠️');data.weights[selected]=n;save();render();notice('Вес записан','Важно видеть тенденцию, а не одну цифру.','⚖️')};
 $('cal-form').onsubmit=e=>{e.preventDefault();const n=Number($('cal-input').value);if($('cal-input').value.trim()===''||!validNum(n,0,10000))return notice('Проверь калории','Можно указать значение от 0 до 10 000.','⚠️');data.calories[selected]=n;save();render();notice('Записано','Без погони за идеальными цифрами.','🍽️')};
 $('goal-form').onsubmit=e=>{e.preventDefault();const n=Number($('goal-input').value);if(!validNum(n,25,350))return notice('Проверь цель','Допустимое значение от 25 до 350 кг.','⚠️');data.goal=n;save();render();notice('Цель сохранена','Менять цель — нормально.','🎯')};
-const VALID_VIEWS=['habits','food','freedom','weight','week','settings'];
+const VALID_VIEWS=['habits','tracker','food','freedom','weight','week','settings'];
 function setView(name){
   if(!VALID_VIEWS.includes(name))name='habits';
   document.querySelectorAll('[data-view-panel]').forEach(panel=>{panel.hidden=panel.dataset.viewPanel!==name});
@@ -400,7 +406,7 @@ function setView(name){
 }
 document.querySelectorAll('[data-view]').forEach(button=>button.addEventListener('click',()=>setView(button.dataset.view)));
 $('settings-toggle').onclick=()=>setView('settings');
-$('header-calendar').onclick=()=>{setView('habits');setCalendarOpen(true);$('calendar-panel').scrollIntoView({behavior:'smooth',block:'center'})};
+$('header-calendar').onclick=()=>{setView('tracker');setCalendarOpen(true);$('calendar-panel').scrollIntoView({behavior:'smooth',block:'center'})};
 $('expand-habits').onclick=()=>{
   const details=$('habit-list-container'),open=details.hidden;
   details.hidden=!open;$('expand-habits').setAttribute('aria-expanded',String(open));
