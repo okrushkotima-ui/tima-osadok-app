@@ -40,7 +40,7 @@
  <form class="micro-add" id="micro-add"><input id="micro-new" aria-label="Своя короткая задача" placeholder="Добавить своё короткое дело" maxlength="70"><button type="submit">+ Добавить</button></form>
 </section>
 <div class="micro-toast" id="micro-toast" role="status" aria-live="polite" hidden><span id="micro-toast-label"></span><button type="button" id="micro-toast-undo" hidden>Отменить</button></div>
-<section class="fusion-glance glass-card" aria-label="Твой баланс на сегодня"><div class="fusion-glance-header"><span class="micro-kicker">ВСЁ В ОДНОМ РИТМЕ</span><strong>Твой день, одним взглядом</strong></div><div class="fusion-glance-grid"><button type="button" data-fusion-go="food" class="fusion-glance-item"><span>🥗 Питание</span><strong id="fusion-food-done">0 / 3</strong><small>приёма пищи</small></button><button type="button" data-fusion-go="freedom" class="fusion-glance-item"><span>⚡ Активность</span><strong id="fusion-activity">0 мин</strong><small>движения сегодня</small></button><button type="button" data-fusion-go="weight" class="fusion-glance-item"><span>⚖ Вес</span><strong id="fusion-last-weight">—</strong><small>из записей баланса</small></button></div></section>
+<section class="fusion-glance glass-card" aria-label="Твой баланс на сегодня"><div class="fusion-glance-header"><span class="micro-kicker">ВСЁ В ОДНОМ РИТМЕ</span><strong>Твой день, одним взглядом</strong></div><div class="fusion-glance-grid"><button type="button" data-fusion-go="food" class="fusion-glance-item"><span>🥗 Питание</span><strong id="fusion-food-done">0 / 3</strong><small>приёма пищи</small></button><button type="button" data-fusion-go="freedom" data-fusion-target="sport" class="fusion-glance-item"><span>⚡ Активность</span><strong id="fusion-activity">0 мин</strong><small>движения сегодня</small></button><button type="button" data-fusion-go="weight" class="fusion-glance-item"><span>⚖ Вес</span><strong id="fusion-last-weight">—</strong><small>из записей баланса</small></button></div></section>
 <section class="today-dashboard glass-card" aria-label="Прогресс дня"><span class="sky-veil" aria-hidden="true"></span>
 <div class="progress-top"><h1 id="today-headline">Прогресс дня</h1><span class="subtle-spark" aria-hidden="true">✳</span></div>
 <div class="today-greeting"><div class="today-progress" id="today-progress" style="--today-percent:0"><strong id="today-percent">0%</strong><small id="today-count">0 из 8</small></div>
@@ -150,6 +150,6 @@
   </div>
   <div class="celebration" id="celebration" role="status" aria-live="polite" aria-atomic="true"><span id="toast-icon">✨</span><strong id="toast-title"></strong><p id="toast-desc"></p></div>
   <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
-  <script src="./app.js?v=19" defer></script><script src="./fusion.js?v=3" defer></script><script src="./backup-unified.js?v=1" defer></script>
+  <script src="./app.js?v=19" defer></script><script src="./fusion.js?v=4" defer></script><script src="./backup-unified.js?v=1" defer></script>
 </body>
 </html>
