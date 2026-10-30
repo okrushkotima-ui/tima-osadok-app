@@ -31,3 +31,6 @@
 .nav-tab{min-width:0}
 @media(max-width:520px){.micro-shell{padding:18px 14px 14px}.micro-track{grid-auto-columns:75%}.micro-head h2{font-size:20px}.fusion-title{font-size:23px}.bottom-nav .nav-tab{font-size:10px!important;padding-left:2px!important;padding-right:2px!important}.bottom-nav .nav-tab span{font-size:19px!important}}
 @media(prefers-reduced-motion:reduce){.micro-finish{transition:none}}
+/* Старые привычки доступны по кнопке «Все привычки», не дублируют горизонтальный трекер. */
+.habit-showcase .habit-preview{display:none!important}
+.habit-showcase .showcase-head{margin-bottom:0}
