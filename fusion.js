@@ -196,7 +196,7 @@ function showEmbedded(view){
  else try{frame.contentWindow?.postMessage({type:'ritm-remeasure'},location.origin)}catch{}
  renderSnapshot();
 }
-window.RitmFusion={showEmbedded,renderSnapshot,renderCombined,syncDate:date=>{if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date))return;if(shownDate!==date){shownDate=date;filter='all';render()}else renderCombined()},reload:()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');all=v&&typeof v==='object'?v:{};shownDate=dateKey();filter='all';render()}catch{}}};
+window.RitmFusion={showEmbedded,renderSnapshot,renderCombined,syncDate:date=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;if(shownDate!==date){shownDate=date;filter='all';render()}else renderCombined()},reload:()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');all=v&&typeof v==='object'?v:{};shownDate=dateKey();filter='all';render()}catch{}}};
 window.addEventListener('message',e=>{
  if(e.origin!==location.origin||!e.data)return;
  const f=[...document.querySelectorAll('.fusion-frame')].find(x=>x.contentWindow===e.source);if(!f)return;
