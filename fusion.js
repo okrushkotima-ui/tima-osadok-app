@@ -150,8 +150,14 @@ function showEmbedded(view){
 }
 window.RitmFusion={showEmbedded,renderSnapshot,reload:()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');all=v&&typeof v==='object'?v:{};shownDate=dateKey();filter='all';render()}catch{}}};
 window.addEventListener('message',e=>{
- if(e.origin!==location.origin||e.data?.type!=='ritm-embed-size')return;
+ if(e.origin!==location.origin||!e.data)return;
  const f=[...document.querySelectorAll('.fusion-frame')].find(x=>x.contentWindow===e.source);if(!f)return;
+ if(e.data.type==='ritm-embed-ready'){
+  const tab=f.dataset.target||(e.data.kind==='food'?'food':'today');
+  try{f.contentWindow.postMessage({type:'ritm-open-tab',tab},location.origin)}catch{}
+  return;
+ }
+ if(e.data.type!=='ritm-embed-size')return;
  const height=Math.max(400,Math.min(16000,Number(e.data.height)||800));
  if(Math.abs((parseFloat(f.style.height)||0)-height)>4)f.style.height=height+'px';
  renderSnapshot();
