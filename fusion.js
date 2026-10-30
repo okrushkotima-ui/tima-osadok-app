@@ -24,7 +24,18 @@ const pool=[
  ['Ответь на важное сообщение','📩','дела',2],['Подготовь одежду на завтра','👕','дела',2],
  ['Сделай 5 спокойных вдохов','🌬️','отдых',1],['Отдохни 3 минуты без экрана','🌙','отдых',3],
  ['Послушай любимую песню','🎼','отдых',4],['Назови один успех за день','💚','отдых',1],
- ['Посиди в тишине 2 минуты','🌌','отдых',2],['Расслабь плечи и челюсть','☁️','отдых',1]
+ ['Посиди в тишине 2 минуты','🌌','отдых',2],['Расслабь плечи и челюсть','☁️','отдых',1],
+ ['Возьми гитару в руки на минуту','🎸','творчество',1],['Открой проект и нажми Play','🎚️','творчество',1],
+ ['Пропой одну мелодию в диктофон','🎙️','творчество',2],['Запиши одну строчку в заметки','✍️','творчество',1],
+ ['Сохрани интересный звук','🔊','творчество',2],['Открой последний набросок','🎵','творчество',1],
+ ['Встань и пройдись по комнате','🚶','движение',1],['Потяни плечи 30 секунд','🧘','движение',1],
+ ['Сделай 3 приседания','⚡','движение',1],['Выйди к окну на минуту','🌤️','движение',1],
+ ['Налей воды к следующей еде','💧','питание',1],['Положи овощ рядом с тарелкой','🥒','питание',1],
+ ['Выбери блюдо на сегодня','🍽️','питание',1],['Помой один фрукт','🍎','питание',1],
+ ['Убери одну вещь на место','🧺','дела',1],['Напиши одно слово для идеи','🖊️','дела',1],
+ ['Открой нужный файл','🗂️','дела',1],['Прибери один предмет со стола','🧽','дела',1],
+ ['Сядь поудобнее на минуту','☁️','отдых',1],['Выпей несколько глотков воды','💧','отдых',1],
+ ['Закрой глаза на 30 секунд','🌙','отдых',1],['Включи спокойную мелодию','🎧','отдых',1]
 ];
 const dateKey=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const previousDate=key=>{const [y,m,d]=key.split('-').map(Number),day=new Date(y,m-1,d,12);day.setDate(day.getDate()-1);return [day.getFullYear(),String(day.getMonth()+1).padStart(2,'0'),String(day.getDate()).padStart(2,'0')].join('-')};
@@ -54,7 +65,7 @@ function day(){
 function getTask(id,d=day()){
  if(typeof id!=='string')return null;
  if(/^task-\d+$/.test(id)){const p=pool[Number(id.slice(5))];return p?{id,title:p[0],emoji:p[1],group:p[2],min:p[3]}:null}
- const t=d.custom[id];return t&&typeof t.title==='string'?{id,title:t.title,emoji:'✳',group:'своё',min:0}:null;
+ const t=d.custom[id];return t&&typeof t.title==='string'?{id,title:t.title,emoji:t.emoji||'✳',group:t.group||'своё',min:Number.isFinite(t.min)?t.min:0}:null;
 }
 function streak(){
  let n=0,key=shownDate;
@@ -170,6 +181,7 @@ function renderCombined(){
  $('home-step-count').textContent=done+' из '+total+' выполнено';
  const bubble=document.querySelector('.ritm-first-bubble');if(bubble)bubble.textContent=easy&&current?'≈ '+easy.min+' МИН НА СТАРТ':'В СВОЁМ РИТМЕ';
  easyButton.disabled=!current||!easy;easyButton.textContent=easy&&current?'✓ Готово, сделал':'На сегодня достаточно';
+ window.RitmSmart?.render();
 }
 $('home-easy-done').onclick=()=>{if(shownDate!==dateKey())return;const d=day(),pending=d.items.map(id=>getTask(id,d)).filter(t=>t&&!d.done.includes(t.id));const t=pending.sort((a,b)=>(a.min||99)-(b.min||99))[0];if(t)finish(t)};
 $('tracker-core-more').onclick=()=>{coreExpanded=!coreExpanded;renderCombined()};
@@ -196,7 +208,10 @@ function showEmbedded(view){
  else try{frame.contentWindow?.postMessage({type:'ritm-remeasure'},location.origin)}catch{}
  renderSnapshot();
 }
-window.RitmFusion={showEmbedded,renderSnapshot,renderCombined,syncDate:date=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;if(shownDate!==date){shownDate=date;filter='all';render()}else renderCombined()},reload:()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');all=v&&typeof v==='object'?v:{};shownDate=dateKey();filter='all';render()}catch{}}};
+function smartContext(){const d=day(),tasks=d.items.map(id=>getTask(id,d)).filter(Boolean);return {date:shownDate,today:dateKey(),tasks:tasks.map(t=>({...t,done:d.done.includes(t.id)})),core:window.RitmMain?.getTrackerState()?.habits||[]}}
+function smartComplete(id){const d=day();const task=getTask(id,d);if(!task||!d.items.includes(id)||d.done.includes(id))return false;finish(task);return true}
+function smartInsert(title,group='своё',emoji='✳',min=1){if(shownDate!==dateKey())return null;const d=day();const found=d.items.find(x=>d.custom[x]?.title===title);if(found)return found;const id='own-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);d.custom[id]={id,title:title.slice(0,70),group,emoji,min};d.items.push(id);save();render();return id}
+window.RitmFusion={showEmbedded,renderSnapshot,renderCombined,smartContext,smartComplete,smartInsert,syncDate:date=>{if(!/^\d{4}-\d{2}-\d{2}$/.test(date))return;if(shownDate!==date){shownDate=date;filter='all';render()}else renderCombined()},reload:()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');all=v&&typeof v==='object'?v:{};shownDate=dateKey();filter='all';render()}catch{}}};
 window.addEventListener('message',e=>{
  if(e.origin!==location.origin||!e.data)return;
  const f=[...document.querySelectorAll('.fusion-frame')].find(x=>x.contentWindow===e.source);if(!f)return;
