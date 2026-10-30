@@ -13,7 +13,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/ritm-192.png">
   <link rel="icon" href="./icons/ritm-192.png">
-  <link rel="stylesheet" href="./styles.css?v=17"><link rel="stylesheet" href="./fusion.css?v=2">
+  <link rel="stylesheet" href="./styles.css?v=17"><link rel="stylesheet" href="./fusion.css?v=3">
   <title>РИТМ — by тима осадок</title>
 </head>
 <body>
@@ -22,6 +22,28 @@
 <div class="brand centered-brand ritm-brand" aria-label="РИТМ — Тима Осадок"><span class="ritm-title">РИТМ</span><img class="ritm-signature-cloud" src="./assets/ritm-cloud-lettering.webp" draggable="false" alt="Тима Осадок" width="88" height="42"></div>
 <button type="button" class="header-icon" id="header-calendar" aria-label="Открыть календарь">▦</button></header>
 <main id="main-content"><div class="app-view" id="view-habits" data-view-panel="habits">
+<section class="ritm-first glass-card" aria-labelledby="ritm-first-title"><div class="ritm-first-head"><span class="micro-kicker">ОДИН МАЛЕНЬКИЙ ШАГ</span><span class="ritm-first-bubble">60 СЕКУНД НА СТАРТ</span></div><h1 id="ritm-first-title">Не нужно заставлять себя.<br><em>Просто начни.</em></h1><p class="ritm-first-sub">Тебе не нужно выполнять весь план. Сейчас достаточно одного лёгкого действия.</p><div class="ritm-first-task"><span id="home-easy-icon" class="ritm-first-emoji">💧</span><div><strong id="home-easy-title">Один маленький шаг</strong><span id="home-easy-meta">Подбираем на сегодня</span></div></div><button type="button" id="home-easy-done" class="ritm-first-button">✓ Готово, сделал</button><div class="ritm-first-bottom"><span id="home-step-count">Каждый шаг считается</span><button type="button" id="home-open-tracker" data-view="tracker">Весь трекер <span>›</span></button></div></section>
+<section class="fusion-glance glass-card" aria-label="Твой баланс на сегодня"><div class="fusion-glance-header"><span class="micro-kicker">ВСЁ В ОДНОМ РИТМЕ</span><strong>Твой день, одним взглядом</strong></div><div class="fusion-glance-grid"><button type="button" data-fusion-go="food" class="fusion-glance-item"><span>🥗 Питание</span><strong id="fusion-food-done">0 / 3</strong><small>приёма пищи</small></button><button type="button" data-fusion-go="freedom" data-fusion-target="sport" class="fusion-glance-item"><span>⚡ Активность</span><strong id="fusion-activity">0 мин</strong><small>движения сегодня</small></button><button type="button" data-fusion-go="weight" class="fusion-glance-item"><span>⚖ Вес</span><strong id="fusion-last-weight">—</strong><small>из записей баланса</small></button></div></section>
+<div class="overview-duo">
+<section class="mini-overview sleep-overview glass-card" aria-label="Сон">
+<button id="open-sleep" class="mini-overview-head" type="button"><span class="sleep-icon">☾</span><strong>Сон</strong><span class="mini-arrow">›</span></button>
+<div class="mini-sleep-grid"><div><span>Уснул</span><strong id="sleep-mini-bed">—</strong></div><div><span>Проснулся</span><strong id="sleep-mini-wake">—</strong></div></div>
+<div class="sleep-mini-foot"><span>Продолжительность</span><strong id="sleep-mini-total">Нет записи</strong></div></section>
+<section class="mini-overview weight-overview glass-card" aria-label="Вес">
+<button id="open-weight" class="mini-overview-head" type="button"><span class="weight-icon">▥</span><strong>Вес</strong><span class="mini-arrow">›</span></button>
+<strong class="weight-mini-value" id="weight-mini-value">—</strong><p id="weight-mini-change">Добавь первый вес</p><svg id="weight-mini-chart" class="weight-mini-chart" viewBox="0 0 330 110" role="img" aria-label="Мини-график веса"></svg></section></div>
+<details class="sleep-editor glass-card" id="sleep-editor"><summary><span>☾</span> Записать время сна <span class="summary-tail">⌄</span></summary><section class="sleep-card" aria-labelledby="sleep-card-title">
+          <div class="sleep-heading"><div class="sleep-symbol" aria-hidden="true">☾</div><div><span class="section-kicker">НОЧНОЙ РИТМ</span><h3 id="sleep-card-title">Режим сна</h3><p>Отмечай, когда уснул и когда проснулся. День записи — день пробуждения.</p></div></div>
+          <form id="sleep-form" class="sleep-form">
+            <label><span>🌙 Уснул</span><input type="time" id="sleep-bed" aria-label="Время засыпания"></label>
+            <label><span>☀️ Проснулся</span><input type="time" id="sleep-wake" aria-label="Время пробуждения"></label>
+            <button type="submit" class="sleep-save">Сохранить сон</button>
+          </form>
+          <div class="sleep-result" id="sleep-result" aria-live="polite">Пока нет записи за выбранный день</div>
+        </section></details>
+<details class="journal-card"><summary><span>✎</span><span><strong>Заметки дня</strong><small>Как прошёл день, что помогло тебе?</small></span><span class="journal-chevron">⌄</span></summary><div class="journal-content"><label for="day-note" class="visually-hidden">Заметка за день</label><textarea id="day-note" placeholder="Что сегодня получилось? Что хочется запомнить?" maxlength="2000" rows="4"></textarea><span id="note-status" class="note-status">Сохраняется автоматически</span></div></details>
+</div><div class="app-view ritm-tracker-view" id="view-tracker" data-view-panel="tracker" hidden>
+<section class="tracker-intro glass-card"><span class="micro-kicker">ТВОЯ ДОРОГА · БЕЗ ГОНКИ</span><h1>Трекер</h1><p>Основа и маленькие победы в одном месте. Выбирай по силам — даже одна отметка имеет смысл.</p><div class="tracker-total-row"><strong id="tracker-combined-counter">0 из 18</strong><span id="tracker-momentum">Сегодня можно начать с одного</span></div><div class="tracker-total-bar" id="tracker-combined-bar" role="progressbar" aria-label="Общий прогресс всех привычек" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="tracker-combined-fill"></i></div><div class="tracker-switches" aria-label="Виды привычек"><button class="active" type="button" data-tracker-filter="all" aria-pressed="true">Все</button><button type="button" data-tracker-filter="core" aria-pressed="false">Основные</button><button type="button" data-tracker-filter="mini" aria-pressed="false">Мини</button></div></section>
 <section class="date-strip" aria-label="Выбор дня"><div class="day-nav"><button class="day-move" id="prev-day" aria-label="Предыдущий день">‹</button><div id="days" class="days" aria-label="Выбор дня"></div><button class="day-move" id="next-day" aria-label="Следующий день">›</button></div><div class="date-strip-detail"><span class="mini-pill" id="active-day-label">Сегодня</span><button type="button" class="calendar-toggle" id="calendar-toggle" aria-controls="calendar-panel" aria-expanded="false">Весь календарь <span>↗</span></button></div><div id="calendar-panel" class="calendar-panel" hidden>
   <div class="calendar-panel-top"><div><span class="section-kicker">ИСТОРИЯ ПО ДНЯМ</span><h3>Твой календарь</h3></div><button type="button" id="calendar-close" class="calendar-close" aria-label="Закрыть календарь">×</button></div>
   <div class="calendar-month-nav"><button id="calendar-prev" type="button" aria-label="Предыдущий месяц">‹</button><strong id="calendar-month-title">Октябрь 2026</strong><button id="calendar-next" type="button" aria-label="Следующий месяц">›</button></div>
@@ -30,6 +52,8 @@
   <div class="calendar-legend"><span><i class="dot dot-done"></i> Выполнено</span><span><i class="dot dot-today"></i> Сегодня</span><span><i class="dot dot-empty"></i> Без записей</span></div>
   <p class="calendar-caption">Дата берётся из календаря твоего телефона. Записи привязаны к каждому дню.</p>
 </div></section>
+
+<section class="tracker-core glass-card" id="tracker-core-panel"><div class="tracker-core-head"><div><span class="micro-kicker">ОСНОВА · БЕЗ ЖЁСТКИХ ПРАВИЛ</span><h2>Основные привычки</h2></div><span id="tracker-core-count">0 / 8</span></div><div id="tracker-core-queue" class="tracker-core-queue" aria-label="Основные привычки на день"></div><button type="button" class="tracker-more" id="tracker-core-more">Остальные привычки</button><details class="tracker-done"><summary id="tracker-core-done-caption">Сделано · 0</summary><div id="tracker-core-done-list"></div></details></section>
 <section class="micro-shell glass-card" aria-labelledby="micro-heading">
  <div class="micro-head"><div><span class="micro-kicker">МАЛЕНЬКИЕ ПОБЕДЫ · КАЖДЫЙ ДЕНЬ</span><h2 id="micro-heading">Сделай сейчас</h2></div><span id="micro-count" class="micro-count">0 из 8</span></div>
  <p class="micro-muted" id="micro-left">Листай вбок →</p>
@@ -40,7 +64,7 @@
  <form class="micro-add" id="micro-add"><input id="micro-new" aria-label="Своя короткая задача" placeholder="Добавить своё короткое дело" maxlength="70"><button type="submit">+ Добавить</button></form>
 </section>
 <div class="micro-toast" id="micro-toast" role="status" aria-live="polite" hidden><span id="micro-toast-label"></span><button type="button" id="micro-toast-undo" hidden>Отменить</button></div>
-<section class="fusion-glance glass-card" aria-label="Твой баланс на сегодня"><div class="fusion-glance-header"><span class="micro-kicker">ВСЁ В ОДНОМ РИТМЕ</span><strong>Твой день, одним взглядом</strong></div><div class="fusion-glance-grid"><button type="button" data-fusion-go="food" class="fusion-glance-item"><span>🥗 Питание</span><strong id="fusion-food-done">0 / 3</strong><small>приёма пищи</small></button><button type="button" data-fusion-go="freedom" data-fusion-target="sport" class="fusion-glance-item"><span>⚡ Активность</span><strong id="fusion-activity">0 мин</strong><small>движения сегодня</small></button><button type="button" data-fusion-go="weight" class="fusion-glance-item"><span>⚖ Вес</span><strong id="fusion-last-weight">—</strong><small>из записей баланса</small></button></div></section>
+
 <section class="today-dashboard glass-card" aria-label="Прогресс дня"><span class="sky-veil" aria-hidden="true"></span>
 <div class="progress-top"><h1 id="today-headline">Прогресс дня</h1><span class="subtle-spark" aria-hidden="true">✳</span></div>
 <div class="today-greeting"><div class="today-progress" id="today-progress" style="--today-percent:0"><strong id="today-percent">0%</strong><small id="today-count">0 из 8</small></div>
@@ -53,14 +77,7 @@
 <div class="today-bottom"><span id="today-date-label">Сегодня</span><button type="button" id="jump-today" hidden>Вернуться к сегодня →</button></div></section>
 <section class="habit-showcase glass-card" aria-labelledby="habits-title"><div class="showcase-head"><h2 id="habits-title">Постоянные привычки</h2><button type="button" id="expand-habits" aria-controls="habit-list-container" aria-expanded="false">Все привычки <span>›</span></button></div>
 <div class="habit-preview" id="habit-preview" role="list" aria-label="Быстрые отметки привычек"></div><div class="habit-full-details" id="habit-list-container" hidden><p>Здесь можно отметить пропуск или сбросить отметку.</p><div id="habit-list" class="habits" aria-live="off"></div></div></section>
-<div class="overview-duo">
-<section class="mini-overview sleep-overview glass-card" aria-label="Сон">
-<button id="open-sleep" class="mini-overview-head" type="button"><span class="sleep-icon">☾</span><strong>Сон</strong><span class="mini-arrow">›</span></button>
-<div class="mini-sleep-grid"><div><span>Уснул</span><strong id="sleep-mini-bed">—</strong></div><div><span>Проснулся</span><strong id="sleep-mini-wake">—</strong></div></div>
-<div class="sleep-mini-foot"><span>Продолжительность</span><strong id="sleep-mini-total">Нет записи</strong></div></section>
-<section class="mini-overview weight-overview glass-card" aria-label="Вес">
-<button id="open-weight" class="mini-overview-head" type="button"><span class="weight-icon">▥</span><strong>Вес</strong><span class="mini-arrow">›</span></button>
-<strong class="weight-mini-value" id="weight-mini-value">—</strong><p id="weight-mini-change">Добавь первый вес</p><svg id="weight-mini-chart" class="weight-mini-chart" viewBox="0 0 330 110" role="img" aria-label="Мини-график веса"></svg></section></div>
+
 <section class="analytics-panel" id="analytics" aria-labelledby="analytics-title">
           <div class="analytics-head">
             <div><span class="section-kicker">ТВОИ ЦИФРЫ</span><h3 id="analytics-title">Аналитика</h3></div>
@@ -98,17 +115,8 @@
           <div class="analytics-detail-head"><span>Привычки за период</span><span id="analytics-period-label">Сегодня</span></div>
           <div class="analytics-habits" id="analytics-habits"></div>
           <p class="analytics-footnote" id="analytics-footnote">Процент считается от шести привычек в день.</p></section>
-<details class="sleep-editor glass-card" id="sleep-editor"><summary><span>☾</span> Записать время сна <span class="summary-tail">⌄</span></summary><section class="sleep-card" aria-labelledby="sleep-card-title">
-          <div class="sleep-heading"><div class="sleep-symbol" aria-hidden="true">☾</div><div><span class="section-kicker">НОЧНОЙ РИТМ</span><h3 id="sleep-card-title">Режим сна</h3><p>Отмечай, когда уснул и когда проснулся. День записи — день пробуждения.</p></div></div>
-          <form id="sleep-form" class="sleep-form">
-            <label><span>🌙 Уснул</span><input type="time" id="sleep-bed" aria-label="Время засыпания"></label>
-            <label><span>☀️ Проснулся</span><input type="time" id="sleep-wake" aria-label="Время пробуждения"></label>
-            <button type="submit" class="sleep-save">Сохранить сон</button>
-          </form>
-          <div class="sleep-result" id="sleep-result" aria-live="polite">Пока нет записи за выбранный день</div>
-        </section></details>
-<details class="journal-card"><summary><span>✎</span><span><strong>Заметки дня</strong><small>Как прошёл день, что помогло тебе?</small></span><span class="journal-chevron">⌄</span></summary><div class="journal-content"><label for="day-note" class="visually-hidden">Заметка за день</label><textarea id="day-note" placeholder="Что сегодня получилось? Что хочется запомнить?" maxlength="2000" rows="4"></textarea><span id="note-status" class="note-status">Сохраняется автоматически</span></div></details>
-</div><div class="app-view" id="view-weight" data-view-panel="weight" hidden>
+
+<div class="tracker-extra glass-card"><strong>За что себя похвалить на этой неделе?</strong><p>Смотри на тенденцию, а не на идеальные дни.</p><button type="button" data-view="week">Моя неделя <span>›</span></button></div><div class="app-view" id="view-weight" data-view-panel="weight" hidden>
         <section class="section tracking" aria-labelledby="weight-title">
         <div class="section-head"><div><span class="section-kicker">02 / ТВОИ ЦИФРЫ</span><h2 id="weight-title">Вес и питание</h2></div><span class="soft-icon">↗</span></div>
         <div class="measure-grid">
@@ -125,7 +133,7 @@
  <h2 class="fusion-title">Баланс</h2><p class="fusion-subtitle">Активность, самочувствие и поддержка из «Свободы» теперь часть РИТМа. Все старые записи сохраняются.</p>
  <div class="fusion-subnav" aria-label="Разделы баланса"><button type="button" class="active" data-freedom-tab="today">Обзор</button><button type="button" data-freedom-tab="sport">Активность</button><button type="button" data-freedom-tab="sobriety">Поддержка</button><button type="button" data-freedom-tab="progress">Прогресс</button><button type="button" data-freedom-tab="settings">Настройки</button></div>
  <iframe id="fusion-balance-frame" class="fusion-frame" title="Данные баланса" data-src="./svoboda/?embed=freedom" scrolling="no"></iframe>
- </div><div class="app-view" id="view-week" data-view-panel="week" hidden>
+ </div><div class="app-view" id="view-week" data-view-panel="week" hidden><button type="button" class="tracker-back" data-view="tracker">‹ Назад в трекер</button>
         <section class="hero hero-compact" aria-label="Твой ритм">
         <div class="hero-top"><div class="eyebrow"><span class="live-dot"></span> ДЕНЬ ЗА ДНЁМ <span class="eyebrow-divider">/</span> В СВОЁМ РИТМЕ</div><span class="hero-tag">Без гонки. Только движение.</span></div>
         <div class="hero-bottom"><span id="human-date"></span><span class="hero-streak" id="week-summary">Неделя начинается ✨</span></div>
@@ -142,14 +150,15 @@
       </div></main>    <aside id="ios-install-tip" class="ios-install-tip" hidden><strong>РИТМ на главном экране</strong><p>Safari → Поделиться → На экран «Домой»</p><button type="button" id="dismiss-install" aria-label="Закрыть подсказку">×</button></aside>
     <nav class="bottom-nav" aria-label="Разделы приложения">
  <button type="button" data-view="habits" class="nav-tab selected" aria-current="page"><span>⌂</span>Ритм</button>
+ <button type="button" data-view="tracker" class="nav-tab"><span>◎</span>Трекер</button>
  <button type="button" data-view="food" class="nav-tab"><span>🥗</span>Еда</button>
  <button type="button" data-view="freedom" class="nav-tab"><span>✳</span>Баланс</button>
  <button type="button" data-view="weight" class="nav-tab"><span>⚖</span>Вес</button>
- <button type="button" data-view="week" class="nav-tab"><span>▥</span>Неделя</button>
+ 
  </nav>
   </div>
   <div class="celebration" id="celebration" role="status" aria-live="polite" aria-atomic="true"><span id="toast-icon">✨</span><strong id="toast-title"></strong><p id="toast-desc"></p></div>
   <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
-  <script src="./app.js?v=19" defer></script><script src="./fusion.js?v=4" defer></script><script src="./backup-unified.js?v=1" defer></script>
+  <script src="./app.js?v=19" defer></script><script src="./fusion.js?v=5" defer></script><script src="./backup-unified.js?v=1" defer></script>
 </body>
 </html>
