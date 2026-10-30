@@ -115,7 +115,7 @@ function render(keepScroll=false){
   const undo=document.createElement('button');undo.type='button';undo.textContent='Вернуть';undo.onclick=()=>restore(t.id);line.append(name,undo);history.append(line);
  });
  $('micro-done-title').textContent='Выполнено сегодня · '+done.length;
- renderSnapshot();
+ renderSnapshot();renderCombined();
 }
 function renderSnapshot(){
  try{
@@ -129,6 +129,51 @@ function renderSnapshot(){
   $('fusion-last-weight').textContent=Number.isFinite(old)?old.toLocaleString('ru-RU')+' кг':'—';
  }catch{}
 }
+/* Минимум трения: один лёгкий шаг на главном экране и единый список. */
+let trackerMode='all',coreExpanded=false;
+const corePriority=['Вода','Зарядка','Чтение книг','Прогулка','Саморазвитие','Сон по режиму','Тренировка','Без переедания'];
+function orderedCore(items){return [...items].sort((a,b)=>corePriority.indexOf(a.id)-corePriority.indexOf(b.id))}
+function mainCoreCard(h,isDone=false){
+ const card=document.createElement('div');card.className='tracker-core-item'+(isDone?' is-complete':'');
+ const mark=document.createElement('span');mark.className='tracker-core-symbol';mark.textContent=h.icon;
+ const desc=document.createElement('div');desc.className='tracker-core-desc';
+ const heading=document.createElement('strong');heading.textContent=h.title;
+ const sub=document.createElement('small');sub.textContent=h.status==='skip'?'Сегодня пауза':h.status==='done'?'Уже сделано':h.sub;
+ desc.append(heading,sub);
+ const actions=document.createElement('div');actions.className='tracker-core-actions';
+ if(!isDone){const done=document.createElement('button');done.type='button';done.className='tracker-core-check';done.textContent='✓';done.setAttribute('aria-label','Выполнено: '+h.title);done.title='Сделал';done.onclick=()=>window.RitmMain?.markHabit(h.id,'done');
+ const skip=document.createElement('button');skip.type='button';skip.className='tracker-core-skip';skip.textContent='Позже';skip.setAttribute('aria-label','Отложить на сегодня: '+h.title);skip.onclick=()=>window.RitmMain?.markHabit(h.id,'skip');actions.append(done,skip);
+ }else{const restore=document.createElement('button');restore.type='button';restore.className='tracker-core-reset';restore.textContent='Вернуть';restore.onclick=()=>window.RitmMain?.markHabit(h.id,null);actions.append(restore)}
+ card.append(mark,desc,actions);return card;
+}
+function renderCombined(){
+ const state=window.RitmMain?.getTrackerState();if(!state||!$('tracker-combined-counter'))return;
+ const d=day(),tasks=d.items.map(id=>getTask(id,d)).filter(Boolean),pending=tasks.filter(t=>!d.done.includes(t.id));
+ const core=orderedCore(state.habits),coreDone=core.filter(h=>h.status==='done'),corePaused=core.filter(h=>h.status==='skip'),corePending=core.filter(h=>!h.status);
+ const done=coreDone.length+tasks.length-pending.length,total=core.length+tasks.length;
+ const pct=total?Math.round(done/total*100):0;
+ $('tracker-combined-counter').textContent=done+' из '+total;
+ $('tracker-momentum').textContent=done===total?'Все запланированные шаги выполнены ✨':done===0?'Не весь список. Один шаг.':'Уже '+done+' побед. Продолжай в своём темпе.';
+ $('tracker-combined-fill').style.width=pct+'%';$('tracker-combined-bar').setAttribute('aria-valuenow',String(pct));
+ $('tracker-core-count').textContent=coreDone.length+' / '+core.length;
+ const queue=$('tracker-core-queue'),show=coreExpanded?corePending:corePending.slice(0,3);queue.replaceChildren(...show.map(h=>mainCoreCard(h)));
+ if(!corePending.length)queue.append(Object.assign(document.createElement('p'),{className:'tracker-all-done',textContent:'Сегодня основные привычки разобраны. Хорошая работа.'}));
+ const more=$('tracker-core-more');more.hidden=corePending.length<=3;more.textContent=coreExpanded?'Свернуть список':'Ещё '+(corePending.length-3)+' привычек';
+ const history=$('tracker-core-done-list');history.replaceChildren(...[...coreDone,...corePaused].map(h=>mainCoreCard(h,true)));
+ $('tracker-core-done-caption').textContent='Выполнено · '+coreDone.length+(corePaused.length?' · пауза '+corePaused.length:'');
+ $('tracker-core-panel').hidden=trackerMode==='mini';$('micro-track').closest('.micro-shell').hidden=trackerMode==='core';
+ document.querySelectorAll('[data-tracker-filter]').forEach(b=>{const selected=b.dataset.trackerFilter===trackerMode;b.classList.toggle('active',selected);b.setAttribute('aria-pressed',String(selected))});
+ const easy=pending.slice().sort((a,b)=>(a.min||99)-(b.min||99))[0],current=shownDate===dateKey();
+ const easyButton=$('home-easy-done');$('home-easy-title').textContent=!current?'Записи за другой день':easy?easy.title:'Всё на сегодня!';
+ $('home-easy-icon').textContent=!current?'📅':easy?easy.emoji:'✨';
+ $('home-easy-meta').textContent=!current?'Открой трекер и выбери сегодняшний день':easy?'≈ '+easy.min+' мин · всего один маленький шаг':'Можно отдохнуть. Завтра будут новые задания.';
+ $('home-step-count').textContent=done+' из '+total+' выполнено';
+ const bubble=document.querySelector('.ritm-first-bubble');if(bubble)bubble.textContent=easy&&current?'≈ '+easy.min+' МИН НА СТАРТ':'В СВОЁМ РИТМЕ';
+ easyButton.disabled=!current||!easy;easyButton.textContent=easy&&current?'✓ Готово, сделал':'На сегодня достаточно';
+}
+$('home-easy-done').onclick=()=>{if(shownDate!==dateKey())return;const d=day(),pending=d.items.map(id=>getTask(id,d)).filter(t=>t&&!d.done.includes(t.id));const t=pending.sort((a,b)=>(a.min||99)-(b.min||99))[0];if(t)finish(t)};
+$('tracker-core-more').onclick=()=>{coreExpanded=!coreExpanded;renderCombined()};
+document.querySelectorAll('[data-tracker-filter]').forEach(b=>b.onclick=()=>{trackerMode=b.dataset.trackerFilter;renderCombined()});
 $('micro-add').addEventListener('submit',e=>{e.preventDefault();const input=$('micro-new'),title=input.value.trim().slice(0,70);if(!title)return;
  const d=day(),id='own-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
  d.custom[id]={id,title};d.items.push(id);save();input.value='';filter='all';render();toast('Добавил твою задачу.');
@@ -151,7 +196,7 @@ function showEmbedded(view){
  else try{frame.contentWindow?.postMessage({type:'ritm-remeasure'},location.origin)}catch{}
  renderSnapshot();
 }
-window.RitmFusion={showEmbedded,renderSnapshot,reload:()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');all=v&&typeof v==='object'?v:{};shownDate=dateKey();filter='all';render()}catch{}}};
+window.RitmFusion={showEmbedded,renderSnapshot,renderCombined,syncDate:date=>{if(!/^\\d{4}-\\d{2}-\\d{2}$/.test(date))return;if(shownDate!==date){shownDate=date;filter='all';render()}else renderCombined()},reload:()=>{try{const v=JSON.parse(localStorage.getItem(KEY)||'{}');all=v&&typeof v==='object'?v:{};shownDate=dateKey();filter='all';render()}catch{}}};
 window.addEventListener('message',e=>{
  if(e.origin!==location.origin||!e.data)return;
  const f=[...document.querySelectorAll('.fusion-frame')].find(x=>x.contentWindow===e.source);if(!f)return;
