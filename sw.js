@@ -1,5 +1,5 @@
-const CACHE='ritm-shell-v19';
-const ASSETS=['./','./index.html','./styles.css?v=17','./fusion.css?v=1','./app.js?v=18','./fusion.js?v=2','./manifest.webmanifest','./sounds/success.wav','./sounds/impact.wav','./sounds/soft-no.wav','./sounds/tap.wav','./sounds/warm.wav','./assets/midnight-clouds.svg','./assets/ritm-cloud-lettering.webp','./icons/ritm-192.png','./icons/ritm-512.png'];
+const CACHE='ritm-shell-v20';
+const ASSETS=['./','./index.html','./styles.css?v=17','./fusion.css?v=2','./app.js?v=19','./fusion.js?v=2','./manifest.webmanifest','./sounds/success.wav','./sounds/impact.wav','./sounds/soft-no.wav','./sounds/tap.wav','./sounds/warm.wav','./assets/midnight-clouds.svg','./assets/ritm-cloud-lettering.webp','./icons/ritm-192.png','./icons/ritm-512.png'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(ASSETS.map(path=>cache.add(path)))).then(()=>self.skipWaiting()));
 });
