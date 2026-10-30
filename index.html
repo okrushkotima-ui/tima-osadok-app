@@ -33,10 +33,14 @@
 <section class="micro-shell glass-card" aria-labelledby="micro-heading">
  <div class="micro-head"><div><span class="micro-kicker">МАЛЕНЬКИЕ ПОБЕДЫ · КАЖДЫЙ ДЕНЬ</span><h2 id="micro-heading">Сделай сейчас</h2></div><span id="micro-count" class="micro-count">0 из 8</span></div>
  <p class="micro-muted" id="micro-left">Листай вбок →</p>
+ <div class="micro-progress-line"><div id="micro-progress-rail" class="micro-progress-rail" role="progressbar" aria-label="Прогресс коротких задач" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="micro-progress-fill"></span></div><span id="micro-streak" class="micro-streak">0 дн. с победами</span></div>
+ <div class="micro-filters" id="micro-filters" aria-label="Фильтр коротких задач"></div>
  <div class="micro-track" id="micro-track" role="list" aria-label="Короткие задачи на сегодня"></div>
  <details class="micro-details"><summary id="micro-done-title">Выполнено · 0</summary><div id="micro-done"></div></details>
  <form class="micro-add" id="micro-add"><input id="micro-new" aria-label="Своя короткая задача" placeholder="Добавить своё короткое дело" maxlength="70"><button type="submit">+ Добавить</button></form>
 </section>
+<div class="micro-toast" id="micro-toast" role="status" aria-live="polite" hidden><span id="micro-toast-label"></span><button type="button" id="micro-toast-undo" hidden>Отменить</button></div>
+<section class="fusion-glance glass-card" aria-label="Твой баланс на сегодня"><div class="fusion-glance-header"><span class="micro-kicker">ВСЁ В ОДНОМ РИТМЕ</span><strong>Твой день, одним взглядом</strong></div><div class="fusion-glance-grid"><button type="button" data-fusion-go="food" class="fusion-glance-item"><span>🥗 Питание</span><strong id="fusion-food-done">0 / 3</strong><small>приёма пищи</small></button><button type="button" data-fusion-go="freedom" class="fusion-glance-item"><span>⚡ Активность</span><strong id="fusion-activity">0 мин</strong><small>движения сегодня</small></button><button type="button" data-fusion-go="weight" class="fusion-glance-item"><span>⚖ Вес</span><strong id="fusion-last-weight">—</strong><small>из записей баланса</small></button></div></section>
 <section class="today-dashboard glass-card" aria-label="Прогресс дня"><span class="sky-veil" aria-hidden="true"></span>
 <div class="progress-top"><h1 id="today-headline">Прогресс дня</h1><span class="subtle-spark" aria-hidden="true">✳</span></div>
 <div class="today-greeting"><div class="today-progress" id="today-progress" style="--today-percent:0"><strong id="today-percent">0%</strong><small id="today-count">0 из 8</small></div>
@@ -115,11 +119,12 @@
         <div class="chart-box"><svg id="weight-chart" viewBox="0 0 640 210" role="img" aria-label="График изменений веса"></svg></div>
       </section>
       </div><div class="app-view fusion-view" id="view-food" data-view-panel="food" hidden>
- <h2 class="fusion-title">Питание</h2><p class="fusion-subtitle">Меню из «Свободы»: завтрак, обед, ужин, продукты и дневник еды. Всё в одном месте.</p>
+ <h2 class="fusion-title">Питание</h2><p class="fusion-subtitle">Завтрак, обед, ужин, рецепты и дневник еды. Всё внутри твоего РИТМа.</p>
  <iframe class="fusion-frame" title="Меню еды и рецепты" data-src="./svoboda/?embed=food" scrolling="no"></iframe>
  </div><div class="app-view fusion-view" id="view-freedom" data-view-panel="freedom" hidden>
- <h2 class="fusion-title">Свобода</h2><p class="fusion-subtitle">Привычки, активность, вес и поддержка. Твои старые записи «Свободы» сохранены.</p>
- <iframe class="fusion-frame" title="Трекер Свобода" data-src="./svoboda/?embed=freedom" scrolling="no"></iframe>
+ <h2 class="fusion-title">Баланс</h2><p class="fusion-subtitle">Активность, самочувствие и поддержка из «Свободы» теперь часть РИТМа. Все старые записи сохраняются.</p>
+ <div class="fusion-subnav" aria-label="Разделы баланса"><button type="button" class="active" data-freedom-tab="today">Обзор</button><button type="button" data-freedom-tab="sport">Активность</button><button type="button" data-freedom-tab="sobriety">Поддержка</button><button type="button" data-freedom-tab="progress">Прогресс</button><button type="button" data-freedom-tab="settings">Настройки</button></div>
+ <iframe id="fusion-balance-frame" class="fusion-frame" title="Данные баланса" data-src="./svoboda/?embed=freedom" scrolling="no"></iframe>
  </div><div class="app-view" id="view-week" data-view-panel="week" hidden>
         <section class="hero hero-compact" aria-label="Твой ритм">
         <div class="hero-top"><div class="eyebrow"><span class="live-dot"></span> ДЕНЬ ЗА ДНЁМ <span class="eyebrow-divider">/</span> В СВОЁМ РИТМЕ</div><span class="hero-tag">Без гонки. Только движение.</span></div>
@@ -133,18 +138,18 @@
         <section class="section insight" aria-labelledby="momentum-title"><div class="section-head"><div><span class="section-kicker">03 / ДЛИННАЯ ДИСТАНЦИЯ</span><h2 id="momentum-title">Твоя неделя</h2></div><span class="soft-icon">✺</span></div><div class="week-grid" id="week-grid"></div><p class="insight-copy" id="week-insight">Начни с одного маленького действия — этого достаточно, чтобы сдвинуться с места.</p></section>
         </div><div class="app-view" id="view-settings" data-view-panel="settings" hidden>
         <section class="settings section" id="settings" aria-labelledby="settings-title"><div class="section-head"><div><span class="section-kicker">РИТМ / НАСТРОЙКИ</span><h2 id="settings-title">Под себя</h2></div></div><form id="goal-form" class="goal-form"><label for="goal-input">Мой желаемый вес, кг</label><div class="entry-row"><input type="number" id="goal-input" min="25" max="350" step="0.1" required><button type="submit">Изменить</button></div></form><div class="install-guide"><span class="install-guide-icon" aria-hidden="true">↗</span><div><strong>РИТМ на экране iPhone</strong><p><b>1.</b> Открой эту страницу именно в Safari (не внутри Telegram или ChatGPT). <b>2.</b> Нажми значок «Поделиться» — квадрат со стрелкой вверх, обычно внизу Safari. <b>3.</b> Прокрути меню вниз и выбери «На экран Домой», затем «Добавить».</p><p>Не видишь этот пункт? Прокрути меню до «Изменить действия» или открой меню страницы Safari и найди «На экран Домой». Названия могут различаться в версиях iOS.</p><p>При запуске с домашнего экрана интерфейса Safari не будет.</p></div></div><div class="personal-profile"><div><span class="section-kicker">ЛИЧНЫЙ ПРОФИЛЬ</span><h3>РИТМ под тебя</h3><p>У каждого человека свои записи. Укажи имя, которое будет показываться только на твоём устройстве.</p></div><form id="profile-form" class="profile-form"><label for="profile-name">Как к тебе обращаться</label><div class="entry-row"><input id="profile-name" type="text" maxlength="30" autocomplete="nickname" placeholder="Например, Тима"><button type="submit">Сохранить</button></div></form></div>
-<div class="audio-preference"><div><strong>Звуки интерфейса</strong><span>Короткие сигналы при выполнении привычек</span></div><button type="button" id="sound-toggle" class="sound-btn icon-btn" aria-label="Выключить звуки" aria-pressed="true">♫</button></div><div class="backup"><button id="export-btn" type="button" class="ghost">↓ Скачать резервную копию</button><label class="ghost upload">↑ Загрузить копию<input type="file" id="import-file" accept="application/json,.json" hidden></label></div><p class="tiny">Данные хранятся на этом устройстве в браузере. Пока нет синхронизации между устройствами. У каждого пользователя свои локальные данные. Не удаляй данные браузера без резервной копии.</p></section>
+<div class="audio-preference"><div><strong>Звуки интерфейса</strong><span>Короткие сигналы при выполнении привычек</span></div><button type="button" id="sound-toggle" class="sound-btn icon-btn" aria-label="Выключить звуки" aria-pressed="true">♫</button></div><div class="backup"><button id="export-btn" type="button" class="ghost">↓ Скачать резервную копию</button><label class="ghost upload">↑ Загрузить копию<input type="file" id="import-file" accept="application/json,.json" hidden></label></div><div class="fusion-backup"><strong>Единая резервная копия РИТМа</strong><p>Сохранит привычки, вес, короткие дела и записи питания и баланса — без потери старых данных.</p><div class="fusion-backup-actions"><button type="button" id="fusion-export">↓ Скачать всё</button><label for="fusion-import" class="fusion-import-label">↑ Восстановить всё</label><input type="file" id="fusion-import" accept=".json,application/json" hidden></div><p class="micro-muted" id="fusion-backup-status" role="status"></p></div><p class="tiny">Данные хранятся на этом устройстве в браузере. Пока нет синхронизации между устройствами. У каждого пользователя свои локальные данные. Не удаляй данные браузера без резервной копии.</p></section>
       </div></main>    <aside id="ios-install-tip" class="ios-install-tip" hidden><strong>РИТМ на главном экране</strong><p>Safari → Поделиться → На экран «Домой»</p><button type="button" id="dismiss-install" aria-label="Закрыть подсказку">×</button></aside>
     <nav class="bottom-nav" aria-label="Разделы приложения">
  <button type="button" data-view="habits" class="nav-tab selected" aria-current="page"><span>⌂</span>Ритм</button>
  <button type="button" data-view="food" class="nav-tab"><span>🥗</span>Еда</button>
- <button type="button" data-view="freedom" class="nav-tab"><span>✳</span>Свобода</button>
+ <button type="button" data-view="freedom" class="nav-tab"><span>✳</span>Баланс</button>
  <button type="button" data-view="weight" class="nav-tab"><span>⚖</span>Вес</button>
  <button type="button" data-view="week" class="nav-tab"><span>▥</span>Неделя</button>
  </nav>
   </div>
   <div class="celebration" id="celebration" role="status" aria-live="polite" aria-atomic="true"><span id="toast-icon">✨</span><strong id="toast-title"></strong><p id="toast-desc"></p></div>
   <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
-  <script src="./app.js?v=19" defer></script><script src="./fusion.js?v=2" defer></script>
+  <script src="./app.js?v=19" defer></script><script src="./fusion.js?v=3" defer></script><script src="./backup-unified.js?v=1" defer></script>
 </body>
 </html>
