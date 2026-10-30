@@ -12,3 +12,9 @@ body.ritm-embedded .hero{background:linear-gradient(150deg,#1c2541,#101b2e)}
 body.ritm-embedded .nav button.active{background:#304564!important}
 body.ritm-embedded .toast{position:fixed;bottom:10px}
 @media(max-width:500px){body.ritm-embedded .app{padding:0 1px 10px!important}body.ritm-embedded .panel{padding:17px!important}body.ritm-embedded .nav button{font-size:9px!important;padding:8px 2px!important}body.ritm-embedded .nav button svg{width:18px;height:18px}}
+/* One app: the parent RITM navigation replaces the Freedom inner navigation. */
+body.ritm-embedded .nav{display:none!important}
+body.ritm-embedded .app{padding-bottom:12px!important}
+body.ritm-embedded main{padding-bottom:0!important}
+body.ritm-embedded .screen.active{margin-top:0!important}
+body.ritm-embedded .sectiontitle{margin-top:0}
