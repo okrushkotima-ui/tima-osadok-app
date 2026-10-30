@@ -159,3 +159,38 @@
 .tracker-back{margin-bottom:17px}
 @media(max-width:520px){.ritm-first{padding:19px 16px}.ritm-first h1{font-size:30px}.tracker-intro{padding:20px 15px}.tracker-core{padding:17px 12px}.tracker-core-item{padding:10px 9px;gap:8px}.tracker-core-symbol{width:34px;min-width:34px;height:36px}.tracker-core-desc strong{font-size:13px}.tracker-core-check{width:42px;height:42px}.tracker-core-skip{padding:8px 6px}.tracker-total-row strong{font-size:21px}}
 @media(prefers-reduced-motion:reduce){.ritm-first-button,.tracker-total-bar i{transition:none}}
+
+/* Адаптивный помощник РИТМ: дополнительные элементы не меняют фирменный стиль. */
+.ritm-energy{margin:0 0 14px}.ritm-energy-label{display:block;color:#b7c7d9;font-size:12px;font-weight:770;margin-bottom:9px}
+.ritm-energy-choices{display:flex;flex-wrap:wrap;gap:7px}.ritm-energy-choices button{flex:1;min-width:105px;min-height:44px;background:#22334a;border:1px solid #40536e;border-radius:12px;padding:9px 7px;color:#cbdaed;font-size:11px;line-height:1.25;font-weight:800}
+.ritm-energy-choices button.active,.ritm-energy-choices button[aria-pressed=true]{background:#b8f5d2;color:#122d22;border-color:#b8f5d2}
+.ritm-preferences{margin:0 0 15px}.ritm-preferences summary{color:#c0d8e7;font-size:12px;cursor:pointer;font-weight:750;list-style:none;padding:6px 0}.ritm-preferences summary::-webkit-details-marker{display:none}
+.ritm-preferences summary span{font-size:14px;color:#9fc8b8}.ritm-topics{display:flex;flex-wrap:wrap;gap:7px;padding:10px 0 3px}
+.ritm-topics button{min-height:38px;padding:8px 11px;background:#23344b;color:#cbddee;border:1px solid #496176;border-radius:30px;font-size:11px;font-weight:750}
+.ritm-topics button.active{background:#baf4d0;color:#133327;border-color:#baf4d0}
+.ritm-ai-why{font-size:12px;line-height:1.5;margin:0 0 12px;color:#b0dec9}
+.ritm-help-row{display:flex;gap:9px;margin-top:9px}.ritm-help-row button{flex:1;min-height:43px;border:1px solid #49647b;background:#243951;color:#d6e6ef;border-radius:13px;padding:10px;font-size:12px;font-weight:800}
+.ritm-help-row button:last-child{border-color:#627664;background:#2a423e;color:#d7efdf}.ritm-help-row button:disabled{opacity:.5}
+.ritm-start-help{margin:10px 0;background:#263f38;border:1px solid #648875;border-radius:14px;padding:13px;color:#e1f8e9}
+.ritm-start-help[hidden]{display:none}.ritm-start-help strong{font-size:13px}.ritm-start-help p{margin:7px 0 0;color:#bddbcb;font-size:12px;line-height:1.45}
+.ritm-assistant,.ritm-focus-tools{margin-top:12px;border:1px solid #3a526a;background:#14243b;border-radius:14px;padding:12px 14px}
+.ritm-assistant summary,.ritm-focus-tools summary{list-style:none;color:#d7e8f7;font-size:12px;cursor:pointer;font-weight:800;padding:4px 0}
+.ritm-assistant summary::-webkit-details-marker,.ritm-focus-tools summary::-webkit-details-marker{display:none}
+.ritm-assistant summary span,.ritm-focus-tools summary span{float:right}
+.ritm-ai-note{font-size:11px;color:#a9bbcd;line-height:1.5;margin:12px 0}
+.ritm-assistant-shortcuts{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.ritm-assistant-shortcuts button{border:1px solid #48657c;background:#273b53;color:#d5e6f0;border-radius:99px;font-size:11px;line-height:1.2;padding:9px 11px;min-height:36px;font-weight:730}
+.ritm-assistant label{display:block;color:#d6e6f2;font-size:12px;font-weight:740;margin-bottom:8px}
+.ritm-assistant textarea{display:block;width:100%;box-sizing:border-box;border:1px solid #4a6177;border-radius:12px;min-height:76px;background:#0c192d;color:#f2f8ff;font-family:inherit;font-size:14px;line-height:1.45;padding:12px;resize:vertical}
+.ritm-assistant-ask{margin-top:9px;width:100%;min-height:43px;border:0;border-radius:12px;background:#b6f4d0;color:#16342a;font-size:12px;font-weight:850}
+.ritm-assistant-answer{background:#20384a;border:1px solid #4e7283;border-radius:13px;padding:12px;margin-top:11px}
+.ritm-assistant-answer[hidden]{display:none}.ritm-assistant-answer p{font-size:13px;color:#e2f3ee;line-height:1.55;margin:0 0 7px}.ritm-assistant-answer small{display:block;font-size:10px;color:#a9c4cb;line-height:1.4}
+.ritm-ai-reset{display:block;margin:13px 0 0;padding:7px 0;border:0;background:none;color:#a8bbd2;font-size:11px;text-decoration:underline;text-underline-offset:3px;text-align:left}
+.ritm-focus-panel{display:flex;flex-direction:column;gap:8px;align-items:center;padding:16px 0 6px}
+.ritm-focus-caption{font-size:12px;color:#c4d8e9}.ritm-focus-time{font-size:42px;font-weight:850;letter-spacing:-1.3px;color:#c5f7d4;font-variant-numeric:tabular-nums}
+.ritm-focus-controls{display:flex;gap:8px;width:100%;max-width:360px}.ritm-focus-controls button{flex:1;min-height:42px;border:1px solid #57836b;border-radius:11px;background:#b1efd0;color:#10281b;font-weight:850;font-size:12px}
+.ritm-focus-controls button:last-child{background:#273d52;border-color:#50667b;color:#dde8f1}
+.ritm-focus-panel small{font-size:11px;color:#a8bcd1;text-align:center}
+.ritm-first-button:focus-visible,.ritm-energy-choices button:focus-visible,.ritm-help-row button:focus-visible,.ritm-assistant button:focus-visible,.ritm-topics button:focus-visible{outline:2px solid #e0f7ff;outline-offset:2px}
+@media(max-width:410px){.ritm-energy-choices{gap:5px}.ritm-energy-choices button{font-size:10px;min-width:90px;padding:8px 5px}.ritm-topics button{padding:8px 9px}.ritm-help-row button{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.ritm-first *{transition:none!important}}
