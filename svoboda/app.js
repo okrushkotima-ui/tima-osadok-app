@@ -60,6 +60,7 @@ const recipes=[[
 recipes[0].push({name:'Тост с хумусом и овощами',ing:['хумус 100 г','2 ломтика цельнозернового хлеба','1 помидор','1 огурец'],how:'Намажь хумус на тосты, добавь овощи. Хумус можно заменить размятой фасолью.'});
 recipes[1].push({name:'Чечевица с рисом и овощами',ing:['чечевица 70 г (сухая)','рис 50 г (сухой)','овощи 250 г','масло 1 ч. л.'],how:'Отвари чечевицу и рис по инструкции на упаковке. Добавь тушёные или свежие овощи.'});
 recipes[2].push({name:'Фасоль с картофелем и салатом',ing:['готовая фасоль 200 г','картофель 200 г','овощи 200 г','масло 1 ч. л.'],how:'Запеки или отвари картофель. Промой готовую фасоль, подогрей и подай с овощами.'});
+window.RitmRecipes?.addTo(recipes);
 const mealNames=['Завтрак','Обед','Ужин'];
 function renderMeals(){SvobodaCoach.renderMeals();}
 function renderShopping(){SvobodaCoach.renderShopping();}
@@ -88,6 +89,7 @@ $('importInput').onchange=async e=>{const file=e.target.files?.[0];if(!file)retu
 
 function render(){sober();smartWeight();daily();renderMeals();renderFoodJournal();sportSummary();sportHistory();weightHistory();renderSettings();SvobodaCoach.render()}
 SvobodaCoach.connect({get:()=>state,save,render,nav,today,dayValue,esc,fmt,formatDate,uid,toast,recipes,mealNames});
+window.RitmRecipes?.init(recipes);
 render();save();
 let lastDate=today();function refreshDay(){if(today()!==lastDate){lastDate=today();SvobodaCoach.newDay();render();}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshDay();});setInterval(refreshDay,60000);
