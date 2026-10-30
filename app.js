@@ -350,7 +350,7 @@ function renderTodaySummary(){
   $('today-progress').style.setProperty('--today-percent',String(percent));
   $('today-percent').textContent=percent+'%';
   $('today-count').textContent=done+' из '+total;
-  $('today-headline').textContent='Прогресс дня';
+  $('today-headline').textContent='Прогресс привычек';
   const name=data.profileName?data.profileName+', ':'';
   $('today-message').textContent=percent===100?'Все цели выполнены. Мощный день!':done>0?name+'держишь темп. Главное — не останавливаться.':'Начни с малого. Даже один шаг считается.';
   $('summary-done').textContent=done;
