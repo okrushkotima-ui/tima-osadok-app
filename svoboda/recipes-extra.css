@@ -1,0 +1,25 @@
+/* РИТМ / Свобода: компактная библиотека еды под палитру приложения. */
+.ritm-library{background:radial-gradient(circle at 95% 0,#244e4757,transparent 55%),linear-gradient(155deg,#162236,#111b2d)}
+.ritm-recipe-search-label{display:block;color:#b9cadb;font-size:12px;font-weight:750;margin-bottom:8px}
+#ritm-recipe-search{width:100%;min-height:49px;background:#101d2e;border:1px solid #456178;color:#eef8ff;border-radius:14px;font-size:14px}
+.ritm-recipe-filters{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding:13px 0 16px;overscroll-behavior-x:contain}
+.ritm-recipe-filters::-webkit-scrollbar{display:none}
+.ritm-recipe-filters button{flex:none;border-radius:99px;border:1px solid #42566b;background:#1d3044;padding:10px 13px;color:#d1e2f0;font-size:12px;font-weight:800;min-height:40px}
+.ritm-recipe-filters button.active,.ritm-recipe-filters button[aria-pressed=true]{color:#10251c;background:#b8f3d1;border-color:#b8f3d1}
+.ritm-recipe-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px;margin-bottom:15px}
+.ritm-recipe{min-width:0;display:flex;flex-direction:column;gap:10px;border-radius:17px;padding:15px;background:linear-gradient(150deg,#22334b,#152438);border:1px solid #39516a}
+.ritm-recipe-top{display:flex;flex-direction:column;gap:7px}
+.ritm-recipe h3{margin:0;font-size:16px;line-height:1.22;letter-spacing:-.25px;color:#f5f9ff}
+.ritm-recipe-meta{font-size:11px;color:#b3edcf;font-weight:750}
+.ritm-recipe-ing{font-size:12px;line-height:1.5;color:#b5c7d8;overflow-wrap:anywhere;margin:0;flex:1}
+.ritm-recipe-details{border-top:1px solid #46576c;padding-top:9px}
+.ritm-recipe-details summary{padding:5px 0;font-size:12px;color:#deebff}
+.ritm-recipe-details p{margin:8px 0 0;color:#c2d2e2;font-size:12px;line-height:1.55}
+.ritm-recipe-actions{display:flex;flex-wrap:wrap;gap:7px}
+.ritm-recipe-actions button{min-height:40px;padding:8px 10px;border-radius:11px;font-size:11px;font-weight:800;cursor:pointer}
+.ritm-recipe-pick{background:#b6efd1;color:#122820;border:0;flex:1}
+.ritm-recipe-fav{background:#273c51;border:1px solid #5c728a;color:#e5f1ff}
+.ritm-recipe-fav.is-fav{color:#ffd0de;border-color:#b57791;background:#472f46}
+.ritm-recipe-empty{font-size:14px;color:#b6c7d7;line-height:1.5;grid-column:1/-1}
+@media(max-width:620px){.ritm-recipe-grid{grid-template-columns:1fr}.ritm-recipe{padding:16px}.ritm-recipe h3{font-size:17px}.ritm-recipe-actions{flex-wrap:nowrap}}
+@media(prefers-reduced-motion:reduce){.ritm-library *{scroll-behavior:auto}}
