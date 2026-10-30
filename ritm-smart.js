@@ -120,7 +120,7 @@ function ask(kind=''){
  const [group,msg]=answers[goal];
  if(goal==='music'||goal==='food'||goal==='house')s.topic=group;
  if(goal==='tired'||goal==='start')s.energy='quiet';
- s.chosen='';save();pick(true);render();
+ s.chosen='';save();pick(true);window.RitmFusion?.renderCombined();render();
  const answer=Q('ritm-assistant-answer');answer.hidden=false;answer.replaceChildren();
  const text=document.createElement('p');text.textContent=msg;
  const small=document.createElement('small');small.textContent='Подсказка подобрана локально. Без отправки текста на сервер.';
@@ -132,7 +132,7 @@ function focusStart(){if(focusEnd)return;focusEnd=Date.now()+120000;Q('ritm-focu
 function focusStop(){focusEnd=0;clearInterval(focusTick);focusTick=null;Q('ritm-focus-time').textContent='02:00';Q('ritm-focus-start').textContent='Начать'}
 function init(){
  if(!Q('ritm-assistant'))return;
- document.querySelectorAll('[data-ritm-energy]').forEach(b=>b.onclick=()=>{s.energy=b.dataset.ritmEnergy;s.chosen='';save();pick(true);render();Q('ritm-start-help').hidden=true});
+ document.querySelectorAll('[data-ritm-energy]').forEach(b=>b.onclick=()=>{s.energy=b.dataset.ritmEnergy;s.chosen='';save();pick(true);window.RitmFusion?.renderCombined();render();Q('ritm-start-help').hidden=true});
  document.querySelectorAll('[data-ritm-topic]').forEach(b=>b.onclick=()=>{s.topic=b.dataset.ritmTopic;s.chosen='';save();pick(true);render()});
  Q('home-easy-done').onclick=complete;
  Q('ritm-next-step').onclick=chooseNext;
@@ -140,12 +140,12 @@ function init(){
  document.querySelectorAll('[data-ritm-help]').forEach(b=>b.onclick=()=>ask(b.dataset.ritmHelp));
  Q('ritm-assistant-ask').onclick=()=>ask();
  Q('ritm-assistant-input').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();ask()}};
- Q('ritm-ai-reset').onclick=()=>{s={...defaults(),day:today()};save();Q('ritm-assistant-answer').hidden=true;Q('ritm-start-help').hidden=true;render()};
+ Q('ritm-ai-reset').onclick=()=>{s={...defaults(),day:today()};const ctx=context();for(const t of ctx.tasks.filter(x=>x.done))s.logged[today()+':m:'+t.id]=true;for(const h of ctx.core.filter(x=>x.status==='done'))s.logged[today()+':c:'+h.id]=true;save();Q('ritm-assistant-answer').hidden=true;Q('ritm-start-help').hidden=true;render()};
  Q('ritm-focus-start').onclick=focusStart;Q('ritm-focus-stop').onclick=focusStop;
  document.addEventListener('visibilitychange',()=>{if(!document.hidden){dateUpdate();tick()}});
  window.addEventListener('focus',dateUpdate);
  render();
 }
-window.RitmSmart={render,chooseNext,stuck,debug:()=>({day:s.day,energy:s.energy,topic:s.topic,chosen:s.chosen,learned:Object.keys(s.stats).length})};
+window.RitmSmart={render,chooseNext,stuck,getGoal:()=>({quiet:1,steady:2,active:4}[s.energy]||2),debug:()=>({day:s.day,energy:s.energy,topic:s.topic,chosen:s.chosen,learned:Object.keys(s.stats).length})};
 init();
 })();
