@@ -95,3 +95,67 @@
  .fusion-glance-item small{font-size:9px}
 }
 @media(prefers-reduced-motion:reduce){#micro-progress-fill,.micro-swap,.fusion-glance-item{transition:none}}
+
+/* РИТМ — спокойный запуск для дней, когда не хочется ничего делать. */
+.ritm-first{padding:clamp(20px,4vw,32px);margin:4px 0 18px;background:radial-gradient(circle at 94% 4%,#35645f77,transparent 52%),linear-gradient(135deg,#182844,#111b30 80%);border-color:#415a6f;overflow:hidden}
+.ritm-first-head{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center}
+.ritm-first-bubble{font-size:10px;letter-spacing:.8px;font-weight:800;border:1px solid #587969;padding:7px 10px;border-radius:50px;color:#b8f2ce}
+.ritm-first h1{font-size:clamp(28px,6vw,45px);line-height:1.1;letter-spacing:-1.4px;margin:18px 0 12px;font-weight:900}
+.ritm-first h1 em{color:#b8f4d0;font-style:normal}
+.ritm-first-sub{font-size:13px;line-height:1.6;max-width:520px;color:#bbcadc;margin:0 0 18px}
+.ritm-first-task{display:flex;gap:13px;align-items:center;background:#0b1625ad;border:1px solid #3a5269;border-radius:19px;padding:17px;margin:0 0 12px}
+.ritm-first-emoji{font-size:30px;min-width:37px}
+.ritm-first-task div{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ritm-first-task strong{font-size:18px;letter-spacing:-.4px;line-height:1.25}
+.ritm-first-task div span{color:#b2c7d5;font-size:12px}
+.ritm-first-button{min-height:54px;width:100%;background:linear-gradient(130deg,#d3ffe0,#9de6c6);border:0;border-radius:16px;color:#133129;font-size:16px;font-weight:900;box-shadow:0 12px 28px #7ae3b226}
+.ritm-first-button:active{transform:scale(.985)}
+.ritm-first-button:disabled{opacity:.7;background:#284337;color:#b9e9ca;box-shadow:none}
+.ritm-first-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-top:14px}
+.ritm-first-bottom span{font-size:12px;color:#abbed1}
+.ritm-first-bottom button{color:#b7f3d1;background:none;border:0;padding:8px 0;font-weight:800;font-size:13px}
+.ritm-first-bottom button span{margin-left:6px;color:inherit}
+.ritm-tracker-view{padding-top:0}
+.tracker-intro{background:radial-gradient(circle at 100% 0%,#3a535d5e,transparent 57%),linear-gradient(145deg,#1a2a43,#101a2d);padding:23px;margin-bottom:14px}
+.tracker-intro h1{font-size:36px;letter-spacing:-1.5px;margin:7px 0}
+.tracker-intro p{font-size:13px;line-height:1.6;color:#b8cadd;margin:0 0 17px}
+.tracker-total-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.tracker-total-row strong{font-size:23px;letter-spacing:-.7px}
+.tracker-total-row span{font-size:12px;color:#b3c7d7}
+.tracker-total-bar{margin:11px 0 16px;width:100%;height:9px;border-radius:99px;background:#33445b;overflow:hidden}
+.tracker-total-bar i{display:block;width:0;height:100%;background:linear-gradient(90deg,#8fdcc7,#c2f9c7);transition:width .2s;border-radius:99px}
+.tracker-switches{display:flex;gap:8px}
+.tracker-switches button{flex:1;min-height:43px;background:#23364d;border:1px solid #41556b;border-radius:14px;color:#d5e4f0;font-size:12px;font-weight:800}
+.tracker-switches button.active{background:#b7f5d1;border-color:#b7f5d1;color:#102b20}
+.tracker-core{padding:20px;margin:14px 0;overflow:hidden}
+.tracker-core-head{display:flex;align-items:center;justify-content:space-between;gap:13px;margin-bottom:15px}
+.tracker-core-head h2{margin:4px 0 0;font-size:21px;letter-spacing:-.5px}
+.tracker-core-head>span{font-size:13px;font-weight:850;color:#b9f0cd;border:1px solid #4d7866;border-radius:50px;padding:7px 10px;white-space:nowrap}
+.tracker-core-queue{display:flex;flex-direction:column;gap:9px}
+.tracker-core-item{display:flex;align-items:center;gap:11px;padding:12px;border:1px solid #3c516c;border-radius:16px;background:#192a42}
+.tracker-core-symbol{display:grid;place-items:center;width:39px;min-width:39px;height:39px;border-radius:12px;background:#30425b;font-size:19px}
+.tracker-core-desc{display:flex;flex-direction:column;min-width:0;flex:1;gap:5px}
+.tracker-core-desc strong{font-size:14px;line-height:1.3}
+.tracker-core-desc small{font-size:11px;color:#b6c5d7;line-height:1.3}
+.tracker-core-actions{display:flex;align-items:center;gap:7px;flex-shrink:0}
+.tracker-core-check{width:44px;height:44px;border-radius:12px;border:0;background:#b3f5ce;color:#153025;font-size:21px;font-weight:900}
+.tracker-core-skip{border:1px solid #4b6078;border-radius:11px;padding:8px 9px;min-height:40px;background:#253750;color:#b9cadd;font-size:11px}
+.tracker-core-reset{border:1px solid #587260;background:#2a4639;color:#c5f1d0;padding:9px 10px;border-radius:11px;font-size:11px;font-weight:800}
+.tracker-core-item.is-complete{background:#172b35;border-color:#375849}
+.tracker-core-item.is-complete .tracker-core-desc strong{color:#b5dec3}
+.tracker-more{display:block;margin:10px auto 0;min-height:39px;padding:8px 16px;background:#253c52;border:1px solid #48647b;border-radius:12px;color:#d2e5f0;font-size:12px;font-weight:750}
+.tracker-more[hidden]{display:none!important}
+.tracker-done{border-top:1px solid #33445d;margin-top:15px;padding-top:10px}
+.tracker-done summary{padding:8px 0;color:#acc8bf;font-size:12px;cursor:pointer}
+.tracker-done .tracker-core-item{margin-top:8px}
+.tracker-all-done{font-size:13px;color:#b2f3cb}
+#view-tracker .today-dashboard,#view-tracker .habit-showcase{display:none!important}
+#view-tracker #tracker-core-panel[hidden],#view-tracker .micro-shell[hidden]{display:none!important}
+#view-tracker .micro-shell{margin:14px 0}
+.tracker-extra{padding:18px 20px;margin:14px 0;display:flex;flex-direction:column;gap:8px}
+.tracker-extra strong{font-size:15px}
+.tracker-extra p{color:#b2c1d7;font-size:12px;line-height:1.5;margin:0}
+.tracker-extra button,.tracker-back{border:1px solid #4d6a7b;border-radius:12px;padding:12px 13px;background:#263950;color:#d0eee1;font-weight:800;font-size:13px;align-self:flex-start}
+.tracker-back{margin-bottom:17px}
+@media(max-width:520px){.ritm-first{padding:19px 16px}.ritm-first h1{font-size:30px}.tracker-intro{padding:20px 15px}.tracker-core{padding:17px 12px}.tracker-core-item{padding:10px 9px;gap:8px}.tracker-core-symbol{width:34px;min-width:34px;height:36px}.tracker-core-desc strong{font-size:13px}.tracker-core-check{width:42px;height:42px}.tracker-core-skip{padding:8px 6px}.tracker-total-row strong{font-size:21px}}
+@media(prefers-reduced-motion:reduce){.ritm-first-button,.tracker-total-bar i{transition:none}}
