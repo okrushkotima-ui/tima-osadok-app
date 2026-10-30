@@ -1,5 +1,5 @@
 const CACHE='ritm-shell-v20';
-const ASSETS=['./','./index.html','./styles.css?v=17','./fusion.css?v=2','./app.js?v=19','./fusion.js?v=2','./manifest.webmanifest','./sounds/success.wav','./sounds/impact.wav','./sounds/soft-no.wav','./sounds/tap.wav','./sounds/warm.wav','./assets/midnight-clouds.svg','./assets/ritm-cloud-lettering.webp','./icons/ritm-192.png','./icons/ritm-512.png'];
+const ASSETS=['./','./index.html','./styles.css?v=17','./fusion.css?v=2','./app.js?v=19','./fusion.js?v=3','./backup-unified.js?v=1','./manifest.webmanifest','./sounds/success.wav','./sounds/impact.wav','./sounds/soft-no.wav','./sounds/tap.wav','./sounds/warm.wav','./assets/midnight-clouds.svg','./assets/ritm-cloud-lettering.webp','./icons/ritm-192.png','./icons/ritm-512.png','./svoboda/','./svoboda/index.html','./svoboda/styles.css?v=4','./svoboda/coach.js?v=4','./svoboda/app.js?v=4','./svoboda/embed.css?v=2','./svoboda/embed.js?v=2'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(ASSETS.map(path=>cache.add(path)))).then(()=>self.skipWaiting()));
 });
