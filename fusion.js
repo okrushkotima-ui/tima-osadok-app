@@ -60,12 +60,14 @@ $('micro-add').addEventListener('submit',e=>{
  const d=day(),id='own-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
  d.custom??={};d.custom[id]={id,title:value,icon:'✳',category:'своё'};d.items.push(id);persist();input.value='';render();$('micro-track').scrollTo({left:100000,behavior:'smooth'});
 });
+let previousView='habits';
 function showEmbedded(view){
- const active=view==='food'||view==='freedom';
+ const active=view==='food'||view==='freedom',changed=previousView!==view;
  document.querySelectorAll('.fusion-frame').forEach(f=>{if(!active||f.closest('[data-view-panel]').dataset.viewPanel!==view)return;
-  if(!f.getAttribute('src'))f.src=f.dataset.src;
+  if(!f.getAttribute('src')||changed)f.src=f.dataset.src;
   else try{f.contentWindow.postMessage({type:'ritm-remeasure'},location.origin)}catch{}
  });
+ previousView=view;
 }
 window.RitmFusion={showEmbedded};
 window.addEventListener('message',e=>{if(e.origin!==location.origin||e.data?.type!=='ritm-embed-size')return;
