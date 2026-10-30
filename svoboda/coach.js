@@ -85,6 +85,11 @@ function mealClick(event){
  else{const id='menu:'+date+':'+i;s.mealChecks[date][i]=!s.mealChecks[date][i];if(s.mealChecks[date][i]){const r=api.recipes[i][menu[i]%api.recipes[i].length];s.foodJournal=s.foodJournal.filter(x=>x.id!==id);s.foodJournal.push({id,date,meal:api.mealNames[i],text:r.name,components:recipeComponents(i,menu[i]),source:'menu'});s.menuByDate[date]=menu;}else s.foodJournal=s.foodJournal.filter(x=>x.id!==id);}
  api.save();api.render();
 }
+function chooseRecipe(i,j){
+ if(!Number.isInteger(i)||i<0||i>2||!Number.isInteger(j)||j<0||j>=api.recipes[i].length)return;
+ const s=get(),date=api.today();if(s.mealChecks[date]?.[i]){api.toast('Сначала сними отметку с уже съеденного блюда, чтобы заменить меню.');return}
+ const menu=[...currentMenu()];menu[i]=j;s.menuByDate[date]=menu;api.save();api.render();api.toast('Блюдо добавлено в меню на сегодня ✓');
+}
 function renderShopping(){
  const s=get(),date=api.today(),menu=currentMenu(),all=api.recipes.flatMap((group,i)=>group[menu[i]%group.length].ing),list=[...new Set(all)];$('shoppingList').replaceChildren(node('strong','','На выбранное меню'));
  const items=node('div','shopping-items');list.forEach(item=>{const label=node('label','shopping-item'),input=node('input');input.type='checkbox';input.checked=Boolean(s.shopping[date]?.[item]);input.dataset.shopping=item;const count=all.filter(value=>value===item).length;label.append(input,node('span','',item+(count>1?' × '+count:'')));items.append(label);});$('shoppingList').append(items,node('p','small','Список для выбранного меню одного человека. Повторяющиеся позиции показаны с множителем. Покупка не отмечает приём пищи автоматически.'));
@@ -133,5 +138,5 @@ function connect(a){
 }
 function render(){renderTriggers();renderReview();supportContact();const c=soberData().contact;if(!['supportName','supportPhone'].includes(document.activeElement?.id)){$('supportName').value=c.name;$('supportPhone').value=c.phone;}const resultNames={easier:'Стало легче',same:'Всё ещё сильно',support:'Нужна поддержка'};$('urgeHistory').replaceChildren(...soberData().urges.slice(-5).reverse().map(entry=>{const item=node('div','record');item.append(node('p','small',new Date(entry.at).toLocaleString('ru-RU')+' · '+needs[entry.need][0]+' · тяга '+entry.intensity+'/10 · '+resultNames[entry.result]));return item;}));if(!soberData().urges.length)$('urgeHistory').append(node('p','small','Пока нет записей. Результат можно отметить в окне поддержки.'));}
 function newDay(){$('journalDate').value=api.today();$('journalDate').max=api.today();$('soberDate').value=api.today();selectedFood=[];renderFoodChoices();}
-return {dayValue,validState,normalize,dailyWeights,weightTrend,connect,render,sober,daily,renderMeals,mealClick,renderShopping,shoppingChange,renderFoodJournal,addJournal,removeJournal,newDay};
+return {dayValue,validState,normalize,dailyWeights,weightTrend,connect,render,sober,daily,renderMeals,mealClick,chooseRecipe,renderShopping,shoppingChange,renderFoodJournal,addJournal,removeJournal,newDay};
 })();
