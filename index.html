@@ -13,7 +13,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" href="./icons/ritm-192.png">
   <link rel="icon" href="./icons/ritm-192.png">
-  <link rel="stylesheet" href="./styles.css?v=17">
+  <link rel="stylesheet" href="./styles.css?v=17"><link rel="stylesheet" href="./fusion.css?v=1">
   <title>РИТМ — by тима осадок</title>
 </head>
 <body>
@@ -30,6 +30,13 @@
   <div class="calendar-legend"><span><i class="dot dot-done"></i> Выполнено</span><span><i class="dot dot-today"></i> Сегодня</span><span><i class="dot dot-empty"></i> Без записей</span></div>
   <p class="calendar-caption">Дата берётся из календаря твоего телефона. Записи привязаны к каждому дню.</p>
 </div></section>
+<section class="micro-shell glass-card" aria-labelledby="micro-heading">
+ <div class="micro-head"><div><span class="micro-kicker">МАЛЕНЬКИЕ ПОБЕДЫ · КАЖДЫЙ ДЕНЬ</span><h2 id="micro-heading">Сделай сейчас</h2></div><span id="micro-count" class="micro-count">0 из 8</span></div>
+ <p class="micro-muted" id="micro-left">Листай вбок →</p>
+ <div class="micro-track" id="micro-track" role="list" aria-label="Короткие задачи на сегодня"></div>
+ <details class="micro-details"><summary id="micro-done-title">Выполнено · 0</summary><div id="micro-done"></div></details>
+ <form class="micro-add" id="micro-add"><input id="micro-new" aria-label="Своя короткая задача" placeholder="Добавить своё короткое дело" maxlength="70"><button type="submit">+ Добавить</button></form>
+</section>
 <section class="today-dashboard glass-card" aria-label="Прогресс дня"><span class="sky-veil" aria-hidden="true"></span>
 <div class="progress-top"><h1 id="today-headline">Прогресс дня</h1><span class="subtle-spark" aria-hidden="true">✳</span></div>
 <div class="today-greeting"><div class="today-progress" id="today-progress" style="--today-percent:0"><strong id="today-percent">0%</strong><small id="today-count">0 из 8</small></div>
@@ -107,7 +114,13 @@
         <div class="chart-head"><strong>Как меняется вес</strong><span id="chart-caption">Появится после первой записи</span></div>
         <div class="chart-box"><svg id="weight-chart" viewBox="0 0 640 210" role="img" aria-label="График изменений веса"></svg></div>
       </section>
-      </div><div class="app-view" id="view-week" data-view-panel="week" hidden>
+      </div><div class="app-view fusion-view" id="view-food" data-view-panel="food" hidden>
+ <h2 class="fusion-title">Питание</h2><p class="fusion-subtitle">Меню из «Свободы»: завтрак, обед, ужин, продукты и дневник еды. Всё в одном месте.</p>
+ <iframe class="fusion-frame" title="Меню еды и рецепты" data-src="./svoboda/?embed=food" scrolling="no"></iframe>
+ </div><div class="app-view fusion-view" id="view-freedom" data-view-panel="freedom" hidden>
+ <h2 class="fusion-title">Свобода</h2><p class="fusion-subtitle">Привычки, активность, вес и поддержка. Твои старые записи «Свободы» сохранены.</p>
+ <iframe class="fusion-frame" title="Трекер Свобода" data-src="./svoboda/?embed=freedom" scrolling="no"></iframe>
+ </div><div class="app-view" id="view-week" data-view-panel="week" hidden>
         <section class="hero hero-compact" aria-label="Твой ритм">
         <div class="hero-top"><div class="eyebrow"><span class="live-dot"></span> ДЕНЬ ЗА ДНЁМ <span class="eyebrow-divider">/</span> В СВОЁМ РИТМЕ</div><span class="hero-tag">Без гонки. Только движение.</span></div>
         <div class="hero-bottom"><span id="human-date"></span><span class="hero-streak" id="week-summary">Неделя начинается ✨</span></div>
@@ -123,14 +136,15 @@
 <div class="audio-preference"><div><strong>Звуки интерфейса</strong><span>Короткие сигналы при выполнении привычек</span></div><button type="button" id="sound-toggle" class="sound-btn icon-btn" aria-label="Выключить звуки" aria-pressed="true">♫</button></div><div class="backup"><button id="export-btn" type="button" class="ghost">↓ Скачать резервную копию</button><label class="ghost upload">↑ Загрузить копию<input type="file" id="import-file" accept="application/json,.json" hidden></label></div><p class="tiny">Данные хранятся на этом устройстве в браузере. Пока нет синхронизации между устройствами. У каждого пользователя свои локальные данные. Не удаляй данные браузера без резервной копии.</p></section>
       </div></main>    <aside id="ios-install-tip" class="ios-install-tip" hidden><strong>РИТМ на главном экране</strong><p>Safari → Поделиться → На экран «Домой»</p><button type="button" id="dismiss-install" aria-label="Закрыть подсказку">×</button></aside>
     <nav class="bottom-nav" aria-label="Разделы приложения">
-      <button type="button" data-view="habits" class="nav-tab selected" aria-current="page"><span>⌂</span>Привычки</button>
-      <button type="button" data-view="weight" class="nav-tab"><span>⚖</span>Вес</button>
-      <button type="button" data-view="week" class="nav-tab"><span>▥</span>Неделя</button>
-      <button type="button" data-view="settings" class="nav-tab"><span>⚙</span>Настройки</button>
-    </nav>
+ <button type="button" data-view="habits" class="nav-tab selected" aria-current="page"><span>⌂</span>Ритм</button>
+ <button type="button" data-view="food" class="nav-tab"><span>🥗</span>Еда</button>
+ <button type="button" data-view="freedom" class="nav-tab"><span>✳</span>Свобода</button>
+ <button type="button" data-view="weight" class="nav-tab"><span>⚖</span>Вес</button>
+ <button type="button" data-view="week" class="nav-tab"><span>▥</span>Неделя</button>
+ </nav>
   </div>
   <div class="celebration" id="celebration" role="status" aria-live="polite" aria-atomic="true"><span id="toast-icon">✨</span><strong id="toast-title"></strong><p id="toast-desc"></p></div>
   <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
-  <script src="./app.js?v=16" defer></script>
+  <script src="./app.js?v=18" defer></script><script src="./fusion.js?v=1" defer></script>
 </body>
 </html>
