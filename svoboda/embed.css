@@ -1,0 +1,14 @@
+/* Общая визуальная система с РИТМ; логотип и внешняя шапка остаются у родителя. */
+html.ritm-embedded,body.ritm-embedded{background:transparent!important;min-height:0!important;color-scheme:dark;--bg:#080d19;--panel:#111b2f;--panel2:#1b2941;--mint:#a7f8c2;--mint2:#92e6b4;--line:#293551;--ink:#f2f4fe;--muted:#9ba9c4}
+body.ritm-embedded .app{max-width:100%;padding:0 3px 12px!important}
+body.ritm-embedded .topbar,body.ritm-embedded .storage-status{display:none!important}
+body.ritm-embedded .panel{background:linear-gradient(145deg,#151f33,#101a2b);border:1px solid #293551;border-radius:23px}
+body.ritm-embedded .sectiontitle{padding-top:5px}
+body.ritm-embedded .sectiontitle h1{font-size:clamp(28px,5vw,39px);letter-spacing:-1px}
+body.ritm-embedded .nav{max-width:100%!important;width:100%!important;position:sticky!important;top:0!important;bottom:auto!important;left:auto!important;transform:none!important;z-index:20!important;border-radius:16px!important;margin:0 0 20px!important;background:#121b30f5!important;backdrop-filter:blur(16px);padding:5px!important;display:flex;gap:3px}
+body.ritm-embedded .nav button{min-width:0!important;flex:1!important;font-size:10px!important}
+body.ritm-food .nav{display:none!important}
+body.ritm-embedded .hero{background:linear-gradient(150deg,#1c2541,#101b2e)}
+body.ritm-embedded .nav button.active{background:#304564!important}
+body.ritm-embedded .toast{position:fixed;bottom:10px}
+@media(max-width:500px){body.ritm-embedded .app{padding:0 1px 10px!important}body.ritm-embedded .panel{padding:17px!important}body.ritm-embedded .nav button{font-size:9px!important;padding:8px 2px!important}body.ritm-embedded .nav button svg{width:18px;height:18px}}
