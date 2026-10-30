@@ -85,8 +85,8 @@ function swap(t){
 function render(keepScroll=false){
  const d=day(),tasks=d.items.map(id=>getTask(id,d)).filter(Boolean),done=tasks.filter(t=>d.done.includes(t.id)),pending=tasks.filter(t=>!d.done.includes(t.id));
  const percentage=tasks.length?Math.round(done.length/tasks.length*100):0;
- $('micro-count').textContent=done.length+' / '+tasks.length;
- $('micro-left').textContent=pending.length?pending.length+' шагов впереди · в своём темпе':'Все задания выполнены. Отдых тоже часть ритма.';
+ $('micro-count').textContent='✓ '+done.length+' сделано';
+ $('micro-left').textContent=pending.length?'Выбирай что хочется. Остальное подождёт.':'Все задания выполнены. Отдых тоже часть ритма.';
  $('micro-progress-fill').style.width=percentage+'%';
  $('micro-progress-rail').setAttribute('aria-valuenow',String(percentage));
  $('micro-progress-rail').setAttribute('aria-valuetext',done.length+' из '+tasks.length+' выполнено');
@@ -163,9 +163,10 @@ function renderCombined(){
  const core=orderedCore(state.habits),coreDone=core.filter(h=>h.status==='done'),corePaused=core.filter(h=>h.status==='skip'),corePending=core.filter(h=>!h.status);
  const done=coreDone.length+tasks.length-pending.length,total=core.length+tasks.length;
  const pct=total?Math.round(done/total*100):0;
- $('tracker-combined-counter').textContent=done+' из '+total;
- $('tracker-momentum').textContent=done===total?'Все запланированные шаги выполнены ✨':done===0?'Не весь список. Один шаг.':'Уже '+done+' побед. Продолжай в своём темпе.';
- $('tracker-combined-fill').style.width=pct+'%';$('tracker-combined-bar').setAttribute('aria-valuenow',String(pct));
+ const target=window.RitmSmart?.getGoal?.()||2,softPct=Math.min(100,Math.round(done/target*100));
+ $('tracker-combined-counter').textContent=done+' '+(done===1?'победа':'побед');
+ $('tracker-momentum').textContent=done===0?'Даже одного шага достаточно.':done<target?'Отлично, уже началось.':'Ориентир на день достигнут ✨';
+ $('tracker-combined-fill').style.width=softPct+'%';$('tracker-combined-bar').setAttribute('aria-valuenow',String(softPct));$('tracker-combined-bar').setAttribute('aria-valuetext',done+' выполнено; мягкий ориентир '+target);
  $('tracker-core-count').textContent=coreDone.length+' / '+core.length;
  const queue=$('tracker-core-queue'),show=coreExpanded?corePending:corePending.slice(0,3);queue.replaceChildren(...show.map(h=>mainCoreCard(h)));
  if(!corePending.length)queue.append(Object.assign(document.createElement('p'),{className:'tracker-all-done',textContent:'Сегодня основные привычки разобраны. Хорошая работа.'}));
@@ -178,7 +179,7 @@ function renderCombined(){
  const easyButton=$('home-easy-done');$('home-easy-title').textContent=!current?'Записи за другой день':easy?easy.title:'Всё на сегодня!';
  $('home-easy-icon').textContent=!current?'📅':easy?easy.emoji:'✨';
  $('home-easy-meta').textContent=!current?'Открой трекер и выбери сегодняшний день':easy?'≈ '+easy.min+' мин · всего один маленький шаг':'Можно отдохнуть. Завтра будут новые задания.';
- $('home-step-count').textContent=done+' из '+total+' выполнено';
+ $('home-step-count').textContent=done+' маленьких побед';
  const bubble=document.querySelector('.ritm-first-bubble');if(bubble)bubble.textContent=easy&&current?'≈ '+easy.min+' МИН НА СТАРТ':'В СВОЁМ РИТМЕ';
  easyButton.disabled=!current||!easy;easyButton.textContent=easy&&current?'✓ Готово, сделал':'На сегодня достаточно';
  window.RitmSmart?.render();
