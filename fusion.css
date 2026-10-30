@@ -34,3 +34,64 @@
 /* Старые привычки доступны по кнопке «Все привычки», не дублируют горизонтальный трекер. */
 .habit-showcase .habit-preview{display:none!important}
 .habit-showcase .showcase-head{margin-bottom:0}
+
+/* РИТМ · глубокая интеграция и обновлённый UX. Бренд и логотип не затрагиваются. */
+.micro-shell{background:radial-gradient(circle at 95% 6%,#314b5266,transparent 45%),linear-gradient(145deg,#172139,#101a2c);border-color:#30465e}
+.micro-head{align-items:flex-start}.micro-head h2{font-size:clamp(25px,5vw,32px);font-weight:900;letter-spacing:-1.1px}
+.micro-kicker{color:#a7f8c2;letter-spacing:1.35px}
+.micro-progress-line{display:flex;align-items:center;gap:12px;margin:12px 0 14px}
+.micro-progress-rail{height:6px;background:#344359;border-radius:99px;overflow:hidden;flex:1}
+#micro-progress-fill{height:100%;width:0;display:block;border-radius:99px;background:linear-gradient(90deg,#87cfc0,#c4facd);transition:width .24s ease}
+.micro-streak{white-space:nowrap;font-size:11px;color:#b1cbd4;font-weight:700}
+.micro-filters{display:flex;overflow-x:auto;gap:7px;padding:2px 0 14px;scrollbar-width:none}
+.micro-filters::-webkit-scrollbar{display:none}
+.micro-chip{background:#1e2b42;border:1px solid #3c4a62;border-radius:100px;padding:9px 12px;min-height:36px;white-space:nowrap;font-size:12px;font-weight:750;color:#c0cbe0;transition:background .2s}
+.micro-chip.active{background:#b6f7cf;color:#162a24;border-color:#b6f7cf}
+.micro-card{min-height:188px;background:radial-gradient(circle at 100% 0%,#4661785e,transparent 52%),linear-gradient(146deg,#273653,#131e31);border:1px solid #47617b;box-shadow:0 12px 26px #04081244;gap:13px}
+.micro-card[data-category="творчество"]{background:radial-gradient(circle at 100% 0%,#6a507a75,transparent 53%),linear-gradient(146deg,#293353,#141d30)}
+.micro-card[data-category="питание"]{background:radial-gradient(circle at 100% 0%,#3466585e,transparent 53%),linear-gradient(146deg,#223948,#141d2d)}
+.micro-card-copy{display:flex;flex-direction:column;gap:8px;margin:auto 0}
+.micro-title{font-size:19px;line-height:1.24}
+.micro-time{font-size:11px;letter-spacing:.2px;color:#acbfd0}
+.micro-actions{display:flex;gap:7px}
+.micro-finish{flex:1;background:linear-gradient(130deg,#d4ffe0,#a6ebca);border:none;border-radius:12px;min-height:44px}
+.micro-swap{border-radius:12px;background:#273950;border:1px solid #4d6277;color:#e3edff;width:44px;min-width:44px;min-height:44px;font-size:24px;line-height:1}
+.micro-swap:active{transform:rotate(-30deg)}
+.micro-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-size:15px;min-height:160px;min-width:100%}
+.micro-back{padding:8px 14px;border-radius:12px;background:#263b4b;border:1px solid #53786b;color:#e5fff2}
+.micro-toast{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#1c3340;border:1px solid #5a856d;color:#e6ffed;border-radius:15px;padding:12px 14px;margin:-4px 0 18px;font-size:12px;font-weight:700;box-shadow:0 9px 24px #0002}
+.micro-toast[hidden]{display:none}
+.micro-toast button{border:0;background:#a7f8c2;color:#143027;border-radius:10px;padding:9px 12px;font-weight:850}
+.fusion-glance{padding:19px;margin:0 0 17px;overflow:hidden}
+.fusion-glance-header{display:flex;flex-direction:column;gap:7px;margin-bottom:13px}
+.fusion-glance-header strong{font-size:19px;font-weight:850;letter-spacing:-.45px}
+.fusion-glance-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.fusion-glance-item{min-width:0;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:8px;padding:15px 12px;border-radius:16px;background:#1a2a43;border:1px solid #334660;color:#e4effa;text-align:left;transition:transform .14s}
+.fusion-glance-item:active{transform:scale(.97)}
+.fusion-glance-item span{font-size:11px;font-weight:700;color:#b5c9d5}
+.fusion-glance-item strong{font-size:clamp(17px,4vw,25px);white-space:nowrap;font-weight:900;letter-spacing:-.6px}
+.fusion-glance-item small{font-size:10px;color:#8fa7bc}
+.fusion-subnav{display:flex;gap:7px;overflow-x:auto;padding:3px 1px 16px;scrollbar-width:none}
+.fusion-subnav::-webkit-scrollbar{display:none}
+.fusion-subnav button{min-height:42px;white-space:nowrap;border:1px solid #354963;background:#1c2a43;color:#d0ddee;border-radius:13px;padding:10px 13px;font-weight:750;font-size:12px}
+.fusion-subnav button.active{background:#b6f7cf;color:#183329;border-color:#b6f7cf}
+.fusion-frame{height:1150px}
+.fusion-backup{border:1px solid #385a54;background:#13292d;border-radius:16px;padding:16px;margin-top:18px}
+.fusion-backup strong{font-size:16px}.fusion-backup p{font-size:12px;color:#adc3bc;line-height:1.6}
+.fusion-backup-actions{display:flex;flex-wrap:wrap;gap:8px}
+.fusion-backup-actions button,.fusion-import-label{font-size:13px;background:#a7f8c2;color:#102a24;border-radius:12px;padding:11px 13px;border:0;cursor:pointer;font-weight:800}
+.fusion-import-label{background:#273e43;color:#dcf5eb;border:1px solid #537366}
+.fusion-frame:focus-visible,.micro-chip:focus-visible,.micro-swap:focus-visible,.fusion-glance-item:focus-visible,.fusion-subnav button:focus-visible{outline:3px solid #e3c7ff;outline-offset:3px}
+@media(max-width:520px){
+ .micro-shell{margin-top:13px;padding:18px 13px}
+ .micro-track{grid-auto-columns:83%;gap:9px}
+ .micro-card{min-height:192px;padding:16px}
+ .micro-filters{margin-right:-9px}
+ .fusion-glance{padding:14px}
+ .fusion-glance-grid{gap:6px}
+ .fusion-glance-item{padding:12px 8px;border-radius:13px;min-height:112px}
+ .fusion-glance-item span{font-size:10px}
+ .fusion-glance-item strong{font-size:18px}
+ .fusion-glance-item small{font-size:9px}
+}
+@media(prefers-reduced-motion:reduce){#micro-progress-fill,.micro-swap,.fusion-glance-item{transition:none}}
