@@ -134,7 +134,10 @@ $('micro-add').addEventListener('submit',e=>{e.preventDefault();const input=$('m
  d.custom[id]={id,title};d.items.push(id);save();input.value='';filter='all';render();toast('Добавил твою задачу.');
 });
 $('micro-toast-undo').onclick=()=>{const prev=lastUndo;lastUndo=null;if(prev)restore(prev.id,prev.date)};
-document.querySelectorAll('[data-fusion-go]').forEach(b=>b.onclick=()=>document.querySelector('[data-view="'+b.dataset.fusionGo+'"]')?.click());
+document.querySelectorAll('[data-fusion-go]').forEach(b=>b.onclick=()=>{
+ document.querySelector('[data-view="'+b.dataset.fusionGo+'"]')?.click();
+ if(b.dataset.fusionTarget)document.querySelector('[data-freedom-tab="'+b.dataset.fusionTarget+'"]')?.click();
+});
 document.querySelectorAll('[data-freedom-tab]').forEach(b=>b.onclick=()=>{
  document.querySelectorAll('[data-freedom-tab]').forEach(x=>x.classList.toggle('active',x===b));
  const frame=$('fusion-balance-frame');if(frame){frame.dataset.target=b.dataset.freedomTab;
