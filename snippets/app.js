@@ -216,6 +216,7 @@ function render() {
   if (tab === "trends") renderTrends();
   if (tab === "stats") renderStats();
   if (tab === "growth") $("#app").innerHTML = RitmGrowth.render({ date, state });
+  if (tab === "songs") $("#app").innerHTML = RitmPlayer.render();
 }
 function renderToday() {
   const rs = records(),
@@ -1149,6 +1150,6 @@ document.addEventListener("click", (e) => {
 render();
 if ("serviceWorker" in navigator)
   navigator.serviceWorker
-    .register("./sw.js?v=7", { scope: "./", updateViaCache: "none" })
+    .register("./sw.js?v=8", { scope: "./", updateViaCache: "none" })
     .then((r) => r.update())
     .catch(() => {});
