@@ -5,10 +5,10 @@
 (function (root) {
   "use strict";
   const TRACKS = [
-    {id:"ushi",name:"По уши влип в тебя",duration:"1:44",role:"Главный трек · романтика",url:"https://music.apple.com/us/album/6791902958",tag:"хит"},
-    {id:"glaza",name:"Её глаза",duration:"1:55",role:"Ночь · взгляд · атмосфера",url:"https://music.apple.com/us/album/6814474872",tag:"эстетика"},
-    {id:"net",name:"Нас больше нет",duration:"1:57",role:"Драма · живая история",url:"https://zvuk.com/track/188594589",tag:"эмоция"},
-    {id:"kislorod",name:"Кислород",duration:"2:06",role:"Мелодия · чувство",url:"https://music.apple.com/us/album/6807343628",tag:"песня"},
+    {id:"ushi",name:"По уши влип в тебя",duration:"1:44",role:"Главный трек · романтика",url:"https://music.yandex.ru/search?text=%D1%82%D0%B8%D0%BC%D0%B0%20%D0%BE%D1%81%D0%B0%D0%B4%D0%BE%D0%BA%20%D0%9F%D0%BE%20%D1%83%D1%88%D0%B8%20%D0%B2%D0%BB%D0%B8%D0%BF%20%D0%B2%20%D1%82%D0%B5%D0%B1%D1%8F",tag:"хит"},
+    {id:"glaza",name:"Её глаза",duration:"1:55",role:"Ночь · взгляд · атмосфера",url:"https://music.yandex.ru/search?text=%D1%82%D0%B8%D0%BC%D0%B0%20%D0%BE%D1%81%D0%B0%D0%B4%D0%BE%D0%BA%20%D0%95%D0%B5%20%D0%B3%D0%BB%D0%B0%D0%B7%D0%B0",tag:"эстетика"},
+    {id:"net",name:"Нас больше нет",duration:"1:57",role:"Драма · живая история",url:"https://music.yandex.ru/search?text=%D1%82%D0%B8%D0%BC%D0%B0%20%D0%BE%D1%81%D0%B0%D0%B4%D0%BE%D0%BA%20%D0%9D%D0%B0%D1%81%20%D0%B1%D0%BE%D0%BB%D1%8C%D1%88%D0%B5%20%D0%BD%D0%B5%D1%82",tag:"эмоция"},
+    {id:"kislorod",name:"Кислород",duration:"2:06",role:"Мелодия · чувство",url:"https://music.yandex.ru/search?text=%D1%82%D0%B8%D0%BC%D0%B0%20%D0%BE%D1%81%D0%B0%D0%B4%D0%BE%D0%BA%20%D0%9A%D0%B8%D1%81%D0%BB%D0%BE%D1%80%D0%BE%D0%B4",tag:"песня"},
     {id:"pravda",name:"Правды нет",duration:"1:52*",role:"Рабочая версия v3 · не публичный релиз",url:"",tag:"демо"},
     {id:"home",name:"Буду ждать тебя дома",duration:"1:14*",role:"Демо из твоего архива",url:"",tag:"демо"}
   ];
@@ -59,9 +59,9 @@
   }
   function render(){
     queueMicrotask(refresh);
-    return '<section class="panel music-hero"><span class="eyebrow">ПОЛНАЯ МУЗЫКА · НЕ ОТРЫВКИ</span><h1>Твои песни. Прямо в РИТМ.</h1><p>Прикрепи оригинальный MP3, WAV или M4A один раз — слушай целиком прямо здесь, даже без интернета. Файл сохранится только на этом телефоне или компьютере. Никаких 15-секундных превью вместо песни.</p><p class="music-note" id="songMessage">Другие устройства не синхронизируются автоматически. Не очищай данные сайта: вместе с ними могут удалиться загруженные треки.</p><div class="music-chip-row"><span>▶ Полное воспроизведение</span><span>♡ Твои треки</span><span>⌁ Съёмка под музыку</span></div></section>'+
+    return '<section class="panel music-hero"><span class="eyebrow">ПОЛНАЯ МУЗЫКА · НЕ ОТРЫВКИ</span><h1>Твои песни. Прямо в РИТМ.</h1><p>Для выпущенных песен открой поиск в Яндекс Музыке. Для прослушивания внутри РИТМ один раз загрузи свой полный MP3, WAV или M4A — он будет работать даже без интернета. Файл сохранится только на этом телефоне или компьютере. Никаких 15-секундных превью вместо песни.</p><p class="music-note" id="songMessage">Другие устройства не синхронизируются автоматически. Не очищай данные сайта: вместе с ними могут удалиться загруженные треки.</p><div class="music-chip-row"><span>▶ Полное воспроизведение</span><span>♡ Твои треки</span><span>⌁ Съёмка под музыку</span></div></section>'+
       '<section class="music-library">'+TRACKS.map((t,i)=>
-        '<article class="music-track card"><div class="music-top"><span class="pill">'+esc(t.tag)+'</span><span class="music-duration">'+esc(t.duration)+'</span></div><div class="music-cover"><span>♫</span><small>'+String(i+1).padStart(2,"0")+'</small></div><h3>'+esc(t.name)+'</h3><p>'+esc(t.role)+'</p><small data-song-status="'+t.id+'">Проверяем файл…</small><div class="music-controls"><button type="button" class="primary" data-song-play="'+t.id+'">▶ Слушать</button><label class="music-attach"><input type="file" accept=".mp3,.wav,.m4a,.aac,audio/*" data-song-upload="'+t.id+'">Добавить MP3</label></div><div class="music-links">'+(t.url?'<a href="'+esc(t.url)+'" target="_blank" rel="noopener noreferrer">На музыкальной площадке ↗</a>':'<span>Только личный файл</span>')+'<button type="button" data-song-delete="'+t.id+'">Убрать аудио</button></div></article>'
+        '<article class="music-track card"><div class="music-top"><span class="pill">'+esc(t.tag)+'</span><span class="music-duration">'+esc(t.duration)+'</span></div><div class="music-cover"><span>♫</span><small>'+String(i+1).padStart(2,"0")+'</small></div><h3>'+esc(t.name)+'</h3><p>'+esc(t.role)+'</p><small data-song-status="'+t.id+'">Проверяем файл…</small><div class="music-controls"><button type="button" class="primary" data-song-play="'+t.id+'">▶ Личный MP3</button><label class="music-attach"><input type="file" accept=".mp3,.wav,.m4a,.aac,audio/*" data-song-upload="'+t.id+'">Добавить MP3</label></div><div class="music-links">'+(t.url?'<a href="'+esc(t.url)+'" target="_blank" rel="noopener noreferrer">Найти в Яндекс Музыке ↗</a>':'<span>Только личный файл</span>')+'<button type="button" data-song-delete="'+t.id+'">Убрать аудио</button></div></article>'
       ).join("")+'</section><section class="panel"><h2>Как пользоваться</h2><p>Нажми «Добавить MP3» возле песни, выбери полный файл, затем «Слушать». Музыка будет играть, даже если перейти на вкладку «Сегодня». Если файла ещё нет на устройстве, открой ссылку на музыкальную площадку — там он доступен по правилам сервиса.</p><p>* Для «Правды нет» и «Буду ждать тебя дома» длительность указана по найденным архивным версиям; это не подтверждение финального мастера. Запись может быть заменена твоим окончательным файлом.</p></section>';
   }
   function dock(){
@@ -78,9 +78,9 @@
     let record;
     try{record=await operation("get",id);}catch(e){statusMessage(e.message);return;}
     if(!record?.blob){
-      statusMessage("Для «"+t.name+"» нужен твой полный аудиофайл. Нажми «Добавить MP3» в карточке.");
-      const input=document.querySelector('[data-song-upload="'+id+'"]');
-      if(input)input.click();
+      statusMessage("Для «"+t.name+"» сначала добавь свой полный MP3. Или открой ссылку на Яндекс Музыку.");
+      const status=document.querySelector('[data-song-status="'+id+'"]');
+      if(status)status.textContent="Загрузи MP3 или открой Яндекс Музыку";
       return;
     }
     if(objectURL)URL.revokeObjectURL(objectURL);
