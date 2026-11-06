@@ -1150,6 +1150,6 @@ document.addEventListener("click", (e) => {
 render();
 if ("serviceWorker" in navigator)
   navigator.serviceWorker
-    .register("./sw.js?v=8", { scope: "./", updateViaCache: "none" })
+    .register("./sw.js?v=9", { scope: "./", updateViaCache: "none" })
     .then((r) => r.update())
     .catch(() => {});
