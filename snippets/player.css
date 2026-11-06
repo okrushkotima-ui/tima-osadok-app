@@ -1,0 +1,31 @@
+
+/* Standalone audio library: works with the existing dark RITM theme. */
+.music-hero{background:radial-gradient(circle at 85% 0%,#b2a8cd22,transparent 55%),linear-gradient(145deg,#1c2531e8,#11171fef)}
+.music-note{padding:11px 14px;border-radius:14px;background:#ffffff07;border:1px solid #ffffff17}
+.music-chip-row{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 3px}
+.music-chip-row span{font-size:11px;border:1px solid #a4dfc636;padding:8px 12px;border-radius:24px;color:var(--mint)}
+.music-library{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.music-track{padding:18px;min-width:0;display:flex;flex-direction:column}
+.music-track h3{font-size:19px;margin:8px 0 6px}
+.music-track p{min-height:0;flex:1;margin:0 0 10px}
+.music-track>small{color:var(--mint);font-size:11px}
+.music-cover{height:92px;border-radius:16px;display:flex;align-items:center;justify-content:center;position:relative;background:radial-gradient(ellipse,#b2a8cd32,transparent 65%),linear-gradient(145deg,#1f2936,#0c1119);border:1px solid #ffffff12;margin:12px 0}
+.music-cover span{font-size:37px;color:#c1c9e1}
+.music-cover small{position:absolute;bottom:10px;right:12px;color:#9aa8be;letter-spacing:2px}
+.music-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.music-duration{font-size:11px;color:var(--muted)}
+.music-controls{display:flex;gap:8px;margin:13px 0 10px}
+.music-controls button{flex:1;min-width:0;font-size:12px;padding:11px 8px}
+.music-attach{display:flex;align-items:center;justify-content:center;border:1px solid #ffffff20;background:#24303b;border-radius:13px;padding:10px;font-size:12px;cursor:pointer;flex:1}
+.music-attach:focus-within{outline:2px solid var(--mint)}
+.music-attach input{position:absolute;width:1px;height:1px;opacity:0}
+.music-links{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center}
+.music-links a,.music-links span{font-size:11px}
+.music-links button{background:transparent;border:0;padding:6px;color:#8795a6;font-size:11px}
+.music-dock{position:fixed;z-index:30;bottom:93px;left:50%;transform:translateX(-50%);width:min(620px,calc(100% - 24px));background:#161d28f5;border:1px solid #a4dfc650;border-radius:20px;padding:12px 14px;box-shadow:0 16px 70px #0009;backdrop-filter:blur(18px)}
+.music-dock[hidden]{display:none}
+.music-dock-top{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--mint);font-size:12px;font-weight:700;padding:0 0 7px}
+.music-dock-top button{padding:1px 8px;border:0;background:transparent;font-size:24px}
+.music-dock audio{display:block;width:100%;height:40px}
+@media(max-width:760px){.music-library{grid-template-columns:repeat(2,minmax(0,1fr))}.music-track{padding:13px}.music-track h3{font-size:16px}.music-controls{flex-direction:column}.music-cover{height:77px}.music-dock{bottom:82px}}
+@media(max-width:400px){.music-library{grid-template-columns:1fr}.music-controls{flex-direction:row}.music-track h3{font-size:20px}}
