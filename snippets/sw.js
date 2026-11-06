@@ -1,4 +1,4 @@
-const CACHE = "content-shell-v4";
+const CACHE = "content-shell-v5";
 const ASSETS = [
   "./",
   "./index.html",
