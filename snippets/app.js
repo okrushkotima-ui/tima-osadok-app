@@ -214,6 +214,7 @@ function render() {
   if (tab === "ideas") renderIdeas();
   if (tab === "trends") renderTrends();
   if (tab === "stats") renderStats();
+  if (tab === "growth") $("#app").innerHTML = RitmGrowth.render({ date, state });
 }
 function renderToday() {
   const rs = records(),
@@ -225,7 +226,7 @@ function renderToday() {
           .slice(0, 2)
       : rs;
   $("#app").innerHTML =
-    `<section class="panel hero"><span class="eyebrow">ОТКРЫЛ → СНЯЛ → ВЫЛОЖИЛ</span><div class="heading"><h1>${low ? "Сегодня бережно" : "Твой голос на сегодня"}</h1><span class="pill">${fmt(date)}</span></div><p>Музыка, разговоры и жизнь между ними. Один конкретный ролик за раз.</p><div class="progress" aria-label="Готово ${done} из ${rs.length}"><i style="width:${rs.length ? (done / rs.length) * 100 : 0}%"></i></div><div class="heading"><b>Готово ${done} из ${rs.length}</b><span class="meta">${rs.filter((x) => x.status === "skipped").length} пропущено · без штрафов</span></div><div class="actions wrap"><button id="low" class="${low ? "primary" : ""}">${low ? "Вернуть полный план" : "Сегодня мало сил"}</button><button id="dayMeta">Тема / трек дня</button><button id="refreshDay">Другой день ↻</button><button data-tab="plan">Очередь · ${state.queue.length}</button></div>${low ? "<p>Показаны два самых простых незавершённых задания. Основной план сохранён.</p>" : ""}${state.dayMeta[date]?.theme ? `<div class="tip">Тема: ${esc(state.dayMeta[date].theme)} · Трек: ${esc(state.dayMeta[date].track || "по выбору")}</div>` : ""}</section><div class="heading section-title"><h2>Выбери ближайший шаг</h2><span class="meta">МСК · UTC+3</span></div><div class="cards">${visible.map(card).join("") || '<section class="panel empty">На этот день задач больше нет. Можно отдохнуть или добавить идею из библиотеки.</section>'}</div><div class="tip">Время — твой ориентир, а не «магические часы». Выложи на выбранной площадке вручную, затем сохрани ссылку и результат.</div>`;
+    `<section class="panel hero"><span class="eyebrow">ОТКРЫЛ → СНЯЛ → ВЫЛОЖИЛ</span><div class="heading"><h1>${low ? "Сегодня бережно" : "Твой голос на сегодня"}</h1><span class="pill">${fmt(date)}</span></div><p>Музыка, разговоры и жизнь между ними. Один конкретный ролик за раз.</p><div class="progress" aria-label="Готово ${done} из ${rs.length}"><i style="width:${rs.length ? (done / rs.length) * 100 : 0}%"></i></div><div class="heading"><b>Готово ${done} из ${rs.length}</b><span class="meta">${rs.filter((x) => x.status === "skipped").length} пропущено · без штрафов</span></div><div class="actions wrap"><button id="low" class="${low ? "primary" : ""}">${low ? "Вернуть полный план" : "Сегодня мало сил"}</button><button id="dayMeta">Тема / трек дня</button><button id="refreshDay">Другой день ↻</button><button data-tab="plan">Очередь · ${state.queue.length}</button><button data-tab="growth">♡ Фокус артиста</button></div>${low ? "<p>Показаны два самых простых незавершённых задания. Основной план сохранён.</p>" : ""}${state.dayMeta[date]?.theme ? `<div class="tip">Тема: ${esc(state.dayMeta[date].theme)} · Трек: ${esc(state.dayMeta[date].track || "по выбору")}</div>` : ""}</section><div class="heading section-title"><h2>Выбери ближайший шаг</h2><span class="meta">МСК · UTC+3</span></div><div class="cards">${visible.map(card).join("") || '<section class="panel empty">На этот день задач больше нет. Можно отдохнуть или добавить идею из библиотеки.</section>'}</div><div class="tip">Время — твой ориентир, а не «магические часы». Выложи на выбранной площадке вручную, затем сохрани ссылку и результат.</div>`;
 }
 function renderPlan() {
   const days = Array.from({ length: calendar }, (_, i) => C.shift(date, i));
@@ -610,6 +611,32 @@ document.addEventListener("click", async (e) => {
     tab = d.tab;
     render();
     window.scrollTo({ top: 0 });
+  }
+  if (d.growthTrack) {
+    RitmGrowth.select(d.growthTrack);
+    render();
+  }
+  if (d.growthCopy) {
+    const f = ideas.find(x => x.id === d.growthCopy);
+    if (f) await copy(f.pov + "\n\n" + f.caption + "\n" + f.tags);
+  }
+  if (d.growthPlan) {
+    let added = 0;
+    for (let i = 0; i < RitmGrowth.week.length; i++) {
+      const plannedDate = C.shift(date, i);
+      const dayTasks = C.ensureDay(state, plannedDate, ideas);
+      const id = RitmGrowth.week[i];
+      if (dayTasks.some(x => x.ideaId === id)) continue;
+      const idea = ideas.find(x => x.id === id);
+      if (!idea) continue;
+      const task = C.task(idea, "19:00");
+      task.createdDate = plannedDate;
+      dayTasks.push(task);
+      added++;
+    }
+    const ok = save();
+    render();
+    toast(ok ? (added ? "Добавлено " + added + " конкретных съёмок без удаления старых" : "Все семь идей уже в плане") : "План изменён только в этой вкладке. Экспортируй JSON.");
   }
   if (d.date) {
     date = d.date;
