@@ -135,53 +135,79 @@
       ...s.queue.map((r) => r.ideaId),
     ]);
   }
-  function choose(s, ideas, d, mode = "any", current) {
-    let pool = ideas.filter((x) => s.settings.categories.includes(x.category));
-    if (mode === "same")
-      pool = pool.filter((x) => x.category === current?.category);
-    if (mode === "other")
-      pool = pool.filter((x) => x.category !== current?.category);
-    if (mode === "simpler")
-      pool = pool.filter((x) => x.props === "нет" || x.effort === 5);
-    if (mode === "faster") pool = pool.filter((x) => x.effort === 5);
-    if (mode === "faceless") pool = pool.filter((x) => !x.face);
-    if (mode === "trend") pool = pool.filter((x) => x.category === "pov");
-    if (mode === "track") pool = pool.filter((x) => x.category === "music");
-    pool = pool.filter((x) => x.id !== current?.id);
+  // Режим артиста: ежедневные идеи только из «Фокуса».
+  // Вся старая библиотека остаётся доступной через «Идеи».
+  const focusCycle = ["ushi", "glaza", "ushi", "net", "ushi", "glaza", "ushi", "pravda"];
+  function focusPool(s, ideas) {
+    const available = ideas.filter(x => s.settings.categories.includes(x.category));
+    const focused = available.filter(x => x.id.startsWith("focus-"));
+    return focused.length ? focused : available;
+  }
+  function focusPick(s, ideas, d, slot = 0, excluded = new Set()) {
+    const pool = focusPool(s, ideas).filter(x => !excluded.has(x.id));
+    if (!pool.length) return null;
+    const dayOffset = Math.round((Date.parse(d) - Date.parse("2026-11-06")) / 86400000);
+    const desired = focusCycle[((dayOffset * s.settings.count + slot) % focusCycle.length + focusCycle.length) % focusCycle.length];
     const seen = recentIds(s, d);
-    return (
-      pool.find((x) => !seen.has(x.id)) ||
-      pool
-        .sort((a, b) => {
-          const last = (id) => s.recent.findLastIndex((x) => x.ideaId === id);
-          return last(a.id) - last(b.id);
-        })
-        .find((x) => x.id !== current?.id) ||
-      null
-    );
+    const fresh = pool.filter(x => !seen.has(x.id));
+    const matching = fresh.find(x => x.growthTrack === desired);
+    return matching || fresh[0] ||
+      pool.find(x => x.growthTrack === desired) ||
+      pool.sort((a,b) => s.recent.findIndex(x=>x.ideaId===a.id) - s.recent.findIndex(x=>x.ideaId===b.id))[0];
+  }
+  function choose(s, ideas, d, mode = "any", current) {
+    // Даже замена «другая идея» не возвращает случайный юмор,
+    // если основной набор состоит из сценариев Тимы.
+    let pool = focusPool(s, ideas);
+    if (mode === "same") pool = pool.filter(x => x.category === current?.category);
+    if (mode === "other") pool = pool.filter(x => x.category !== current?.category);
+    if (mode === "simpler") pool = pool.filter(x => x.props === "нет" || x.effort === 5);
+    if (mode === "faster") pool = pool.filter(x => x.effort === 5);
+    if (mode === "faceless") pool = pool.filter(x => !x.face);
+    if (mode === "trend") pool = pool.filter(x => x.category === "pov");
+    if (mode === "track") pool = pool.filter(x => x.category === "music");
+    pool = pool.filter(x => x.id !== current?.id);
+    const seen = recentIds(s, d);
+    return pool.find(x => !seen.has(x.id)) ||
+      pool.sort((a,b) => s.recent.findIndex(x=>x.ideaId===a.id) - s.recent.findIndex(x=>x.ideaId===b.id))[0] ||
+      null;
   }
   function ensureDay(s, d, ideas) {
     if (s.days[d]) return s.days[d];
     s.days[d] = [];
-    const seed = ["humor-0", "talk-0", "music-0", "studio-0", "pov-0"];
     for (let i = 0; i < s.settings.count; i++) {
-      const cat = s.settings.categories[i % s.settings.categories.length],
-        seen = recentIds(s, d);
-      const idea =
-        (Object.keys(s.days).length === 1 &&
-          ideas.find(
-            (x) =>
-              x.id === seed[i] && s.settings.categories.includes(x.category),
-          )) ||
-        ideas.find((x) => x.category === cat && !seen.has(x.id)) ||
-        choose(s, ideas, d);
-      if (!idea) break;
-      const r = task(idea, s.settings.times[i]);
+      const picked = focusPick(s, ideas, d, i);
+      if (!picked) break;
+      const r = task(picked, s.settings.times[i]);
       s.days[d].push(r);
-      s.recent.push({ ideaId: idea.id, date: d });
+      s.recent.push({ideaId:picked.id,date:d});
     }
     s.recent = s.recent.slice(-200);
     return s.days[d];
+  }
+  function alignFocusDay(s, d, ideas) {
+    const day = ensureDay(s,d,ideas);
+    let changed=0;
+    const excluded = new Set(day.filter(r=>r.ideaId.startsWith("focus-")).map(r=>r.ideaId));
+    day.forEach((r,i)=>{
+      // Не трогаем снятое, отредактированное, перемещённое, вручную добавленное.
+      if (r.ideaId.startsWith("focus-") || r.focusAdjusted ||
+          r.status !== "idea" || r.createdDate || r.originDate || r.legacy ||
+          r.checks.length || r.history.length ||
+          Object.keys(r.edits).length || Object.keys(r.metrics).length ||
+          Object.keys(r.publications).length) return;
+      const picked = focusPick(s,ideas,d,i,excluded);
+      if (!picked) return;
+      const previous = r.ideaId;
+      r.history.push({ideaId:previous,edits:clone(r.edits)});
+      r.ideaId = picked.id;
+      r.focusAdjusted = true; // После «отменить» больше автоматически не менять.
+      excluded.add(picked.id);
+      s.recent.push({ideaId:picked.id,date:d});
+      changed++;
+    });
+    s.recent=s.recent.slice(-200);
+    return changed;
   }
   function replace(s, r, ideas, d, mode) {
     if (
@@ -560,6 +586,7 @@
     brief,
     choose,
     ensureDay,
+    alignFocusDay,
     replace,
     undo,
     validate,
