@@ -42,12 +42,12 @@
   const base = rows.map(a => {
     const t = tracks.find(x=>x[0]===a[1]);
     return {
-      id:"focus-"+a[0], growthTrack:a[1], title:a[2], category:a[9],
+      id:"focus-"+a[0], growthTrack:a[1], title:a[2], category:a[8],
       pov:a[3], hook:a[4], script:a[4],
       shots:a[5].split(";").map(s=>{const i=s.indexOf("|");return {time:s.slice(0,i),text:s.slice(i+1)};}),
       edit:a[6], caption:a[7]+" #тимаосадок", cta:"Сравнить реакцию аудитории и сохранить лучший вариант.",
       setup:"Снимай вертикально 9:16, камера на уровне глаз. Естественный свет, лицо видно и в тени.",
-      location:a[10], effort:["06","11","16","20","23"].includes(a[0])?5:(a[10]==="улица"?30:15), face:!["20","23"].includes(a[0]), props:["20","23"].includes(a[0])?"нет":"телефон",
+      location:a[9], effort:["06","11","16","20","23"].includes(a[0])?5:(a[9]==="улица"?30:15), face:!["20","23"].includes(a[0]), props:["20","23"].includes(a[0])?"нет":"телефон",
       duration:Number(a[5].split(";").at(-1).split("|")[0].match(/\d+$/)[0]), tags:"#тимаосадок #авторскаямузыка",
       sound:"Официальный звук «"+t[1]+"» при публикации.",
       music:"свой трек", goal:"Проверить хук, репосты и вовлечение.",
