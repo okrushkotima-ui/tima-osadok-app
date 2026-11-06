@@ -1149,6 +1149,6 @@ document.addEventListener("click", (e) => {
 render();
 if ("serviceWorker" in navigator)
   navigator.serviceWorker
-    .register("./sw.js?v=4", { scope: "./", updateViaCache: "none" })
+    .register("./sw.js?v=6", { scope: "./", updateViaCache: "none" })
     .then((r) => r.update())
     .catch(() => {});
