@@ -34,3 +34,10 @@
 .bottom button{min-width:0;padding:7px 1px}
 .bottom button span{font-size:9px}
 @media(max-width:500px){.bottom button span{font-size:8px}}
+
+.music-track .music-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+.music-track .music-yandex{display:flex;grid-column:1/-1;align-items:center;justify-content:center;text-align:center;min-height:42px;border-radius:13px;background:var(--mint);color:#172a24;text-decoration:none;font-weight:750;font-size:12px;padding:10px;}
+.music-track .music-yandex:hover{background:#c4f4df;}
+.music-track .music-local-play{font-size:12px;padding:10px 8px;}
+.music-track .music-attach{min-height:42px;padding:9px 6px;}
+@media(max-width:760px){.music-track .music-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}}
