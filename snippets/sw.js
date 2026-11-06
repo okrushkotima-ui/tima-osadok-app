@@ -1,13 +1,13 @@
-const CACHE = "content-shell-v5";
+const CACHE = "content-shell-v6";
 const ASSETS = [
   "./",
   "./index.html",
-  "./style.css?v=5",
-  "./legacy.js?v=5",
-  "./catalog.js?v=5",
-  "./growth.js?v=5",
-  "./strategy.js?v=5",
-  "./app.js?v=5",
+  "./style.css?v=6",
+  "./legacy.js?v=6",
+  "./catalog.js?v=6",
+  "./growth.js?v=6",
+  "./strategy.js?v=6",
+  "./app.js?v=6",
   "./manifest.webmanifest",
   "../icons/ritm-192.png",
   "../icons/ritm-512.png",
