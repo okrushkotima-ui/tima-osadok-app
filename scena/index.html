@@ -70,6 +70,7 @@ textarea{resize:vertical;min-height:61px}.editfield.full{grid-column:1 / -1}
 <section class="panel"><div class="panelhead"><div><div class="panellabel">01 / ПЛАН ПЛОЩАДКИ</div><div class="detail">Перетаскивай предметы пальцем или мышкой</div></div><div class="micro" id="sceneName">КОМНАТА</div></div>
 <div class="mapbox"><svg id="sceneSvg" viewBox="0 0 820 520" role="img" aria-label="Интерактивный план съёмки сверху: камера, артист, белый и RGB-свет, монитор, пауэрбанк">
 <defs>
+<style>.letter{fill:#ffffff;font:800 14px system-ui,sans-serif}.small{fill:#cbd5de;font:750 12px system-ui,sans-serif}.selected .rim{stroke:#b7f17c;stroke-width:3.3}</style>
 <pattern id="grid" width="35" height="35" patternUnits="userSpaceOnUse"><path d="M35 0H0V35" fill="none" stroke="#768593" stroke-width=".6" opacity=".22"/></pattern>
 <linearGradient id="background" x2="0" y2="1"><stop stop-color="#17222c"/><stop offset="1" stop-color="#121a22"/></linearGradient>
 <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#8dbbe1"/></marker>
@@ -224,7 +225,7 @@ function drawMeta(){
  document.querySelectorAll(".choice").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.item===active?"true":"false")});
  itemIds.forEach(function(k){document.getElementById("node-"+k).classList.toggle("selected",k===active)});
 }
-function pause(){isPlaying=false;playBtn.textContent="▶ Запустить"}
+function pause(){isPlaying=false;tween=null;playBtn.textContent="▶ Запустить"}
 function jump(i,animate){
  var dest=(i+scene.steps.length)%scene.steps.length;
  var from=displayed?clone(displayed):posFor(phase);
@@ -250,7 +251,7 @@ svg.addEventListener("pointermove",function(e){if(!dragging)return;var p=cursorP
 function stopDrag(){dragging=null}svg.addEventListener("pointerup",stopDrag);svg.addEventListener("pointercancel",stopDrag);
 document.getElementById("selector").addEventListener("click",function(e){var b=e.target.closest("[data-item]");if(b)setItem(b.dataset.item)});
 ["xSlider","ySlider"].forEach(function(id){document.getElementById(id).addEventListener("input",function(){pause();var p=posFor(phase)[active].slice();p[id==="xSlider"?0:1]=Number(this.value)/100;updateItem(active,p[0],p[1])})});
-document.querySelectorAll(".tab").forEach(function(b){b.addEventListener("click",function(){pause();sceneId=b.dataset.scene;scene=readScene(sceneId);phase=0;drawMeta();render(posFor(phase))})});
+document.querySelectorAll(".tab").forEach(function(b){b.addEventListener("click",function(){pause();sceneId=b.dataset.scene;scene=readScene(sceneId);phase=0;tween=null;drawMeta();render(posFor(phase))})});
 playBtn.addEventListener("click",function(){isPlaying=!isPlaying;playBtn.textContent=isPlaying?"❚❚ Пауза":"▶ Запустить";startTime=performance.now()});
 document.getElementById("prevBtn").addEventListener("click",function(){pause();jump(phase-1,true)});
 document.getElementById("nextBtn").addEventListener("click",function(){pause();jump(phase+1,true)});
