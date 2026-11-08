@@ -1,0 +1,42 @@
+name: Shtab V0.6 bridge tests (real FFmpeg, no AI spending)
+on:
+  push:
+    branches: [shtab-v04-render-trial]
+    paths:
+      - 'shtab-cloud/**'
+      - '.github/workflows/shtab-v06-tests.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  unit-and-transport:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'shtab-cloud/requirements.txt'
+      - name: Install FFmpeg
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg libglib2.0-0 libgl1
+      - name: Verify pinned base snapshot and assemble deployed server
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' '1acc928edda66c193a2519e915310d1fab88e03063c223de1a5d26bde102c016' 'shtab-cloud/shtab_v04_code.zip' | sha256sum -c -
+          mkdir -p /tmp/shtab-ci
+          python -m zipfile -e shtab-cloud/shtab_v04_code.zip /tmp/shtab-ci
+          python shtab-cloud/fix_inline_assets.py /tmp/shtab-ci
+          cp shtab-cloud/ui_v05/shtab04.html shtab-cloud/ui_v05/shtab04.css shtab-cloud/ui_v05/shtab04.js /tmp/shtab-ci/static/
+          cp shtab-cloud/handoff_v06.py shtab-cloud/ffmpeg_editor_adapter_v06.py /tmp/shtab-ci/server/
+          python shtab-cloud/patch_route_v06.py /tmp/shtab-ci
+          cp shtab-cloud/test_bridge_v06.py /tmp/shtab-ci/tests/
+      - name: Install exactly the project requirements
+        run: python -m pip install -r /tmp/shtab-ci/requirements.txt
+      - name: Run full v0.4 + v0.6 suite using generated actual MP4 with audio
+        env:
+          SHTAB_ROLE_ROUTE_V06: '1'
+          PYTHONPATH: /tmp/shtab-ci
+        working-directory: /tmp/shtab-ci
+        run: python -m unittest discover -s tests -q
