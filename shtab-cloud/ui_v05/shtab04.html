@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>Штаб / Тима Осадок</title>
+<link rel="stylesheet" href="/assets/shtab04.css">
+</head>
+<body>
+<div class="ambient ambient-one"></div><div class="ambient ambient-two"></div>
+<div class="shell">
+ <header class="topbar">
+  <div class="brandline"><div class="brandmark" aria-hidden="true">о<span>.</span></div><div class="brandcopy"><strong>тима осадок</strong><span>творческий штаб</span></div><span class="divider-line"></span><span class="workspace-label">ПРОДАКШН / PRIVATE</span></div>
+  <div class="top-actions"><span class="live-dot"></span><span class="top-state">СЕРВЕР ONLINE</span><span class="version">BETA 0.5 <span class="version-sub">UI</span></span></div>
+ </header>
+ <div class="app-layout">
+  <aside class="sidebar" aria-label="Управление проектами">
+   <section class="side-panel access-panel" aria-labelledby="access-h">
+    <div class="section-heading"><h2 id="access-h">Доступ</h2><span id="authBadge" class="pill pill-muted">Ожидает входа</span></div>
+    <label class="field-label" for="token">Ключ доступа Render</label>
+    <div class="input-wrap"><input id="token" type="password" placeholder="Вставь ключ" autocomplete="off" spellcheck="false" aria-label="Ключ доступа Render"><button id="toggleKey" type="button" class="icon-btn" aria-label="Показать или скрыть ключ" title="Показать / скрыть ключ">◉</button></div>
+    <button id="login" type="button" class="btn btn-primary btn-full"><span>Подключиться</span><span aria-hidden="true">↗</span></button>
+    <p id="connection" class="connection-text" role="status" aria-live="polite">Вход защищён. Ключ не сохраняется в браузере.</p>
+   </section>
+
+   <section class="side-panel project-panel" aria-labelledby="create-h">
+    <div class="section-heading"><h2 id="create-h">Новый проект</h2><span class="micro">01 / БРИФ</span></div>
+    <label class="field-label" for="title">Название</label>
+    <input id="title" type="text" maxlength="160" value="Лайфхак №1 — тест команды" placeholder="Название проекта">
+    <label class="field-label" for="goal">Задача команды</label>
+    <textarea id="goal" rows="4" maxlength="6000" placeholder="Что должна сделать команда?">Проверить на одном ролике полный цикл согласования: Тима → Джон → Семён → QC → Рик → Тима.</textarea>
+    <button id="create" type="button" class="btn btn-accent btn-full"><span class="plus">+</span> Создать проект</button>
+   </section>
+
+   <section class="side-panel projects-panel" aria-labelledby="projects-h">
+    <div class="section-heading"><h2 id="projects-h">Мои проекты</h2><span id="projectCount" class="micro">0</span></div>
+    <div id="list" class="project-list" aria-live="polite"><p class="muted tiny">Войди, чтобы увидеть проекты</p></div>
+   </section>
+   <div class="sidebar-foot"><span class="safe-indicator"></span> Публикация отключена<br><span class="subfoot">Решение всегда за Тимой</span></div>
+  </aside>
+
+  <main class="workspace">
+   <section class="hero" aria-labelledby="hero-h"><div><p class="eyebrow">ШТАБ ТИМЫ ОСАДКА / ПРОИЗВОДСТВО</p><h1 id="hero-h">Ты задаёшь направление.<br><span>Команда делает остальное.</span></h1><p class="hero-desc">Единый путь от идеи до согласования. Без ручной пересылки задач — когда все агенты подключены.</p></div><div class="hero-orbit" aria-hidden="true"><span class="orbit-ring ring-one"></span><span class="orbit-ring ring-two"></span><span class="orbit-core">O</span></div></section>
+
+   <section class="section-block" aria-labelledby="team-h"><div class="section-title"><div><p class="eyebrow">СТРУКТУРА КОМАНДЫ</p><h2 id="team-h">Производственный цикл</h2></div><span class="chip-outline">Лимит · 3 пересборки</span></div>
+    <div class="pipeline" aria-label="Маршрут работы команды">
+      <div class="person person-tima"><div class="avatar av-tima">Т</div><strong>Тима</strong><span>Руководитель</span><em>Решение</em></div>
+      <div class="path-arrow" aria-hidden="true">→</div>
+      <div class="person"><div class="avatar av-john">J</div><strong>Джон</strong><span>Стратегия и ТЗ</span><em class="pending">Не подключён</em></div>
+      <div class="path-arrow" aria-hidden="true">→</div>
+      <div class="person"><div class="avatar av-semen">С</div><strong>Семён</strong><span>Монтаж MP4</span><em class="pending">Не подключён</em></div>
+      <div class="path-arrow" aria-hidden="true">→</div>
+      <div class="person"><div class="avatar av-rick">R</div><strong>Рик</strong><span>Контроль и правки</span><em class="pending">Не подключён</em></div>
+      <div class="path-arrow" aria-hidden="true">→</div>
+      <div class="person person-tima"><div class="avatar av-tima">✓</div><strong>Тима</strong><span>Финальная приёмка</span><em>Решение</em></div>
+    </div>
+    <p class="pipeline-caption">QC проверяет каждую версию; при замечаниях Рик возвращает её Семёну. Сейчас автоматическая передача задач не активирована.</p>
+   </section>
+
+   <section class="project-shell section-block" aria-labelledby="project-h">
+     <div class="section-title project-title-row"><div><p class="eyebrow">АКТИВНЫЙ ПРОЕКТ</p><h2 id="project-h">Рабочая панель</h2></div><span id="projectStatus" class="pill pill-muted">Не выбран</span></div>
+     <p id="state" class="selected-title">Выбери проект слева, чтобы начать.</p>
+     <div class="progress-row" aria-label="Статусы этапов"><div class="stage"><span class="stage-index">01</span><span>Задание</span><i class="stage-line stage-line-on"></i></div><div class="stage"><span class="stage-index">02</span><span>Джон</span><i class="stage-line"></i></div><div class="stage"><span class="stage-index">03</span><span>Семён + QC</span><i class="stage-line"></i></div><div class="stage"><span class="stage-index">04</span><span>Рик</span><i class="stage-line"></i></div><div class="stage"><span class="stage-index">05</span><span>Приёмка</span><i class="stage-line"></i></div></div>
+
+     <div class="audit-panel"><div class="audit-header"><div><span class="eyebrow">НЕЗАВИСИМАЯ ПРОВЕРКА</span><h3>Пять ворот качества Рика</h3></div><span class="audit-shield">QC 2.2</span></div><div id="gates" class="gate-grid"><p class="muted">Для просмотра выбери проект.</p></div></div>
+
+     <div id="details" class="hidden detail-grid">
+       <section class="work-card"><div class="card-heading"><div><p class="eyebrow">МАТЕРИАЛЫ</p><h3>Исходники проекта</h3></div><span class="card-icon" aria-hidden="true">↥</span></div><p class="supporting">Один ролик для проверки. Исходники сохраняются с контрольными SHA-256.</p>
+        <label class="file-picker" for="files"><span class="upload-symbol">↑</span><strong>Выбрать исходники</strong><small>MP4, MOV, MKV, SRT или ZIP</small><input id="files" type="file" accept=".mp4,.mov,.mkv,.zip,.srt" multiple></label>
+        <div id="fileHint" class="small-note" aria-live="polite">Файлы не выбраны</div>
+        <button id="upload" class="btn btn-secondary btn-full" type="button">Загрузить выбранные файлы</button>
+        <div class="uploaded-files" id="assets">Нет загруженных материалов</div>
+       </section>
+       <section class="work-card"><div class="card-heading"><div><p class="eyebrow">УПРАВЛЕНИЕ</p><h3>Запуск и контроль</h3></div><span class="card-icon" aria-hidden="true">◎</span></div><p class="supporting">Проверяй файлы перед запуском. Без ключа модели сервер честно остановит задачу.</p>
+        <button id="seal" class="btn btn-accent btn-full" type="button">Завершить загрузку → Джон</button><button id="refresh" class="btn btn-secondary btn-full" type="button">Обновить результаты</button><button id="stop" class="btn btn-danger btn-full" type="button">СТОП · Остановить проект</button>
+        <p class="warning-note">Публикация не выполняется автоматически. Агентам запрещено выдумывать результат.</p>
+       </section>
+     </div>
+     <div id="evidence" class="evidence-note hidden">Оценка ограничена доступными доказательствами.</div>
+     <section class="journal"><div class="section-title"><div><p class="eyebrow">ПРОТОКОЛ</p><h3>Результаты и журнал</h3></div><span class="micro">ВСЁ ЗАПИСЫВАЕТСЯ</span></div><div id="messages" class="timeline"><p class="empty-journal">Здесь появятся проверенные результаты агентов и история передачи задач.</p></div></section>
+     <div id="errors" class="errorbox" role="status" aria-live="polite"></div>
+   </section>
+  <footer>© Штаб Тимы Осадка <span>•</span> Дизайн команды / v0.5 UI <span>•</span> Сервер не публикует материалы</footer>
+  </main>
+ </div>
+</div>
+<script src="/assets/shtab04.js" defer></script>
+</body>
+</html>
