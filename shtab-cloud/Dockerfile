@@ -6,6 +6,11 @@ COPY shtab_v04_code.zip /tmp/shtab_v04_code.zip
 RUN echo "1acc928edda66c193a2519e915310d1fab88e03063c223de1a5d26bde102c016  /tmp/shtab_v04_code.zip" | sha256sum -c - && python -m zipfile -e /tmp/shtab_v04_code.zip /app && rm /tmp/shtab_v04_code.zip
 COPY fix_inline_assets.py /tmp/fix_inline_assets.py
 RUN python /tmp/fix_inline_assets.py /app && rm -f /tmp/fix_inline_assets.py
+COPY ui_v05 /tmp/ui_v05
+RUN cp /tmp/ui_v05/shtab04.html /app/static/shtab04.html && \
+    cp /tmp/ui_v05/shtab04.css /app/static/shtab04.css && \
+    cp /tmp/ui_v05/shtab04.js /app/static/shtab04.js && \
+    rm -rf /tmp/ui_v05
 RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 10000
 CMD ["sh","-c","exec uvicorn server.app_v04:create_app_v04 --factory --host 0.0.0.0 --port ${PORT:-10000} --workers 1"]
