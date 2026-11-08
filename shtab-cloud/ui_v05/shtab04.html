@@ -29,7 +29,7 @@
     <label class="field-label" for="title">Название</label>
     <input id="title" type="text" maxlength="160" value="Лайфхак №1 — тест команды" placeholder="Название проекта">
     <label class="field-label" for="goal">Задача команды</label>
-    <textarea id="goal" rows="4" maxlength="6000" placeholder="Что должна сделать команда?">Проверить на одном ролике полный цикл согласования: Тима → Джон → Семён → QC → Рик → Тима.</textarea>
+    <textarea id="goal" rows="4" maxlength="6000" placeholder="Что должна сделать команда?">Проверить на одном ролике цикл: Тима → Джон → Семён → Рик ↔ Семён (до 3 пересборок) → Рик → Тима.</textarea>
     <button id="create" type="button" class="btn btn-accent btn-full"><span class="plus">+</span> Создать проект</button>
    </section>
 
@@ -44,24 +44,28 @@
    <section class="hero" aria-labelledby="hero-h"><div><p class="eyebrow">ШТАБ ТИМЫ ОСАДКА / ПРОИЗВОДСТВО</p><h1 id="hero-h">Ты задаёшь направление.<br><span>Команда делает остальное.</span></h1><p class="hero-desc">Единый путь от идеи до согласования. Без ручной пересылки задач — когда все агенты подключены.</p></div><div class="hero-orbit" aria-hidden="true"><span class="orbit-ring ring-one"></span><span class="orbit-ring ring-two"></span><span class="orbit-core">O</span></div></section>
 
    <section class="section-block" aria-labelledby="team-h"><div class="section-title"><div><p class="eyebrow">СТРУКТУРА КОМАНДЫ</p><h2 id="team-h">Производственный цикл</h2></div><span class="chip-outline">Лимит · 3 пересборки</span></div>
-    <div class="pipeline" aria-label="Маршрут работы команды">
-      <div class="person person-tima"><div class="avatar av-tima">Т</div><strong>Тима</strong><span>Руководитель</span><em>Решение</em></div>
-      <div class="path-arrow" aria-hidden="true">→</div>
-      <div class="person"><div class="avatar av-john">J</div><strong>Джон</strong><span>Стратегия и ТЗ</span><em class="pending">Не подключён</em></div>
-      <div class="path-arrow" aria-hidden="true">→</div>
-      <div class="person"><div class="avatar av-semen">С</div><strong>Семён</strong><span>Монтаж MP4</span><em class="pending">Не подключён</em></div>
-      <div class="path-arrow" aria-hidden="true">→</div>
-      <div class="person"><div class="avatar av-rick">R</div><strong>Рик</strong><span>Контроль и правки</span><em class="pending">Не подключён</em></div>
-      <div class="path-arrow" aria-hidden="true">→</div>
-      <div class="person person-tima"><div class="avatar av-tima">✓</div><strong>Тима</strong><span>Финальная приёмка</span><em>Решение</em></div>
+    <div class="pipeline-main" aria-label="Старт: Тима даёт задачу, Джон готовит ТЗ, Семён монтирует MP4, Рик проверяет">
+      <div class="person person-tima"><span class="route-num">01</span><div class="avatar av-tima">Т</div><strong>Тима</strong><span>Ставит задачу</span><em>Руководитель</em></div>
+      <div class="person"><span class="route-num">02</span><div class="avatar av-john">J</div><strong>Джон</strong><span>Анализ и ТЗ</span><em class="pending">Не подключён</em></div>
+      <div class="person"><span class="route-num">03</span><div class="avatar av-semen">С</div><strong>Семён</strong><span>Монтаж MP4 + QC</span><em class="pending">Не подключён</em></div>
+      <div class="person"><span class="route-num">04</span><div class="avatar av-rick">R</div><strong>Рик</strong><span>Смотрит и слушает</span><em class="pending">Не подключён</em></div>
     </div>
-    <p class="pipeline-caption">QC проверяет каждую версию; при замечаниях Рик возвращает её Семёну. Сейчас автоматическая передача задач не активирована.</p>
+    <div class="revision-cycle" aria-label="Обязательный цикл: Рик передаёт правки Семёну, Семён возвращает новую MP4, Рик заново проверяет. До трёх пересборок">
+      <div class="cycle-header"><span class="cycle-icon" aria-hidden="true">↻</span><div><strong>Цикл правок: Рик ↔ Семён</strong><p>Не одноразовая передача, а настоящий круг проверки и доработки</p></div><span class="cycle-count">ДО 3 ПЕРЕСБОРОК</span></div>
+      <div class="cycle-steps">
+        <div class="cycle-step"><span class="cycle-actor cycle-rick">Рик → Семён</span><strong>Замечания и тайм-коды</strong><p>Рик отправляет Семёну конкретные правки</p></div>
+        <div class="cycle-step"><span class="cycle-actor cycle-semen">Семён → Рик</span><strong>Новая MP4 + QC 2.2</strong><p>Семён исправляет монтаж и возвращает видео</p></div>
+        <div class="cycle-step"><span class="cycle-actor cycle-rick">Рик пересматривает</span><strong>Принять или вернуть снова</strong><p>Рик проверяет картинку, речь и звук. Не больше трёх пересборок</p></div>
+      </div>
+    </div>
+    <div class="delivery-row" aria-label="Финал: Рик сдаёт Тиме готовое видео и отчёт, решение принимает Тима"><div class="delivery-symbol" aria-hidden="true">✓</div><div class="delivery-copy"><strong>Рик → Тима: сдача результата</strong><p>Готовые видео, что исправили, что оставили, оставшиеся вопросы. Только Тима утверждает результат и публикацию.</p></div><span class="delivery-state">Ожидает подключения</span></div>
+    <p class="pipeline-caption">Пока схема — контракт будущей работы: автоматическая передача задач и видеоправки ещё не подключены.</p>
    </section>
 
    <section class="project-shell section-block" aria-labelledby="project-h">
      <div class="section-title project-title-row"><div><p class="eyebrow">АКТИВНЫЙ ПРОЕКТ</p><h2 id="project-h">Рабочая панель</h2></div><span id="projectStatus" class="pill pill-muted">Не выбран</span></div>
      <p id="state" class="selected-title">Выбери проект слева, чтобы начать.</p>
-     <div class="progress-row" aria-label="Статусы этапов"><div class="stage"><span class="stage-index">01</span><span>Задание</span><i class="stage-line stage-line-on"></i></div><div class="stage"><span class="stage-index">02</span><span>Джон</span><i class="stage-line"></i></div><div class="stage"><span class="stage-index">03</span><span>Семён + QC</span><i class="stage-line"></i></div><div class="stage"><span class="stage-index">04</span><span>Рик</span><i class="stage-line"></i></div><div class="stage"><span class="stage-index">05</span><span>Приёмка</span><i class="stage-line"></i></div></div>
+     <div class="progress-row" aria-label="Статусы этапов"><div class="stage"><span class="stage-index">01</span><span>Задание</span><i class="stage-line stage-line-on"></i></div><div class="stage"><span class="stage-index">02</span><span>Джон</span><i class="stage-line"></i></div><div class="stage"><span class="stage-index">03</span><span>Семён · MP4 + QC</span><i class="stage-line"></i></div><div class="stage"><span class="stage-index">04</span><span>Рик ↔ Семён</span><i class="stage-line"></i></div><div class="stage"><span class="stage-index">05</span><span>Рик → Тима</span><i class="stage-line"></i></div></div>
 
      <div class="audit-panel"><div class="audit-header"><div><span class="eyebrow">НЕЗАВИСИМАЯ ПРОВЕРКА</span><h3>Пять ворот качества Рика</h3></div><span class="audit-shield">QC 2.2</span></div><div id="gates" class="gate-grid"><p class="muted">Для просмотра выбери проект.</p></div></div>
 
