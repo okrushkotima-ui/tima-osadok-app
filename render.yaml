@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: tima-osadok-shtab-trial
+    runtime: docker
+    plan: free
+    region: frankfurt
+    repo: https://github.com/okrushkotima-ui/tima-osadok-app
+    branch: shtab-v04-render-trial
+    autoDeployTrigger: off
+    dockerfilePath: ./shtab-cloud/Dockerfile
+    dockerContext: ./shtab-cloud
+    envVars:
+      - key: SHTAB_ACCESS_TOKEN
+        generateValue: true
+      - key: SHTAB_DATA_DIR
+        value: /tmp/shtab_data
+      - key: SHTAB_MAX_UPLOAD_BYTES
+        value: "31457280"
