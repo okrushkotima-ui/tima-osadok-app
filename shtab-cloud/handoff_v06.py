@@ -61,7 +61,7 @@ class Bridge:
   cur=self.db.one('SELECT * FROM bridge_v06 WHERE project_id=?',(pid,))
   log=self.db.rows('SELECT seq,from_actor,to_actor,action,version,asset_sha256,detail_json,created_at FROM bridge_handoffs WHERE project_id=? ORDER BY seq',(pid,))
   for x in log:x['detail']=json.loads(x.pop('detail_json'))
-  return {'state':cur['state'] if cur else 'NOT_STARTED','revision':cur['version'] if cur else 0,
+  return {'state':cur['state'] if cur else p['state'],'revision':cur['version'] if cur else 0,
    'rebuilds':cur['rebuilds'] if cur else 0,'current_sha256':cur['current_sha256'] if cur else None,
    'moves':log,'real_chatgpt_plugins_invoked':False,'publish_api':'DISABLED'}
  def start_from_verified_john(self,pid):
@@ -79,6 +79,7 @@ class Bridge:
    if prev:return {'status':prev['state'],'idempotent':True}
    now=time.time()
    c.execute('INSERT INTO bridge_v06(project_id,state,opened_at,updated_at) VALUES(?,?,?,?)',(pid,'WAITING_FOR_SEMEN',now,now))
+   self.db.state(c,pid,'WAITING_FOR_SEMEN')
    self.record(c,pid,'JOHN','SEMEN','VERIFIED_BRIEF_TO_EDITOR',0,meta['evidence_hash'],
      {'response_id':johns[-1]['response_id'],'strategy_sha256':johns[-1]['output_sha256'],'source_evidence_sha256':meta['evidence_hash']})
   return {'status':'WAITING_FOR_SEMEN','idempotent':False}
@@ -137,6 +138,7 @@ class Bridge:
      (subid,pid,cur['clip_id'],rev,'editor_srt',Path(srt_name).name,subid+'.srt',subsha,subdest.stat().st_size,time.time()))
     c.execute('UPDATE bridge_v06 SET state=?,version=?,current_asset_id=?,current_sha256=?,updated_at=? WHERE project_id=?',
      ('RICK_AV_PENDING',rev,asset_id,digest,time.time(),pid))
+    self.db.state(c,pid,'RICK_AV_PENDING')
     self.record(c,pid,'SEMEN','RICK','VERIFIED_EDITOR_MP4_RECEIVED',rev,digest,
      {'editor_job_id':editor_job_id,'render_manifest':editor_manifest,'technical_qc':metadata,'asset_id':asset_id,'srt_asset_id':subid,'srt_sha256':subsha})
    except:
@@ -164,6 +166,7 @@ class Bridge:
    c.execute('INSERT INTO bridge_reviews VALUES(?,?,?,?,?,?,?,?,?)',
     (str(uuid.uuid4()),pid,x.version,x.sha256,x.verdict,x.assessment,x.audiovisual_claim,x.reviewer_receipt,time.time()))
    c.execute('UPDATE bridge_v06 SET state=?,rebuilds=?,updated_at=? WHERE project_id=?',(state,rebuilds,time.time(),pid))
+   self.db.state(c,pid,state)
    self.record(c,pid,'RICK',dest,'RICK_REVIEW_'+x.verdict,x.version,x.sha256,
     {'assessment':x.assessment,'audiovisual_claim':x.audiovisual_claim,'reviewer_receipt':x.reviewer_receipt,'review_not_cryptographically_attested':True})
   return {'state':state,'version':x.version,'rebuilds':rebuilds,'av_gate_passed':False,'publish_api':'DISABLED'}
