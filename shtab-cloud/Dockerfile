@@ -11,6 +11,12 @@ RUN cp /tmp/ui_v05/shtab04.html /app/static/shtab04.html && \
     cp /tmp/ui_v05/shtab04.css /app/static/shtab04.css && \
     cp /tmp/ui_v05/shtab04.js /app/static/shtab04.js && \
     rm -rf /tmp/ui_v05
+# V0.6: actual authenticated role/file handoff transport; no agent impersonation.
+COPY handoff_v06.py /app/server/handoff_v06.py
+COPY ffmpeg_editor_adapter_v06.py /app/server/ffmpeg_editor_adapter_v06.py
+COPY patch_route_v06.py /tmp/patch_route_v06.py
+RUN python /tmp/patch_route_v06.py /app && rm /tmp/patch_route_v06.py
+ENV SHTAB_ROLE_ROUTE_V06=1
 RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 10000
 CMD ["sh","-c","exec uvicorn server.app_v04:create_app_v04 --factory --host 0.0.0.0 --port ${PORT:-10000} --workers 1"]
